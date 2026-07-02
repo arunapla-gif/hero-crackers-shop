@@ -7,26 +7,15 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   const [products, setProducts] = useState(initialProducts);
   const [godowns, setGodowns] = useState(initialGodowns);
   
-  // Tab State
-  const [activeTab, setActiveTab] = useState('orders'); // 'orders' or 'masters'
-  const [activeMasterTab, setActiveMasterTab] = useState('category'); // 'category', 'product', 'godown'
-
+  const [activeTab, setActiveTab] = useState('orders');
+  const [activeMasterTab, setActiveMasterTab] = useState('product');
   const [loadingOrderId, setLoadingOrderId] = useState(null);
 
-  // Forms state
   const [categoryName, setCategoryName] = useState('');
   const [godownName, setGodownName] = useState('');
   const [godownLocation, setGodownLocation] = useState('');
-  
   const [newProduct, setNewProduct] = useState({
-    name: '',
-    description: '',
-    basePrice: '',
-    price: '',
-    discount: '',
-    stockShop: '',
-    categoryId: categories.length > 0 ? categories[0].id : '',
-    imageUrl: ''
+    name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', categoryId: categories.length > 0 ? categories[0].id : '', imageUrl: ''
   });
 
   const handleStatusChange = async (orderId, newStatus) => {
@@ -40,11 +29,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
       if (res.ok) {
         const updatedOrder = await res.json();
         setOrders(orders.map(o => o.id === orderId ? updatedOrder : o));
-      } else {
-        alert('Failed to update order status');
       }
-    } catch (error) {
-      alert('Error updating order');
     } finally {
       setLoadingOrderId(null);
     }
@@ -52,329 +37,378 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
-    try {
-      const res = await fetch('/api/categories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: categoryName })
-      });
-      if (res.ok) {
-        alert('Category added! Please refresh the page to see it in the dropdown.');
-        setCategoryName('');
-      } else {
-        alert('Failed to add category');
-      }
-    } catch (error) {
-      alert('Error adding category');
+    const res = await fetch('/api/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: categoryName })
+    });
+    if (res.ok) {
+      alert('Category added! Refresh to see it in dropdowns.');
+      setCategoryName('');
     }
   };
   
   const handleAddGodown = async (e) => {
     e.preventDefault();
-    try {
-      const res = await fetch('/api/godowns', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: godownName, location: godownLocation })
-      });
-      if (res.ok) {
-        const added = await res.json();
-        setGodowns([...godowns, { ...added, stocks: [] }]);
-        setGodownName('');
-        setGodownLocation('');
-        alert('Godown added!');
-      } else {
-        alert('Failed to add godown');
-      }
-    } catch (error) {
-      alert('Error adding godown');
+    const res = await fetch('/api/godowns', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: godownName, location: godownLocation })
+    });
+    if (res.ok) {
+      const added = await res.json();
+      setGodowns([...godowns, { ...added, stocks: [] }]);
+      setGodownName(''); setGodownLocation('');
     }
   };
 
   const handleUpdateGodownStock = async (godownId, productId, quantity) => {
-    try {
-      const res = await fetch('/api/godowns/stock', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ godownId, productId, quantity })
-      });
-      if (!res.ok) alert('Failed to update stock');
-    } catch (error) {
-      alert('Error updating stock');
-    }
+    await fetch('/api/godowns/stock', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ godownId, productId, quantity })
+    });
   };
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
-    try {
-      const res = await fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...newProduct,
-          imageUrls: newProduct.imageUrl ? [newProduct.imageUrl] : []
-        })
-      });
-      if (res.ok) {
-        const addedProduct = await res.json();
-        setProducts([...products, addedProduct]);
-        alert('Product added successfully!');
-        setNewProduct({ ...newProduct, name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', imageUrl: '' });
-      } else {
-        alert('Failed to add product');
-      }
-    } catch (error) {
-      alert('Error adding product');
+    const res = await fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...newProduct, imageUrls: newProduct.imageUrl ? [newProduct.imageUrl] : [] })
+    });
+    if (res.ok) {
+      const addedProduct = await res.json();
+      setProducts([...products, addedProduct]);
+      setNewProduct({ ...newProduct, name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', imageUrl: '' });
     }
   };
 
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'PENDING': return '#ffae00';
-      case 'PROCESSING': return '#007bff';
-      case 'SHIPPED': return '#17a2b8';
-      case 'DELIVERED': return '#28a745';
-      default: return '#333';
-    }
+  // Modern UI Styles
+  const theme = {
+    bg: '#0f172a', // Deep slate
+    cardBg: '#1e293b',
+    textPrimary: '#f8fafc',
+    textSecondary: '#94a3b8',
+    accent: '#f59e0b', // Gold/Amber
+    accentHover: '#d97706',
+    border: '#334155',
+    inputBg: '#0f172a',
+    danger: '#ef4444',
+    success: '#10b981',
+    info: '#3b82f6',
   };
 
-  const inputStyle = { width: '100%', padding: '10px', margin: '5px 0 15px 0', border: '1px solid #ccc', borderRadius: '5px' };
-  
+  const cardStyle = {
+    backgroundColor: theme.cardBg,
+    borderRadius: '16px',
+    padding: '30px',
+    boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+    border: `1px solid ${theme.border}`,
+    color: theme.textPrimary
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '12px 16px',
+    margin: '8px 0 20px 0',
+    backgroundColor: theme.inputBg,
+    border: `1px solid ${theme.border}`,
+    borderRadius: '8px',
+    color: theme.textPrimary,
+    fontSize: '1rem',
+    outline: 'none',
+    transition: 'border-color 0.2s',
+  };
+
+  const labelStyle = {
+    display: 'block',
+    fontSize: '0.9rem',
+    fontWeight: '600',
+    color: theme.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px'
+  };
+
+  const btnPrimary = {
+    padding: '12px 24px',
+    backgroundColor: theme.accent,
+    color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: '1rem',
+    transition: 'all 0.2s',
+    boxShadow: '0 4px 10px rgba(245, 158, 11, 0.3)'
+  };
+
+  const statusBadge = (status) => {
+    let color = theme.textSecondary;
+    if(status === 'PENDING') color = theme.accent;
+    if(status === 'PROCESSING') color = theme.info;
+    if(status === 'SHIPPED') color = '#8b5cf6';
+    if(status === 'DELIVERED') color = theme.success;
+    return (
+      <span style={{ 
+        padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold',
+        backgroundColor: `${color}22`, color: color, border: `1px solid ${color}55`
+      }}>
+        {status}
+      </span>
+    );
+  };
+
   const TabButton = ({ active, onClick, children }) => (
     <button 
       onClick={onClick}
       style={{
-        padding: '12px 24px',
+        padding: '14px 28px',
         fontSize: '1.1rem',
         fontWeight: 'bold',
         cursor: 'pointer',
-        backgroundColor: active ? 'var(--color-primary)' : '#eee',
-        color: active ? '#fff' : '#333',
+        backgroundColor: active ? theme.cardBg : 'transparent',
+        color: active ? theme.accent : theme.textSecondary,
         border: 'none',
-        borderRadius: '8px 8px 0 0',
-        marginRight: '5px'
+        borderBottom: active ? `3px solid ${theme.accent}` : '3px solid transparent',
+        transition: 'all 0.3s',
+        outline: 'none'
       }}
+      onMouseOver={e => !active && (e.target.style.color = theme.textPrimary)}
+      onMouseOut={e => !active && (e.target.style.color = theme.textSecondary)}
     >
       {children}
     </button>
   );
 
   return (
-    <div style={{ padding: '50px', maxWidth: '1400px', margin: '0 auto' }}>
-      <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', color: 'var(--color-primary)', marginBottom: '30px' }}>
-        Admin Dashboard
-      </h1>
-      
-      {/* Main Tabs */}
-      <div style={{ borderBottom: '2px solid var(--color-primary)', marginBottom: '30px' }}>
-        <TabButton active={activeTab === 'orders'} onClick={() => setActiveTab('orders')}>Orders & Estimates</TabButton>
-        <TabButton active={activeTab === 'masters'} onClick={() => setActiveTab('masters')}>Masters</TabButton>
-      </div>
-      
-      {/* Orders Tab Content */}
-      {activeTab === 'orders' && (
-        <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '0 12px 12px 12px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
-          <h2 style={{ color: 'var(--color-primary)', marginBottom: '20px' }}>Incoming Orders</h2>
-          {orders.length === 0 ? <p>No orders yet.</p> : orders.map(order => (
-            <div key={order.id} style={{ border: '1px solid #eee', borderRadius: '8px', padding: '15px', marginBottom: '15px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <strong>Order ID: {order.id.slice(-6).toUpperCase()}</strong>
-                <span style={{ color: getStatusColor(order.status), fontWeight: 'bold' }}>{order.status}</span>
-              </div>
-              <p><strong>Customer ID:</strong> {order.userId}</p>
-              <p><strong>Total:</strong> ₹{order.totalAmount}</p>
-              
-              <div style={{ marginTop: '15px' }}>
-                <strong>Items:</strong>
-                <ul style={{ margin: '5px 0', paddingLeft: '20px', fontSize: '0.9rem', color: '#555' }}>
-                  {order.items.map(item => {
-                    const product = products.find(p => p.id === item.productId);
-                    return <li key={item.id}>{product ? product.name : 'Unknown Product'} - Qty: {item.quantity} (₹{item.price})</li>;
-                  })}
-                </ul>
-              </div>
-
-              <div style={{ marginTop: '15px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                {order.status !== 'PROCESSING' && (
-                  <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ padding: '8px 15px', backgroundColor: '#007bff', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Mark Processing</button>
-                )}
-                {order.status !== 'SHIPPED' && (
-                  <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ padding: '8px 15px', backgroundColor: '#17a2b8', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Mark Shipped</button>
-                )}
-                {order.status !== 'DELIVERED' && (
-                  <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ padding: '8px 15px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Mark Delivered</button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Masters Tab Content */}
-      {activeTab === 'masters' && (
-        <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '0 12px 12px 12px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
-          
-          {/* Sub-tabs for Masters */}
-          <div style={{ display: 'flex', gap: '15px', marginBottom: '30px', borderBottom: '1px solid #eee', paddingBottom: '15px' }}>
-            <button onClick={() => setActiveMasterTab('category')} style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid var(--color-primary)', backgroundColor: activeMasterTab === 'category' ? 'var(--color-primary)' : 'transparent', color: activeMasterTab === 'category' ? '#fff' : 'var(--color-primary)', cursor: 'pointer', fontWeight: 'bold' }}>Category Master</button>
-            <button onClick={() => setActiveMasterTab('product')} style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid var(--color-primary)', backgroundColor: activeMasterTab === 'product' ? 'var(--color-primary)' : 'transparent', color: activeMasterTab === 'product' ? '#fff' : 'var(--color-primary)', cursor: 'pointer', fontWeight: 'bold' }}>Product Master</button>
-            <button onClick={() => setActiveMasterTab('godown')} style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid var(--color-primary)', backgroundColor: activeMasterTab === 'godown' ? 'var(--color-primary)' : 'transparent', color: activeMasterTab === 'godown' ? '#fff' : 'var(--color-primary)', cursor: 'pointer', fontWeight: 'bold' }}>Godown Master</button>
+    <div style={{ backgroundColor: theme.bg, minHeight: '100vh', padding: '40px 20px', fontFamily: '"Inter", sans-serif' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+          <div>
+            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '3rem', color: '#fff', margin: '0 0 10px 0' }}>
+              Command Center
+            </h1>
+            <p style={{ color: theme.textSecondary, margin: 0, fontSize: '1.1rem' }}>Manage orders, inventory, and masters seamlessly.</p>
           </div>
-
-          {/* Category Master */}
-          {activeMasterTab === 'category' && (
-            <div>
-              <h3 style={{ marginBottom: '15px' }}>Add New Category</h3>
-              <form onSubmit={handleAddCategory} style={{ maxWidth: '400px', marginBottom: '30px' }}>
-                <label><strong>Category Name</strong></label>
-                <input type="text" value={categoryName} onChange={e => setCategoryName(e.target.value)} required style={inputStyle} placeholder="e.g. Sparklers" />
-                <button type="submit" style={{ padding: '10px 20px', backgroundColor: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>Save Category</button>
-              </form>
-              
-              <h3 style={{ marginBottom: '15px' }}>Existing Categories</h3>
-              <ul>
-                {categories.map(c => <li key={c.id} style={{ marginBottom: '8px' }}>{c.name} (/{c.slug})</li>)}
-              </ul>
-            </div>
-          )}
-
-          {/* Product Master */}
-          {activeMasterTab === 'product' && (
-            <div style={{ display: 'flex', gap: '40px', alignItems: 'start' }}>
-              <div style={{ flex: 1, maxWidth: '500px' }}>
-                <h3 style={{ marginBottom: '15px' }}>Add New Product</h3>
-                <form onSubmit={handleAddProduct}>
-                  <label><strong>Product Name</strong></label>
-                  <input type="text" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required style={inputStyle} />
-                  
-                  <label><strong>Category</strong></label>
-                  <select value={newProduct.categoryId} onChange={e => setNewProduct({...newProduct, categoryId: e.target.value})} required style={inputStyle}>
-                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
-                  
-                  <div style={{ display: 'flex', gap: '15px' }}>
-                    <div style={{ flex: 1 }}>
-                      <label><strong>Base Price (MRP)</strong></label>
-                      <input type="number" step="0.01" value={newProduct.basePrice} onChange={e => setNewProduct({...newProduct, basePrice: e.target.value})} required style={inputStyle} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <label><strong>Selling Price</strong></label>
-                      <input type="number" step="0.01" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} required style={inputStyle} />
-                    </div>
+        </div>
+        
+        {/* Main Navigation */}
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', borderBottom: `1px solid ${theme.border}` }}>
+          <TabButton active={activeTab === 'orders'} onClick={() => setActiveTab('orders')}>Incoming Orders</TabButton>
+          <TabButton active={activeTab === 'masters'} onClick={() => setActiveTab('masters')}>Data Masters</TabButton>
+        </div>
+        
+        {/* Orders Tab */}
+        {activeTab === 'orders' && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '25px' }}>
+            {orders.length === 0 ? <p style={{ color: theme.textSecondary }}>No orders yet.</p> : orders.map(order => (
+              <div key={order.id} style={{ ...cardStyle, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <strong style={{ fontSize: '1.2rem', color: '#fff' }}>#{order.id.slice(-6).toUpperCase()}</strong>
+                    {statusBadge(order.status)}
                   </div>
-
-                  <label><strong>Image URL (Optional)</strong></label>
-                  <input type="url" value={newProduct.imageUrl} onChange={e => setNewProduct({...newProduct, imageUrl: e.target.value})} style={inputStyle} placeholder="https://..." />
                   
-                  <label><strong>Description</strong></label>
-                  <textarea value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} style={{...inputStyle, height: '80px'}} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', color: theme.textSecondary, fontSize: '0.95rem' }}>
+                    <span>Customer ID: {order.userId.slice(-6)}</span>
+                    <strong style={{ color: theme.accent, fontSize: '1.1rem' }}>₹{order.totalAmount}</strong>
+                  </div>
+                  
+                  <div style={{ backgroundColor: theme.bg, padding: '15px', borderRadius: '8px', marginBottom: '20px', maxHeight: '120px', overflowY: 'auto' }}>
+                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.9rem', color: theme.textSecondary }}>
+                      {order.items.map(item => {
+                        const product = products.find(p => p.id === item.productId);
+                        return <li key={item.id} style={{ marginBottom: '5px' }}>{product ? product.name : 'Item'} x {item.quantity}</li>;
+                      })}
+                    </ul>
+                  </div>
+                </div>
 
-                  <button type="submit" style={{ padding: '10px 20px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>Create Product</button>
-                </form>
-              </div>
-
-              <div style={{ flex: 1 }}>
-                <h3 style={{ marginBottom: '15px' }}>Products Directory</h3>
-                <div style={{ overflowY: 'auto', maxHeight: '500px' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
-                    <thead style={{ position: 'sticky', top: 0, backgroundColor: '#fff' }}>
-                      <tr style={{ borderBottom: '2px solid #eee' }}>
-                        <th style={{ padding: '10px 0' }}>Name</th>
-                        <th style={{ padding: '10px 0' }}>Price</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {products.map(product => (
-                        <tr key={product.id} style={{ borderBottom: '1px solid #eee' }}>
-                          <td style={{ padding: '10px 0' }}>{product.name}</td>
-                          <td>₹{product.price}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  {order.status !== 'PROCESSING' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ ...btnPrimary, flex: 1, backgroundColor: theme.info, boxShadow: 'none' }}>Process</button>}
+                  {order.status !== 'SHIPPED' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ ...btnPrimary, flex: 1, backgroundColor: '#8b5cf6', boxShadow: 'none' }}>Ship</button>}
+                  {order.status !== 'DELIVERED' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ ...btnPrimary, flex: 1, backgroundColor: theme.success, boxShadow: 'none' }}>Deliver</button>}
                 </div>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
+        )}
 
-          {/* Godown Master */}
-          {activeMasterTab === 'godown' && (
-            <div>
-              <div style={{ display: 'flex', gap: '40px', marginBottom: '40px' }}>
-                <div style={{ flex: 1, maxWidth: '400px' }}>
-                  <h3 style={{ marginBottom: '15px' }}>Add New Godown</h3>
-                  <form onSubmit={handleAddGodown}>
-                    <label><strong>Godown Name</strong></label>
-                    <input type="text" value={godownName} onChange={e => setGodownName(e.target.value)} required style={inputStyle} placeholder="e.g. Main Warehouse" />
-                    <label><strong>Location</strong></label>
-                    <input type="text" value={godownLocation} onChange={e => setGodownLocation(e.target.value)} style={inputStyle} placeholder="e.g. South Sivakasi" />
-                    <button type="submit" style={{ padding: '10px 20px', backgroundColor: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>Save Godown</button>
+        {/* Masters Tab */}
+        {activeTab === 'masters' && (
+          <div style={cardStyle}>
+            {/* Sub-navigation */}
+            <div style={{ display: 'flex', gap: '15px', marginBottom: '40px' }}>
+              {['product', 'category', 'godown'].map(tab => (
+                <button 
+                  key={tab}
+                  onClick={() => setActiveMasterTab(tab)} 
+                  style={{ 
+                    padding: '10px 20px', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s',
+                    backgroundColor: activeMasterTab === tab ? theme.accent : 'transparent', 
+                    color: activeMasterTab === tab ? '#000' : theme.textSecondary,
+                    border: `1px solid ${activeMasterTab === tab ? theme.accent : theme.border}`
+                  }}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)} Master
+                </button>
+              ))}
+            </div>
+
+            {/* Product Master */}
+            {activeMasterTab === 'product' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+                {/* Form */}
+                <div>
+                  <h3 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '25px' }}>Create Product</h3>
+                  <form onSubmit={handleAddProduct}>
+                    <label style={labelStyle}>Product Name</label>
+                    <input type="text" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required style={inputStyle} />
+                    
+                    <label style={labelStyle}>Category</label>
+                    <select value={newProduct.categoryId} onChange={e => setNewProduct({...newProduct, categoryId: e.target.value})} required style={inputStyle}>
+                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                    
+                    <div style={{ display: 'flex', gap: '20px' }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={labelStyle}>MRP (Base)</label>
+                        <input type="number" step="0.01" value={newProduct.basePrice} onChange={e => setNewProduct({...newProduct, basePrice: e.target.value})} required style={inputStyle} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={labelStyle}>Selling Price</label>
+                        <input type="number" step="0.01" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} required style={inputStyle} />
+                      </div>
+                    </div>
+
+                    <label style={labelStyle}>Image URL</label>
+                    <input type="url" value={newProduct.imageUrl} onChange={e => setNewProduct({...newProduct, imageUrl: e.target.value})} style={inputStyle} />
+
+                    <button type="submit" style={{ ...btnPrimary, width: '100%', marginTop: '10px' }}>Save Product</button>
                   </form>
                 </div>
-                
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ marginBottom: '15px' }}>Existing Godowns</h3>
-                  <ul>
-                    {godowns.map(g => (
-                      <li key={g.id} style={{ marginBottom: '8px' }}>
-                        <strong>{g.name}</strong> {g.location && `(${g.location})`}
-                      </li>
-                    ))}
-                  </ul>
+
+                {/* Table */}
+                <div>
+                  <h3 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '25px' }}>Product Directory</h3>
+                  <div style={{ overflowY: 'auto', maxHeight: '550px', border: `1px solid ${theme.border}`, borderRadius: '12px' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                      <thead style={{ position: 'sticky', top: 0, backgroundColor: theme.bg, zIndex: 1 }}>
+                        <tr>
+                          <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Item</th>
+                          <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Price</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {products.map(product => (
+                          <tr key={product.id} style={{ borderBottom: `1px solid ${theme.border}`, transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.backgroundColor = theme.bg} onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}>
+                            <td style={{ padding: '15px', color: '#fff' }}>{product.name}</td>
+                            <td style={{ padding: '15px', color: theme.accent }}>₹{product.price}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
+            )}
 
-              <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '30px 0' }} />
-
-              <h3 style={{ marginBottom: '15px' }}>Manage Godown Stock</h3>
-              <p style={{ marginBottom: '20px', color: '#666' }}>Update stock quantities for each product across different godowns.</p>
-              
-              {godowns.length === 0 ? (
-                <p>Please create a Godown first to manage stock.</p>
-              ) : (
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                    <thead>
-                      <tr style={{ backgroundColor: '#f9f9f9' }}>
-                        <th style={{ padding: '15px', borderBottom: '2px solid #ddd' }}>Product</th>
-                        {godowns.map(g => (
-                          <th key={g.id} style={{ padding: '15px', borderBottom: '2px solid #ddd' }}>{g.name}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {products.map(product => (
-                        <tr key={product.id} style={{ borderBottom: '1px solid #eee' }}>
-                          <td style={{ padding: '15px' }}><strong>{product.name}</strong></td>
-                          {godowns.map(godown => {
-                            const stockRecord = godown.stocks?.find(s => s.productId === product.id);
-                            const currentQty = stockRecord ? stockRecord.quantity : 0;
-                            return (
-                              <td key={godown.id} style={{ padding: '15px' }}>
-                                <input 
-                                  type="number" 
-                                  defaultValue={currentQty}
-                                  onBlur={(e) => {
-                                    if(e.target.value !== String(currentQty)) {
-                                      handleUpdateGodownStock(godown.id, product.id, e.target.value);
-                                    }
-                                  }}
-                                  style={{ width: '80px', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }}
-                                />
-                              </td>
-                            )
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+            {/* Category Master */}
+            {activeMasterTab === 'category' && (
+              <div style={{ maxWidth: '500px' }}>
+                <h3 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '25px' }}>Add Category</h3>
+                <form onSubmit={handleAddCategory} style={{ marginBottom: '40px' }}>
+                  <label style={labelStyle}>Category Name</label>
+                  <input type="text" value={categoryName} onChange={e => setCategoryName(e.target.value)} required style={inputStyle} />
+                  <button type="submit" style={btnPrimary}>Save Category</button>
+                </form>
+                
+                <h3 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '25px' }}>Existing Categories</h3>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                  {categories.map(c => (
+                    <span key={c.id} style={{ padding: '8px 16px', backgroundColor: theme.bg, border: `1px solid ${theme.border}`, borderRadius: '20px', color: theme.textSecondary }}>
+                      {c.name}
+                    </span>
+                  ))}
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
 
-        </div>
-      )}
+            {/* Godown Master */}
+            {activeMasterTab === 'godown' && (
+              <div>
+                <div style={{ display: 'flex', gap: '40px', marginBottom: '50px', alignItems: 'start' }}>
+                  <div style={{ flex: 1, maxWidth: '400px' }}>
+                    <h3 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '25px' }}>Register Godown</h3>
+                    <form onSubmit={handleAddGodown}>
+                      <label style={labelStyle}>Godown Name</label>
+                      <input type="text" value={godownName} onChange={e => setGodownName(e.target.value)} required style={inputStyle} />
+                      <label style={labelStyle}>Location / Address</label>
+                      <input type="text" value={godownLocation} onChange={e => setGodownLocation(e.target.value)} style={inputStyle} />
+                      <button type="submit" style={btnPrimary}>Register Godown</button>
+                    </form>
+                  </div>
+                  
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '25px' }}>Registered Locations</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                      {godowns.map(g => (
+                        <div key={g.id} style={{ padding: '20px', backgroundColor: theme.bg, borderRadius: '12px', border: `1px solid ${theme.border}` }}>
+                          <h4 style={{ margin: '0 0 5px 0', color: theme.accent, fontSize: '1.2rem' }}>{g.name}</h4>
+                          <span style={{ color: theme.textSecondary, fontSize: '0.9rem' }}>{g.location || 'No location specified'}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ padding: '30px', backgroundColor: theme.bg, borderRadius: '12px', border: `1px solid ${theme.border}` }}>
+                  <h3 style={{ color: '#fff', fontSize: '1.5rem', margin: '0 0 10px 0' }}>Global Stock Matrix</h3>
+                  <p style={{ color: theme.textSecondary, marginBottom: '25px' }}>Click any cell to instantly update the inventory level.</p>
+                  
+                  {godowns.length === 0 ? <p style={{ color: theme.accent }}>Please register a Godown first.</p> : (
+                    <div style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                        <thead style={{ backgroundColor: theme.cardBg }}>
+                          <tr>
+                            <th style={{ padding: '15px', color: '#fff', borderBottom: `1px solid ${theme.border}` }}>Product</th>
+                            {godowns.map(g => (
+                              <th key={g.id} style={{ padding: '15px', color: theme.accent, borderBottom: `1px solid ${theme.border}` }}>{g.name}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {products.map(product => (
+                            <tr key={product.id} style={{ borderBottom: `1px solid ${theme.border}` }}>
+                              <td style={{ padding: '15px', color: theme.textSecondary }}>{product.name}</td>
+                              {godowns.map(godown => {
+                                const qty = godown.stocks?.find(s => s.productId === product.id)?.quantity || 0;
+                                return (
+                                  <td key={godown.id} style={{ padding: '15px' }}>
+                                    <input 
+                                      type="number" 
+                                      defaultValue={qty}
+                                      onBlur={(e) => e.target.value !== String(qty) && handleUpdateGodownStock(godown.id, product.id, e.target.value)}
+                                      style={{ width: '80px', padding: '8px', backgroundColor: theme.inputBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: '#fff', outline: 'none' }}
+                                    />
+                                  </td>
+                                )
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
