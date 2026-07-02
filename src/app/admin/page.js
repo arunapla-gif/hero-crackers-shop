@@ -17,5 +17,9 @@ export default async function AdminDashboard() {
     orderBy: { name: 'asc' }
   });
 
-  return <AdminDashboardClient initialOrders={orders} products={products} />;
+  const categories = await prisma.category.findMany({
+    orderBy: { name: 'asc' }
+  });
+
+  return <AdminDashboardClient initialOrders={orders} initialProducts={products} categories={categories} />;
 }

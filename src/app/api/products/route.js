@@ -19,8 +19,12 @@ export async function POST(request) {
       data: {
         name: body.name,
         description: body.description,
+        basePrice: body.basePrice ? parseFloat(body.basePrice) : 0,
         price: parseFloat(body.price),
-        stock: parseInt(body.stock),
+        discount: body.discount ? parseFloat(body.discount) : 0,
+        stockShop: body.stockShop ? parseInt(body.stockShop) : 0,
+        stockGodown: body.stockGodown ? parseInt(body.stockGodown) : 0,
+        stock: (body.stockShop ? parseInt(body.stockShop) : 0) + (body.stockGodown ? parseInt(body.stockGodown) : 0),
         categoryId: body.categoryId,
         imageUrls: body.imageUrls || []
       }

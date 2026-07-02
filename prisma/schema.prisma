@@ -22,14 +22,18 @@ enum Role {
 }
 
 model Product {
-  id          String   @id @default(cuid())
+  id          String      @id @default(cuid())
   name        String
   description String
+  basePrice   Float       @default(0)
   price       Float
-  stock       Int
+  discount    Float       @default(0)
+  stockShop   Int         @default(0)
+  stockGodown Int         @default(0)
+  stock       Int         @default(0)
   categoryId  String
   imageUrls   String[]
-  category    Category @relation(fields: [categoryId], references: [id])
+  category    Category    @relation(fields: [categoryId], references: [id])
   orderItems  OrderItem[]
 }
 
