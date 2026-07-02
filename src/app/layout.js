@@ -17,7 +17,8 @@ export default function RootLayout({ children }) {
           <nav>
             <a href="/" style={{ marginRight: '20px', fontWeight: 'bold' }}>Home</a>
             <a href="/shop" style={{ marginRight: '20px', fontWeight: 'bold' }}>Shop Crackers</a>
-            <a href="/cart" style={{ fontWeight: 'bold' }}>Cart (0)</a>
+            <a href="/cart" style={{ marginRight: '20px', fontWeight: 'bold' }}>Cart (0)</a>
+            <a href="/admin" style={{ fontWeight: 'bold', color: '#ffae00' }}>Admin</a>
           </nav>
         </header>
         <main>
