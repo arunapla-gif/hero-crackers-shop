@@ -35,7 +35,10 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   const todayRevenue = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
     return orders
-      .filter(o => o.createdAt.startsWith(today) && o.status !== 'PENDING')
+      .filter(o => {
+        const dateStr = new Date(o.createdAt).toISOString();
+        return dateStr.startsWith(today) && o.status !== 'PENDING';
+      })
       .reduce((sum, o) => sum + o.totalAmount, 0);
   }, [orders]);
 
