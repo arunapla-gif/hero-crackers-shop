@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 export default function AdminDashboardClient({ initialOrders, initialProducts, categories, initialGodowns }) {
   const [orders, setOrders] = useState(initialOrders);
@@ -13,6 +13,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   
   const [isDarkMode, setIsDarkMode] = useState(true);
 
+  // Forms state
   const [categoryName, setCategoryName] = useState('');
   const [godownName, setGodownName] = useState('');
   const [godownLocation, setGodownLocation] = useState('');
@@ -20,13 +21,78 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', categoryId: categories.length > 0 ? categories[0].id : '', imageUrl: ''
   });
 
+  // Filters for Orders
+  const [orderSearch, setOrderSearch] = useState('');
+  const [orderFilter, setOrderFilter] = useState('ALL');
+
+  // Dispatch Modal
+  const [dispatchModalOpen, setDispatchModalOpen] = useState(false);
+  const [dispatchOrderId, setDispatchOrderId] = useState(null);
+  const [transportName, setTransportName] = useState('');
+  const [trackingNumber, setTrackingNumber] = useState('');
+
+  // Calculate Analytics
+  const todayRevenue = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return orders
+      .filter(o => o.createdAt.startsWith(today) && o.status !== 'PENDING')
+      .reduce((sum, o) => sum + o.totalAmount, 0);
+  }, [orders]);
+
+  const pendingCount = orders.filter(o => o.status === 'PENDING').length;
+  const shippedCount = orders.filter(o => o.status === 'SHIPPED').length;
+
+  const filteredOrders = useMemo(() => {
+    let result = orders;
+    if (orderFilter !== 'ALL') {
+      result = result.filter(o => o.status === orderFilter);
+    }
+    if (orderSearch.trim()) {
+      const q = orderSearch.toLowerCase();
+      result = result.filter(o => 
+        o.id.toLowerCase().includes(q) || 
+        o.shippingAddress.toLowerCase().includes(q) || 
+        (o.customerPhone && o.customerPhone.includes(q))
+      );
+    }
+    // Sort newest first
+    return result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [orders, orderFilter, orderSearch]);
+
+
   const handleStatusChange = async (orderId, newStatus) => {
+    // If marking as shipped, open dispatch modal instead
+    if (newStatus === 'SHIPPED') {
+      setDispatchOrderId(orderId);
+      setDispatchModalOpen(true);
+      return;
+    }
+
+    await updateOrder(orderId, { status: newStatus });
+  };
+
+  const handleDispatchSubmit = async (e) => {
+    e.preventDefault();
+    if (!dispatchOrderId) return;
+    
+    await updateOrder(dispatchOrderId, { 
+      status: 'SHIPPED', 
+      transportName, 
+      trackingNumber 
+    });
+    
+    setDispatchModalOpen(false);
+    setTransportName('');
+    setTrackingNumber('');
+  };
+
+  const updateOrder = async (orderId, data) => {
     setLoadingOrderId(orderId);
     try {
       const res = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify(data),
       });
       if (res.ok) {
         const updatedOrder = await res.json();
@@ -37,6 +103,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     }
   };
 
+  // Rest of the master handlers (Product, Category, Godown) remain same
   const handleAddCategory = async (e) => {
     e.preventDefault();
     const res = await fetch('/api/categories', {
@@ -86,6 +153,17 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     }
   };
 
+  const triggerPrint = (orderId) => {
+    // Hide standard UI, show print UI, trigger print, revert
+    const printContent = document.getElementById(`print-invoice-${orderId}`);
+    const originalContent = document.body.innerHTML;
+
+    document.body.innerHTML = printContent.innerHTML;
+    window.print();
+    document.body.innerHTML = originalContent;
+    window.location.reload(); // Reload to restore React state bindings after native innerHTML mutation
+  };
+
   // UI Styles definition
   const darkTheme = {
     bg: '#0f172a',
@@ -106,7 +184,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     cardBg: '#ffffff',
     textPrimary: '#0f172a',
     textSecondary: '#475569',
-    accent: '#d97706', // Slightly darker amber for light mode
+    accent: '#d97706',
     accentHover: '#b45309',
     border: '#e2e8f0',
     inputBg: '#f1f5f9',
@@ -202,6 +280,26 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
 
   return (
     <div style={{ backgroundColor: theme.bg, minHeight: '100vh', padding: '40px 20px', fontFamily: '"Inter", sans-serif', transition: 'background-color 0.3s' }}>
+      
+      {/* Modal Overlay for Dispatch */}
+      {dispatchModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ ...cardStyle, width: '400px' }}>
+            <h3 style={{ margin: '0 0 20px 0', fontSize: '1.5rem', color: theme.textPrimary }}>Dispatch Order</h3>
+            <form onSubmit={handleDispatchSubmit}>
+              <label style={labelStyle}>Transport / Courier Name</label>
+              <input type="text" required value={transportName} onChange={e => setTransportName(e.target.value)} style={inputStyle} placeholder="e.g. Navata Transport" />
+              <label style={labelStyle}>Lorry Receipt (LR) / Tracking Number</label>
+              <input type="text" required value={trackingNumber} onChange={e => setTrackingNumber(e.target.value)} style={inputStyle} placeholder="e.g. LR-98765432" />
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <button type="button" onClick={() => setDispatchModalOpen(false)} style={{ ...btnPrimary, flex: 1, backgroundColor: 'transparent', color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>Cancel</button>
+                <button type="submit" style={{ ...btnPrimary, flex: 1 }}>Confirm Dispatch</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
         
         {/* Header */}
@@ -226,43 +324,169 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
         
         {/* Main Navigation */}
         <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', borderBottom: `1px solid ${theme.border}` }}>
-          <TabButton active={activeTab === 'orders'} onClick={() => setActiveTab('orders')}>Incoming Orders</TabButton>
+          <TabButton active={activeTab === 'orders'} onClick={() => setActiveTab('orders')}>Orders & Analytics</TabButton>
           <TabButton active={activeTab === 'masters'} onClick={() => setActiveTab('masters')}>Data Masters</TabButton>
         </div>
         
         {/* Orders Tab */}
         {activeTab === 'orders' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '25px' }}>
-            {orders.length === 0 ? <p style={{ color: theme.textSecondary }}>No orders yet.</p> : orders.map(order => (
-              <div key={order.id} style={{ ...cardStyle, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <strong style={{ fontSize: '1.2rem', color: theme.textPrimary }}>#{order.id.slice(-6).toUpperCase()}</strong>
-                    {statusBadge(order.status)}
-                  </div>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', color: theme.textSecondary, fontSize: '0.95rem' }}>
-                    <span>Customer ID: {order.userId.slice(-6)}</span>
-                    <strong style={{ color: theme.accent, fontSize: '1.1rem' }}>₹{order.totalAmount}</strong>
-                  </div>
-                  
-                  <div style={{ backgroundColor: theme.bg, padding: '15px', borderRadius: '8px', marginBottom: '20px', maxHeight: '120px', overflowY: 'auto' }}>
-                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.9rem', color: theme.textSecondary }}>
-                      {order.items.map(item => {
-                        const product = products.find(p => p.id === item.productId);
-                        return <li key={item.id} style={{ marginBottom: '5px' }}>{product ? product.name : 'Item'} x {item.quantity}</li>;
-                      })}
-                    </ul>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  {order.status !== 'PROCESSING' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ ...btnPrimary, flex: 1, backgroundColor: theme.info, boxShadow: 'none' }}>Process</button>}
-                  {order.status !== 'SHIPPED' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ ...btnPrimary, flex: 1, backgroundColor: '#8b5cf6', boxShadow: 'none' }}>Ship</button>}
-                  {order.status !== 'DELIVERED' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ ...btnPrimary, flex: 1, backgroundColor: theme.success, boxShadow: 'none' }}>Deliver</button>}
-                </div>
+          <div>
+            {/* Analytics Dashboard */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+              <div style={cardStyle}>
+                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.9rem' }}>Today's Processed Revenue</h4>
+                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: theme.accent }}>₹{todayRevenue.toLocaleString()}</div>
               </div>
-            ))}
+              <div style={cardStyle}>
+                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.9rem' }}>Pending Orders</h4>
+                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: theme.textPrimary }}>{pendingCount} <span style={{ fontSize: '1rem', color: theme.textSecondary }}>Requires Action</span></div>
+              </div>
+              <div style={cardStyle}>
+                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.9rem' }}>Total Shipped</h4>
+                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#8b5cf6' }}>{shippedCount} <span style={{ fontSize: '1rem', color: theme.textSecondary }}>In Transit</span></div>
+              </div>
+            </div>
+
+            {/* Filter & Search Bar */}
+            <div style={{ display: 'flex', gap: '15px', marginBottom: '30px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <input 
+                type="text" 
+                placeholder="Search by Order ID, Address, or Phone..." 
+                value={orderSearch}
+                onChange={(e) => setOrderSearch(e.target.value)}
+                style={{ ...inputStyle, margin: 0, flex: 2, minWidth: '300px' }}
+              />
+              <div style={{ display: 'flex', gap: '10px', flex: 1, minWidth: '300px' }}>
+                {['ALL', 'PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED'].map(f => (
+                  <button 
+                    key={f}
+                    onClick={() => setOrderFilter(f)}
+                    style={{ 
+                      padding: '10px 15px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
+                      backgroundColor: orderFilter === f ? theme.accent : theme.cardBg,
+                      color: orderFilter === f ? '#fff' : theme.textSecondary,
+                      border: `1px solid ${orderFilter === f ? theme.accent : theme.border}`,
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '25px' }}>
+              {filteredOrders.length === 0 ? <p style={{ color: theme.textSecondary }}>No orders found.</p> : filteredOrders.map(order => (
+                <div key={order.id} style={{ ...cardStyle, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  
+                  {/* Hidden Print Layout */}
+                  <div id={`print-invoice-${order.id}`} style={{ display: 'none' }}>
+                    <div style={{ padding: '40px', fontFamily: 'Arial, sans-serif', color: '#000', backgroundColor: '#fff' }}>
+                      <h1 style={{ textAlign: 'center', borderBottom: '2px solid #000', paddingBottom: '10px' }}>HERO CRACKERS</h1>
+                      <h2 style={{ textAlign: 'center' }}>PACKING SLIP / INVOICE</h2>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '30px' }}>
+                        <div>
+                          <p><strong>Order ID:</strong> {order.id.slice(-6).toUpperCase()}</p>
+                          <p><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <p><strong>Customer ID:</strong> {order.userId.slice(-6)}</p>
+                          <p><strong>Phone:</strong> {order.customerPhone || 'N/A'}</p>
+                        </div>
+                      </div>
+                      <div style={{ marginTop: '20px', padding: '15px', border: '1px solid #ccc' }}>
+                        <p><strong>Shipping Address:</strong><br/>{order.shippingAddress}</p>
+                      </div>
+                      <table style={{ width: '100%', marginTop: '30px', borderCollapse: 'collapse' }}>
+                        <thead>
+                          <tr>
+                            <th style={{ border: '1px solid #000', padding: '8px', textAlign: 'left' }}>Item</th>
+                            <th style={{ border: '1px solid #000', padding: '8px', textAlign: 'center' }}>Qty</th>
+                            <th style={{ border: '1px solid #000', padding: '8px', textAlign: 'right' }}>Price</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {order.items.map(item => {
+                            const product = products.find(p => p.id === item.productId);
+                            return (
+                              <tr key={item.id}>
+                                <td style={{ border: '1px solid #000', padding: '8px' }}>{product ? product.name : 'Item'}</td>
+                                <td style={{ border: '1px solid #000', padding: '8px', textAlign: 'center' }}>{item.quantity}</td>
+                                <td style={{ border: '1px solid #000', padding: '8px', textAlign: 'right' }}>₹{item.price * item.quantity}</td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                        <tfoot>
+                          <tr>
+                            <th colSpan="2" style={{ border: '1px solid #000', padding: '8px', textAlign: 'right' }}>Total:</th>
+                            <th style={{ border: '1px solid #000', padding: '8px', textAlign: 'right' }}>₹{order.totalAmount}</th>
+                          </tr>
+                        </tfoot>
+                      </table>
+                      <div style={{ marginTop: '50px', textAlign: 'center', fontSize: '0.9rem', color: '#555' }}>
+                        Thank you for shopping with Hero Crackers! Have a safe and happy Diwali.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                      <strong style={{ fontSize: '1.2rem', color: theme.textPrimary }}>#{order.id.slice(-6).toUpperCase()}</strong>
+                      {statusBadge(order.status)}
+                    </div>
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', color: theme.textSecondary, fontSize: '0.95rem' }}>
+                      <span>Phone: {order.customerPhone || 'N/A'}</span>
+                      <strong style={{ color: theme.accent, fontSize: '1.1rem' }}>₹{order.totalAmount}</strong>
+                    </div>
+
+                    <div style={{ marginBottom: '15px', color: theme.textSecondary, fontSize: '0.9rem' }}>
+                      <strong>Address:</strong> {order.shippingAddress}
+                    </div>
+                    
+                    {(order.transportName || order.trackingNumber) && (
+                      <div style={{ backgroundColor: `${theme.accent}11`, border: `1px solid ${theme.accent}44`, padding: '10px', borderRadius: '8px', marginBottom: '15px', fontSize: '0.9rem', color: theme.textPrimary }}>
+                        <strong style={{ color: theme.accent }}>Dispatch Details:</strong><br/>
+                        Transport: {order.transportName}<br/>
+                        LR Number: {order.trackingNumber}
+                      </div>
+                    )}
+                    
+                    <div style={{ backgroundColor: theme.bg, padding: '15px', borderRadius: '8px', marginBottom: '20px', maxHeight: '120px', overflowY: 'auto' }}>
+                      <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.9rem', color: theme.textSecondary }}>
+                        {order.items.map(item => {
+                          const product = products.find(p => p.id === item.productId);
+                          return <li key={item.id} style={{ marginBottom: '5px' }}>{product ? product.name : 'Item'} x {item.quantity}</li>;
+                        })}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <button onClick={() => triggerPrint(order.id)} style={{ ...btnPrimary, backgroundColor: theme.bg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>🖨️ Print</button>
+                    
+                    {order.customerPhone && (
+                      <a 
+                        href={`https://wa.me/91${order.customerPhone.replace(/[^0-9]/g, '').slice(-10)}?text=Hello! Your Hero Crackers order %23${order.id.slice(-6).toUpperCase()} is currently ${order.status}.${order.trackingNumber ? ` It was dispatched via ${order.transportName}. Tracking LR: ${order.trackingNumber}` : ''}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ ...btnPrimary, backgroundColor: '#25D366', boxShadow: 'none', display: 'inline-block', textDecoration: 'none' }}
+                      >
+                        💬 WhatsApp
+                      </a>
+                    )}
+
+                    <div style={{ width: '100%', height: '1px', backgroundColor: theme.border, margin: '5px 0' }}></div>
+
+                    {order.status !== 'PROCESSING' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ ...btnPrimary, flex: 1, backgroundColor: theme.info, boxShadow: 'none' }}>Process</button>}
+                    {order.status !== 'SHIPPED' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ ...btnPrimary, flex: 1, backgroundColor: '#8b5cf6', boxShadow: 'none' }}>Ship & Dispatch</button>}
+                    {order.status !== 'DELIVERED' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ ...btnPrimary, flex: 1, backgroundColor: theme.success, boxShadow: 'none' }}>Deliver</button>}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

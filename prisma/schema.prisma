@@ -51,6 +51,9 @@ model Order {
   totalAmount     Float
   status          OrderStatus @default(PENDING)
   shippingAddress String
+  customerPhone   String?
+  transportName   String?
+  trackingNumber  String?
   createdAt       DateTime    @default(now())
   user            User        @relation(fields: [userId], references: [id])
   items           OrderItem[]
