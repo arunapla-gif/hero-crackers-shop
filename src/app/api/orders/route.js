@@ -5,13 +5,33 @@ export async function POST(request) {
   try {
     const body = await request.json();
     
-    // In our Legal Estimate model, this creates a PENDING estimate
+    // 1. Guest Checkout Logic: Find or create a user based on the phone number
+    // We generate a dummy email since the User model requires a unique email.
+    const dummyEmail = `${body.customerPhone.replace(/[^0-9]/g, '')}@guest.local`;
+    
+    let user = await prisma.user.findUnique({
+      where: { email: dummyEmail }
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          name: body.customerName,
+          email: dummyEmail,
+          password: 'guest-checkout-no-password', // Not used for actual login
+          role: 'USER'
+        }
+      });
+    }
+
+    // 2. Create the Order
     const order = await prisma.order.create({
       data: {
-        userId: body.userId,
+        userId: user.id,
         totalAmount: parseFloat(body.totalAmount),
         shippingAddress: body.shippingAddress,
-        status: 'PENDING', // Waiting for phone confirmation & Axis payment
+        customerPhone: body.customerPhone,
+        status: 'PENDING',
         items: {
           create: body.items.map(item => ({
             productId: item.productId,
@@ -25,6 +45,7 @@ export async function POST(request) {
     
     return NextResponse.json(order);
   } catch (error) {
+    console.error('Failed to submit estimate:', error);
     return NextResponse.json({ error: 'Failed to submit estimate' }, { status: 500 });
   }
 }

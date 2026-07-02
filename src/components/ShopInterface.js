@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProductCard from './ProductCard';
 import styles from './ShopInterface.module.css';
 
@@ -8,6 +8,27 @@ export default function ShopInterface({ categories }) {
   const [viewMode, setViewMode] = useState('quick'); // default to quick buy on mobile
   const [cart, setCart] = useState({}); // { [productId]: quantity }
   const [selectedImage, setSelectedImage] = useState(null); // for thumbnail modal
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load cart from local storage on mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem('hero_cart');
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart));
+      } catch (e) {
+        console.error('Failed to parse cart');
+      }
+    }
+    setIsLoaded(true);
+  }, []);
+
+  // Save cart to local storage whenever it changes
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem('hero_cart', JSON.stringify(cart));
+    }
+  }, [cart, isLoaded]);
 
   // Create a fast lookup for product prices to calculate totals
   const productsLookup = {};
