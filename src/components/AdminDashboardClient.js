@@ -10,6 +10,8 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   const [activeTab, setActiveTab] = useState('orders');
   const [activeMasterTab, setActiveMasterTab] = useState('product');
   const [loadingOrderId, setLoadingOrderId] = useState(null);
+  
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   const [categoryName, setCategoryName] = useState('');
   const [godownName, setGodownName] = useState('');
@@ -84,13 +86,13 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     }
   };
 
-  // Modern UI Styles
-  const theme = {
-    bg: '#0f172a', // Deep slate
+  // UI Styles definition
+  const darkTheme = {
+    bg: '#0f172a',
     cardBg: '#1e293b',
     textPrimary: '#f8fafc',
     textSecondary: '#94a3b8',
-    accent: '#f59e0b', // Gold/Amber
+    accent: '#f59e0b',
     accentHover: '#d97706',
     border: '#334155',
     inputBg: '#0f172a',
@@ -99,13 +101,30 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     info: '#3b82f6',
   };
 
+  const lightTheme = {
+    bg: '#f8fafc',
+    cardBg: '#ffffff',
+    textPrimary: '#0f172a',
+    textSecondary: '#475569',
+    accent: '#d97706', // Slightly darker amber for light mode
+    accentHover: '#b45309',
+    border: '#e2e8f0',
+    inputBg: '#f1f5f9',
+    danger: '#dc2626',
+    success: '#059669',
+    info: '#2563eb',
+  };
+
+  const theme = isDarkMode ? darkTheme : lightTheme;
+
   const cardStyle = {
     backgroundColor: theme.cardBg,
     borderRadius: '16px',
     padding: '30px',
-    boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+    boxShadow: isDarkMode ? '0 10px 25px rgba(0,0,0,0.2)' : '0 10px 25px rgba(0,0,0,0.05)',
     border: `1px solid ${theme.border}`,
-    color: theme.textPrimary
+    color: theme.textPrimary,
+    transition: 'all 0.3s'
   };
 
   const inputStyle = {
@@ -118,7 +137,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     color: theme.textPrimary,
     fontSize: '1rem',
     outline: 'none',
-    transition: 'border-color 0.2s',
+    transition: 'all 0.3s',
   };
 
   const labelStyle = {
@@ -140,7 +159,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     fontWeight: 'bold',
     fontSize: '1rem',
     transition: 'all 0.2s',
-    boxShadow: '0 4px 10px rgba(245, 158, 11, 0.3)'
+    boxShadow: `0 4px 10px ${theme.accent}40`
   };
 
   const statusBadge = (status) => {
@@ -182,17 +201,27 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   );
 
   return (
-    <div style={{ backgroundColor: theme.bg, minHeight: '100vh', padding: '40px 20px', fontFamily: '"Inter", sans-serif' }}>
+    <div style={{ backgroundColor: theme.bg, minHeight: '100vh', padding: '40px 20px', fontFamily: '"Inter", sans-serif', transition: 'background-color 0.3s' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
         
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
           <div>
-            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '3rem', color: '#fff', margin: '0 0 10px 0' }}>
+            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '3rem', color: theme.textPrimary, margin: '0 0 10px 0', transition: 'color 0.3s' }}>
               Command Center
             </h1>
             <p style={{ color: theme.textSecondary, margin: 0, fontSize: '1.1rem' }}>Manage orders, inventory, and masters seamlessly.</p>
           </div>
+          <button 
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            style={{ 
+              padding: '10px 20px', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold',
+              backgroundColor: theme.cardBg, color: theme.textPrimary, border: `1px solid ${theme.border}`,
+              display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s'
+            }}
+          >
+            {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+          </button>
         </div>
         
         {/* Main Navigation */}
@@ -208,7 +237,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
               <div key={order.id} style={{ ...cardStyle, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <strong style={{ fontSize: '1.2rem', color: '#fff' }}>#{order.id.slice(-6).toUpperCase()}</strong>
+                    <strong style={{ fontSize: '1.2rem', color: theme.textPrimary }}>#{order.id.slice(-6).toUpperCase()}</strong>
                     {statusBadge(order.status)}
                   </div>
                   
@@ -249,7 +278,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                   style={{ 
                     padding: '10px 20px', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s',
                     backgroundColor: activeMasterTab === tab ? theme.accent : 'transparent', 
-                    color: activeMasterTab === tab ? '#000' : theme.textSecondary,
+                    color: activeMasterTab === tab ? '#fff' : theme.textSecondary,
                     border: `1px solid ${activeMasterTab === tab ? theme.accent : theme.border}`
                   }}
                 >
@@ -263,7 +292,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
                 {/* Form */}
                 <div>
-                  <h3 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '25px' }}>Create Product</h3>
+                  <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Create Product</h3>
                   <form onSubmit={handleAddProduct}>
                     <label style={labelStyle}>Product Name</label>
                     <input type="text" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required style={inputStyle} />
@@ -293,7 +322,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
 
                 {/* Table */}
                 <div>
-                  <h3 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '25px' }}>Product Directory</h3>
+                  <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Product Directory</h3>
                   <div style={{ overflowY: 'auto', maxHeight: '550px', border: `1px solid ${theme.border}`, borderRadius: '12px' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                       <thead style={{ position: 'sticky', top: 0, backgroundColor: theme.bg, zIndex: 1 }}>
@@ -305,7 +334,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                       <tbody>
                         {products.map(product => (
                           <tr key={product.id} style={{ borderBottom: `1px solid ${theme.border}`, transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.backgroundColor = theme.bg} onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}>
-                            <td style={{ padding: '15px', color: '#fff' }}>{product.name}</td>
+                            <td style={{ padding: '15px', color: theme.textPrimary }}>{product.name}</td>
                             <td style={{ padding: '15px', color: theme.accent }}>₹{product.price}</td>
                           </tr>
                         ))}
@@ -319,14 +348,14 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
             {/* Category Master */}
             {activeMasterTab === 'category' && (
               <div style={{ maxWidth: '500px' }}>
-                <h3 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '25px' }}>Add Category</h3>
+                <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Add Category</h3>
                 <form onSubmit={handleAddCategory} style={{ marginBottom: '40px' }}>
                   <label style={labelStyle}>Category Name</label>
                   <input type="text" value={categoryName} onChange={e => setCategoryName(e.target.value)} required style={inputStyle} />
                   <button type="submit" style={btnPrimary}>Save Category</button>
                 </form>
                 
-                <h3 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '25px' }}>Existing Categories</h3>
+                <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Existing Categories</h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                   {categories.map(c => (
                     <span key={c.id} style={{ padding: '8px 16px', backgroundColor: theme.bg, border: `1px solid ${theme.border}`, borderRadius: '20px', color: theme.textSecondary }}>
@@ -342,7 +371,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
               <div>
                 <div style={{ display: 'flex', gap: '40px', marginBottom: '50px', alignItems: 'start' }}>
                   <div style={{ flex: 1, maxWidth: '400px' }}>
-                    <h3 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '25px' }}>Register Godown</h3>
+                    <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Register Godown</h3>
                     <form onSubmit={handleAddGodown}>
                       <label style={labelStyle}>Godown Name</label>
                       <input type="text" value={godownName} onChange={e => setGodownName(e.target.value)} required style={inputStyle} />
@@ -353,7 +382,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                   </div>
                   
                   <div style={{ flex: 1 }}>
-                    <h3 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '25px' }}>Registered Locations</h3>
+                    <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Registered Locations</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                       {godowns.map(g => (
                         <div key={g.id} style={{ padding: '20px', backgroundColor: theme.bg, borderRadius: '12px', border: `1px solid ${theme.border}` }}>
@@ -366,7 +395,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                 </div>
 
                 <div style={{ padding: '30px', backgroundColor: theme.bg, borderRadius: '12px', border: `1px solid ${theme.border}` }}>
-                  <h3 style={{ color: '#fff', fontSize: '1.5rem', margin: '0 0 10px 0' }}>Global Stock Matrix</h3>
+                  <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', margin: '0 0 10px 0' }}>Global Stock Matrix</h3>
                   <p style={{ color: theme.textSecondary, marginBottom: '25px' }}>Click any cell to instantly update the inventory level.</p>
                   
                   {godowns.length === 0 ? <p style={{ color: theme.accent }}>Please register a Godown first.</p> : (
@@ -374,7 +403,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                       <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                         <thead style={{ backgroundColor: theme.cardBg }}>
                           <tr>
-                            <th style={{ padding: '15px', color: '#fff', borderBottom: `1px solid ${theme.border}` }}>Product</th>
+                            <th style={{ padding: '15px', color: theme.textPrimary, borderBottom: `1px solid ${theme.border}` }}>Product</th>
                             {godowns.map(g => (
                               <th key={g.id} style={{ padding: '15px', color: theme.accent, borderBottom: `1px solid ${theme.border}` }}>{g.name}</th>
                             ))}
@@ -392,7 +421,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                                       type="number" 
                                       defaultValue={qty}
                                       onBlur={(e) => e.target.value !== String(qty) && handleUpdateGodownStock(godown.id, product.id, e.target.value)}
-                                      style={{ width: '80px', padding: '8px', backgroundColor: theme.inputBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: '#fff', outline: 'none' }}
+                                      style={{ width: '80px', padding: '8px', backgroundColor: theme.inputBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.textPrimary, outline: 'none' }}
                                     />
                                   </td>
                                 )
