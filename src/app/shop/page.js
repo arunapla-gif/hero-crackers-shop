@@ -6,6 +6,8 @@ export const metadata = {
   description: 'Browse our full catalog of premium Sivakasi fireworks.',
 }
 
+export const revalidate = 60; // Revalidate every 60 seconds
+
 export default async function ShopPage() {
   // Fetch all categories with their nested products
   const categories = await prisma.category.findMany({

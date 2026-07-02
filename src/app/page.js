@@ -1,6 +1,8 @@
 import prisma from '@/lib/prisma';
 import ProductCard from '@/components/ProductCard';
 
+export const revalidate = 60; // Revalidate every 60 seconds
+
 export default async function Home() {
   // Fetch a few featured products for the homepage
   const featuredProducts = await prisma.product.findMany({
