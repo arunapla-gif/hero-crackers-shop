@@ -22,19 +22,20 @@ enum Role {
 }
 
 model Product {
-  id          String      @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
   description String
-  basePrice   Float       @default(0)
+  basePrice   Float         @default(0)
   price       Float
-  discount    Float       @default(0)
-  stockShop   Int         @default(0)
-  stockGodown Int         @default(0)
-  stock       Int         @default(0)
+  discount    Float         @default(0)
+  stockShop   Int           @default(0)
+  stockGodown Int           @default(0)
+  stock       Int           @default(0)
   categoryId  String
   imageUrls   String[]
-  category    Category    @relation(fields: [categoryId], references: [id])
+  category    Category      @relation(fields: [categoryId], references: [id])
   orderItems  OrderItem[]
+  godownStock GodownStock[]
 }
 
 model Category {
@@ -70,4 +71,22 @@ model OrderItem {
   price     Float
   order     Order   @relation(fields: [orderId], references: [id])
   product   Product @relation(fields: [productId], references: [id])
+}
+
+model Godown {
+  id       String        @id @default(cuid())
+  name     String
+  location String?
+  stocks   GodownStock[]
+}
+
+model GodownStock {
+  id        String  @id @default(cuid())
+  godownId  String
+  productId String
+  quantity  Int     @default(0)
+  godown    Godown  @relation(fields: [godownId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@unique([godownId, productId])
 }

@@ -21,5 +21,10 @@ export default async function AdminDashboard() {
     orderBy: { name: 'asc' }
   });
 
-  return <AdminDashboardClient initialOrders={orders} initialProducts={products} categories={categories} />;
+  const godowns = await prisma.godown.findMany({
+    include: { stocks: true },
+    orderBy: { name: 'asc' }
+  });
+
+  return <AdminDashboardClient initialOrders={orders} initialProducts={products} categories={categories} initialGodowns={godowns} />;
 }
