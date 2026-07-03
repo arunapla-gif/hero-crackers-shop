@@ -351,15 +351,15 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
             </div>
 
             {/* Filter & Search Bar */}
-            <div style={{ display: 'flex', gap: '15px', marginBottom: '30px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '20px', marginBottom: '30px', alignItems: 'center', flexWrap: 'wrap' }}>
               <input 
                 type="text" 
                 placeholder="Search by Order ID, Address, or Phone..." 
                 value={orderSearch}
                 onChange={(e) => setOrderSearch(e.target.value)}
-                style={{ ...inputStyle, margin: 0, flex: 2, minWidth: '300px' }}
+                style={{ ...inputStyle, margin: 0, width: '100%', maxWidth: '450px' }}
               />
-              <div style={{ display: 'flex', gap: '10px', flex: 1, minWidth: '300px' }}>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 {['ALL', 'PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED'].map(f => (
                   <button 
                     key={f}
