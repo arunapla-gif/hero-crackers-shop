@@ -335,18 +335,18 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
         {activeTab === 'orders' && (
           <div>
             {/* Analytics Dashboard */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '40px' }}>
-              <div style={cardStyle}>
-                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.9rem' }}>Today's Processed Revenue</h4>
-                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: theme.accent }}>₹{todayRevenue.toLocaleString()}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+              <div style={{ ...cardStyle, padding: '20px' }}>
+                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.85rem' }}>Today's Processed Revenue</h4>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: theme.accent }}>₹{todayRevenue.toLocaleString()}</div>
               </div>
-              <div style={cardStyle}>
-                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.9rem' }}>Pending Orders</h4>
-                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: theme.textPrimary }}>{pendingCount} <span style={{ fontSize: '1rem', color: theme.textSecondary }}>Requires Action</span></div>
+              <div style={{ ...cardStyle, padding: '20px' }}>
+                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.85rem' }}>Pending Orders</h4>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: theme.textPrimary }}>{pendingCount} <span style={{ fontSize: '0.9rem', color: theme.textSecondary }}>Requires Action</span></div>
               </div>
-              <div style={cardStyle}>
-                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.9rem' }}>Total Shipped</h4>
-                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#8b5cf6' }}>{shippedCount} <span style={{ fontSize: '1rem', color: theme.textSecondary }}>In Transit</span></div>
+              <div style={{ ...cardStyle, padding: '20px' }}>
+                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.85rem' }}>Total Shipped</h4>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#8b5cf6' }}>{shippedCount} <span style={{ fontSize: '0.9rem', color: theme.textSecondary }}>In Transit</span></div>
               </div>
             </div>
 
@@ -378,7 +378,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '25px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '25px' }}>
               {filteredOrders.length === 0 ? <p style={{ color: theme.textSecondary }}>No orders found.</p> : filteredOrders.map(order => (
                 <div key={order.id} style={{ ...cardStyle, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   
