@@ -7,7 +7,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   const [products, setProducts] = useState(initialProducts);
   const [godowns, setGodowns] = useState(initialGodowns);
   
-  const [activeTab, setActiveTab] = useState('orders');
+  const [activeTab, setActiveTab] = useState('orders'); // 'orders', 'quickbill', 'masters'
   const [activeMasterTab, setActiveMasterTab] = useState('product');
   const [loadingOrderId, setLoadingOrderId] = useState(null);
   
@@ -35,6 +35,11 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   const [dispatchOrderId, setDispatchOrderId] = useState(null);
   const [transportName, setTransportName] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
+
+  // Quick Bill POS State
+  const [quickBillCart, setQuickBillCart] = useState({}); // { productId: quantity }
+  const [quickBillCustomer, setQuickBillCustomer] = useState({ name: '', phone: '', address: 'Walk-in / Store Pickup' });
+  const [isBilling, setIsBilling] = useState(false);
 
 
   const filteredOrders = useMemo(() => {
@@ -174,7 +179,6 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     document.body.removeChild(link);
   };
 
-
   const handleAddCategory = async (e) => {
     e.preventDefault();
     const res = await fetch('/api/categories', {
@@ -226,6 +230,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
 
   const triggerPrint = (orderId) => {
     const printContent = document.getElementById(`print-invoice-${orderId}`);
+    if (!printContent) return;
     const originalContent = document.body.innerHTML;
 
     document.body.innerHTML = printContent.innerHTML;
@@ -233,6 +238,66 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     document.body.innerHTML = originalContent;
     window.location.reload(); 
   };
+
+  // Quick Bill Handlers
+  const updateQuickBillQty = (productId, delta) => {
+    setQuickBillCart(prev => {
+      const current = prev[productId] || 0;
+      const next = Math.max(0, current + delta);
+      const newCart = { ...prev };
+      if (next === 0) delete newCart[productId];
+      else newCart[productId] = next;
+      return newCart;
+    });
+  };
+
+  const quickBillTotal = useMemo(() => {
+    return Object.entries(quickBillCart).reduce((sum, [id, qty]) => {
+      const p = products.find(prod => prod.id === id);
+      return sum + ((p?.price || 0) * qty);
+    }, 0);
+  }, [quickBillCart, products]);
+
+  const handleGenerateQuickBill = async (e) => {
+    e.preventDefault();
+    if (Object.keys(quickBillCart).length === 0) return alert('Cart is empty!');
+    setIsBilling(true);
+    
+    const items = Object.entries(quickBillCart).map(([id, qty]) => {
+      const p = products.find(prod => prod.id === id);
+      return { productId: id, quantity: qty, price: p.price };
+    });
+    
+    const payload = {
+      customerName: quickBillCustomer.name || 'Walk-in Customer',
+      customerPhone: quickBillCustomer.phone || '0000000000',
+      shippingAddress: quickBillCustomer.address,
+      totalAmount: quickBillTotal,
+      items
+    };
+    
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (res.ok) {
+        const order = await res.json();
+        // Immediately mark walk-ins as processing or keep pending? Let's keep PENDING so it acts like a normal order
+        setOrders([order, ...orders]);
+        setQuickBillCart({});
+        setQuickBillCustomer({ name: '', phone: '', address: 'Walk-in / Store Pickup' });
+        
+        // Trigger print after React renders the new order div
+        setTimeout(() => triggerPrint(order.id), 300);
+      }
+    } finally {
+      setIsBilling(false);
+    }
+  };
+
 
   // ---------------- UI THEME SYSTEM ---------------- //
   const darkTheme = {
@@ -350,6 +415,18 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     gap: '8px'
   };
 
+  const qtyBtnStyle = {
+    padding: '5px 12px',
+    fontSize: '1.2rem',
+    fontWeight: 'bold',
+    backgroundColor: theme.inputBg,
+    border: `1px solid ${theme.border}`,
+    color: theme.textPrimary,
+    cursor: 'pointer',
+    borderRadius: '8px',
+    outline: 'none'
+  };
+
   const statusBadge = (status) => {
     let color = theme.textSecondary;
     if(status === 'PENDING') color = theme.accent;
@@ -406,7 +483,63 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
         .order-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,${isDarkMode ? '0.4' : '0.1'}) !important; }
         .search-input:focus, .date-input:focus { border-color: ${theme.accent} !important; box-shadow: 0 0 0 3px ${theme.accent}20 !important; }
         .custom-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: ${theme.accent}; }
+        .qty-btn:active { transform: scale(0.95); }
       `}} />
+
+      {/* Hidden Print Layouts for ALL Orders (Required so Quick Bill instantly finds it) */}
+      <div style={{ display: 'none' }}>
+        {orders.map(order => (
+          <div key={order.id} id={`print-invoice-${order.id}`}>
+            <div style={{ padding: '40px', fontFamily: 'Arial, sans-serif', color: '#000', backgroundColor: '#fff' }}>
+              <h1 style={{ textAlign: 'center', borderBottom: '2px solid #000', paddingBottom: '10px' }}>HERO CRACKERS</h1>
+              <h2 style={{ textAlign: 'center' }}>PACKING SLIP / INVOICE</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '30px' }}>
+                <div>
+                  <p><strong>Order ID:</strong> {order.id.slice(-6).toUpperCase()}</p>
+                  <p><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <p><strong>Customer ID:</strong> {order.userId.slice(-6)}</p>
+                  <p><strong>Phone:</strong> {order.customerPhone || 'N/A'}</p>
+                </div>
+              </div>
+              <div style={{ marginTop: '20px', padding: '15px', border: '1px solid #ccc' }}>
+                <p><strong>Shipping Address:</strong><br/>{order.shippingAddress}</p>
+              </div>
+              <table style={{ width: '100%', marginTop: '30px', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={{ border: '1px solid #000', padding: '8px', textAlign: 'left' }}>Item</th>
+                    <th style={{ border: '1px solid #000', padding: '8px', textAlign: 'center' }}>Qty</th>
+                    <th style={{ border: '1px solid #000', padding: '8px', textAlign: 'right' }}>Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {order.items.map(item => {
+                    const product = products.find(p => p.id === item.productId);
+                    return (
+                      <tr key={item.id}>
+                        <td style={{ border: '1px solid #000', padding: '8px' }}>{product ? product.name : 'Item'}</td>
+                        <td style={{ border: '1px solid #000', padding: '8px', textAlign: 'center' }}>{item.quantity}</td>
+                        <td style={{ border: '1px solid #000', padding: '8px', textAlign: 'right' }}>₹{item.price * item.quantity}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th colSpan="2" style={{ border: '1px solid #000', padding: '8px', textAlign: 'right' }}>Total:</th>
+                    <th style={{ border: '1px solid #000', padding: '8px', textAlign: 'right' }}>₹{order.totalAmount}</th>
+                  </tr>
+                </tfoot>
+              </table>
+              <div style={{ marginTop: '50px', textAlign: 'center', fontSize: '0.9rem', color: '#555' }}>
+                Thank you for shopping with Hero Crackers! Have a safe and happy Diwali.
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Modal Overlay for Dispatch */}
       {dispatchModalOpen && (
@@ -450,8 +583,9 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
         </div>
         
         {/* Main Navigation */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', borderBottom: `1px solid ${theme.border}` }}>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', borderBottom: `1px solid ${theme.border}`, flexWrap: 'wrap' }}>
           <TabButton active={activeTab === 'orders'} onClick={() => setActiveTab('orders')}>Orders & Analytics</TabButton>
+          <TabButton active={activeTab === 'quickbill'} onClick={() => setActiveTab('quickbill')}>⚡ Quick Bill (POS)</TabButton>
           <TabButton active={activeTab === 'masters'} onClick={() => setActiveTab('masters')}>Data Masters</TabButton>
         </div>
         
@@ -568,58 +702,6 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                 </div>
               ) : filteredOrders.map(order => (
                 <div key={order.id} className="order-card" style={{ ...orderCardStyle, opacity: order.status === 'CANCELLED' ? 0.6 : 1 }}>
-                  
-                  {/* Hidden Print Layout */}
-                  <div id={`print-invoice-${order.id}`} style={{ display: 'none' }}>
-                    <div style={{ padding: '40px', fontFamily: 'Arial, sans-serif', color: '#000', backgroundColor: '#fff' }}>
-                      <h1 style={{ textAlign: 'center', borderBottom: '2px solid #000', paddingBottom: '10px' }}>HERO CRACKERS</h1>
-                      <h2 style={{ textAlign: 'center' }}>PACKING SLIP / INVOICE</h2>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '30px' }}>
-                        <div>
-                          <p><strong>Order ID:</strong> {order.id.slice(-6).toUpperCase()}</p>
-                          <p><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <p><strong>Customer ID:</strong> {order.userId.slice(-6)}</p>
-                          <p><strong>Phone:</strong> {order.customerPhone || 'N/A'}</p>
-                        </div>
-                      </div>
-                      <div style={{ marginTop: '20px', padding: '15px', border: '1px solid #ccc' }}>
-                        <p><strong>Shipping Address:</strong><br/>{order.shippingAddress}</p>
-                      </div>
-                      <table style={{ width: '100%', marginTop: '30px', borderCollapse: 'collapse' }}>
-                        <thead>
-                          <tr>
-                            <th style={{ border: '1px solid #000', padding: '8px', textAlign: 'left' }}>Item</th>
-                            <th style={{ border: '1px solid #000', padding: '8px', textAlign: 'center' }}>Qty</th>
-                            <th style={{ border: '1px solid #000', padding: '8px', textAlign: 'right' }}>Price</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {order.items.map(item => {
-                            const product = products.find(p => p.id === item.productId);
-                            return (
-                              <tr key={item.id}>
-                                <td style={{ border: '1px solid #000', padding: '8px' }}>{product ? product.name : 'Item'}</td>
-                                <td style={{ border: '1px solid #000', padding: '8px', textAlign: 'center' }}>{item.quantity}</td>
-                                <td style={{ border: '1px solid #000', padding: '8px', textAlign: 'right' }}>₹{item.price * item.quantity}</td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
-                        <tfoot>
-                          <tr>
-                            <th colSpan="2" style={{ border: '1px solid #000', padding: '8px', textAlign: 'right' }}>Total:</th>
-                            <th style={{ border: '1px solid #000', padding: '8px', textAlign: 'right' }}>₹{order.totalAmount}</th>
-                          </tr>
-                        </tfoot>
-                      </table>
-                      <div style={{ marginTop: '50px', textAlign: 'center', fontSize: '0.9rem', color: '#555' }}>
-                        Thank you for shopping with Hero Crackers! Have a safe and happy Diwali.
-                      </div>
-                    </div>
-                  </div>
-
                   <div>
                     {/* Header with Checkbox */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
@@ -661,7 +743,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                     )}
                     
                     <div style={{ padding: '10px 0', borderTop: `1px dashed ${theme.border}`, borderBottom: `1px dashed ${theme.border}`, marginBottom: '20px', maxHeight: '100px', overflowY: 'auto' }}>
-                      <ul style={{ margin: 0, paddingLeft: '0', listStyle: 'none', fontSize: '0.9rem', color: theme.textSecondary }}>
+                      <ul style={{ margin: '0', paddingLeft: '0', listStyle: 'none', fontSize: '0.9rem', color: theme.textSecondary }}>
                         {order.items.map(item => {
                           const product = products.find(p => p.id === item.productId);
                           return (
@@ -703,6 +785,105 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Quick Bill (POS) Tab */}
+        {activeTab === 'quickbill' && (
+          <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+            
+            {/* Left Panel: Scrollable Product Matrix */}
+            <div style={{ flex: '1 1 600px', backgroundColor: theme.cardBg, borderRadius: '16px', border: `1px solid ${theme.border}`, boxShadow: `0 10px 25px rgba(0,0,0,${isDarkMode ? '0.2' : '0.05'})`, padding: '20px', maxHeight: '800px', overflowY: 'auto' }}>
+              <h2 style={{ color: theme.textPrimary, margin: '0 0 20px 0', fontSize: '1.8rem', borderBottom: `1px solid ${theme.border}`, paddingBottom: '15px' }}>Product Matrix</h2>
+              
+              {categories.map(category => {
+                const catProducts = products.filter(p => p.categoryId === category.id);
+                if (catProducts.length === 0) return null;
+                
+                return (
+                  <div key={category.id} style={{ marginBottom: '30px' }}>
+                    <div style={{ backgroundColor: theme.inputBg, padding: '10px 15px', borderRadius: '8px', color: theme.accent, fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '15px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      {category.name}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {catProducts.map(product => {
+                        const qty = quickBillCart[product.id] || 0;
+                        return (
+                          <div key={product.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: theme.bg, borderRadius: '10px', border: `1px solid ${theme.border}` }}>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ color: theme.textPrimary, fontWeight: '600', fontSize: '1.05rem' }}>{product.name}</div>
+                              <div style={{ color: theme.textSecondary, fontSize: '0.9rem' }}>₹{product.price}</div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                              <button className="qty-btn" onClick={() => updateQuickBillQty(product.id, -1)} style={qtyBtnStyle}>-</button>
+                              <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: theme.textPrimary, width: '30px', textAlign: 'center' }}>{qty}</span>
+                              <button className="qty-btn" onClick={() => updateQuickBillQty(product.id, 1)} style={qtyBtnStyle}>+</button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Right Panel: Sticky Cart Summary */}
+            <div style={{ flex: '1 1 350px', position: 'sticky', top: '20px' }}>
+              <form onSubmit={handleGenerateQuickBill} style={{ backgroundColor: theme.cardBg, borderRadius: '16px', border: `1px solid ${theme.border}`, boxShadow: `0 10px 25px rgba(0,0,0,${isDarkMode ? '0.2' : '0.05'})`, padding: '30px' }}>
+                <h2 style={{ color: theme.textPrimary, margin: '0 0 25px 0', fontSize: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Cart Summary</span>
+                  <span style={{ color: theme.accent, fontSize: '1.2rem' }}>{Object.keys(quickBillCart).length} Items</span>
+                </h2>
+                
+                <div style={{ maxHeight: '250px', overflowY: 'auto', marginBottom: '20px', borderBottom: `1px solid ${theme.border}`, paddingBottom: '10px' }}>
+                  {Object.entries(quickBillCart).length === 0 ? (
+                    <div style={{ color: theme.textSecondary, textAlign: 'center', padding: '20px 0' }}>Cart is empty</div>
+                  ) : (
+                    Object.entries(quickBillCart).map(([id, qty]) => {
+                      const p = products.find(prod => prod.id === id);
+                      return (
+                        <div key={id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: theme.textSecondary, fontSize: '0.95rem' }}>
+                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>{p?.name}</span>
+                          <span style={{ color: theme.textPrimary, fontWeight: 'bold' }}>{qty} x ₹{p?.price}</span>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                  <span style={{ fontSize: '1.2rem', color: theme.textSecondary }}>Grand Total</span>
+                  <strong style={{ fontSize: '2.5rem', color: theme.accent, letterSpacing: '-1px' }}>₹{quickBillTotal.toLocaleString()}</strong>
+                </div>
+
+                <div style={{ marginBottom: '25px' }}>
+                  <label style={labelStyle}>Customer Name (Optional)</label>
+                  <input type="text" value={quickBillCustomer.name} onChange={e => setQuickBillCustomer({...quickBillCustomer, name: e.target.value})} style={inputStyle} placeholder="Walk-in Customer" />
+                  
+                  <label style={labelStyle}>Phone Number (Optional)</label>
+                  <input type="text" value={quickBillCustomer.phone} onChange={e => setQuickBillCustomer({...quickBillCustomer, phone: e.target.value})} style={inputStyle} placeholder="0000000000" />
+                  
+                  <label style={labelStyle}>Address / Notes</label>
+                  <input type="text" value={quickBillCustomer.address} onChange={e => setQuickBillCustomer({...quickBillCustomer, address: e.target.value})} style={{...inputStyle, marginBottom: 0}} />
+                </div>
+
+                <button 
+                  type="submit" 
+                  disabled={isBilling || Object.keys(quickBillCart).length === 0}
+                  style={{ 
+                    ...btnPrimary, 
+                    width: '100%', 
+                    padding: '16px', 
+                    fontSize: '1.2rem', 
+                    backgroundColor: isBilling ? theme.border : theme.success, 
+                    boxShadow: isBilling ? 'none' : `0 4px 15px ${theme.success}50` 
+                  }}
+                >
+                  {isBilling ? 'Generating...' : '⚡ Generate Bill & Print'}
+                </button>
+              </form>
             </div>
           </div>
         )}
