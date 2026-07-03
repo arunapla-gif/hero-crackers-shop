@@ -285,12 +285,10 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
       
       if (res.ok) {
         const order = await res.json();
-        // Immediately mark walk-ins as processing or keep pending? Let's keep PENDING so it acts like a normal order
         setOrders([order, ...orders]);
         setQuickBillCart({});
         setQuickBillCustomer({ name: '', phone: '', address: 'Walk-in / Store Pickup' });
         
-        // Trigger print after React renders the new order div
         setTimeout(() => triggerPrint(order.id), 300);
       }
     } finally {
@@ -344,14 +342,18 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     transition: 'all 0.3s'
   };
 
-  const orderCardStyle = {
-    ...cardStyle,
-    padding: '25px',
-    display: 'flex', 
-    flexDirection: 'column', 
-    justifyContent: 'space-between',
-    cursor: 'default',
-    transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s',
+  // Redesigned Single-Line Horizontal List Card
+  const listCardStyle = {
+    backgroundColor: theme.cardBg,
+    borderRadius: '12px',
+    padding: '20px',
+    boxShadow: isDarkMode ? '0 5px 15px rgba(0,0,0,0.1)' : '0 5px 15px rgba(0,0,0,0.02)',
+    border: `1px solid ${theme.border}`,
+    color: theme.textPrimary,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '20px',
+    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s',
   };
 
   const inputStyle = {
@@ -446,7 +448,8 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
         color: color, 
         border: `1px solid ${color}40`,
         boxShadow: `0 0 10px ${color}20`,
-        textTransform: 'uppercase'
+        textTransform: 'uppercase',
+        display: 'inline-block'
       }}>
         <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: color, marginRight: '6px', marginBottom: '1px' }}></span>
         {status}
@@ -481,7 +484,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     <div style={{ backgroundColor: theme.bg, minHeight: '100vh', padding: '40px 20px', fontFamily: '"Inter", sans-serif', transition: 'background-color 0.3s' }}>
       
       <style dangerouslySetInnerHTML={{__html: `
-        .order-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,${isDarkMode ? '0.4' : '0.1'}) !important; }
+        .order-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,${isDarkMode ? '0.4' : '0.1'}) !important; }
         .search-input:focus, .date-input:focus { border-color: ${theme.accent} !important; box-shadow: 0 0 0 3px ${theme.accent}20 !important; }
         .custom-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: ${theme.accent}; }
         
@@ -715,97 +718,93 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
               </label>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '25px' }}>
+            {/* SINGLE LINE LIST VIEW (Horizontal Layout) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               {filteredOrders.length === 0 ? (
-                <div style={{ gridColumn: '1 / -1', padding: '60px', textAlign: 'center', backgroundColor: theme.cardBg, borderRadius: '16px', border: `1px dashed ${theme.border}` }}>
+                <div style={{ padding: '60px', textAlign: 'center', backgroundColor: theme.cardBg, borderRadius: '16px', border: `1px dashed ${theme.border}` }}>
                   <span style={{ fontSize: '3rem' }}>📭</span>
                   <h3 style={{ color: theme.textPrimary, margin: '15px 0 5px 0' }}>No orders found</h3>
                   <p style={{ color: theme.textSecondary }}>Try adjusting your filters or date range.</p>
                 </div>
               ) : filteredOrders.map(order => (
-                <div key={order.id} className="order-card" style={{ ...orderCardStyle, opacity: order.status === 'CANCELLED' ? 0.6 : 1 }}>
-                  <div>
-                    {/* Header with Checkbox */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <input 
-                          type="checkbox" 
-                          className="custom-checkbox"
-                          checked={selectedOrders.includes(order.id)} 
-                          onChange={() => handleSelectOrder(order.id)} 
-                        />
-                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                          ORD-{order.id.slice(-6).toUpperCase()}
-                        </span>
-                      </div>
-                      {statusBadge(order.status)}
+                <div key={order.id} className="order-card" style={{ ...listCardStyle, opacity: order.status === 'CANCELLED' ? 0.6 : 1, flexWrap: 'wrap' }}>
+                  
+                  {/* Column 1: Checkbox, ID & Status */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '150px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <input 
+                        type="checkbox" 
+                        className="custom-checkbox"
+                        checked={selectedOrders.includes(order.id)} 
+                        onChange={() => handleSelectOrder(order.id)} 
+                      />
+                      <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        ORD-{order.id.slice(-6).toUpperCase()}
+                      </span>
                     </div>
-                    
-                    <div style={{ marginBottom: '20px' }}>
-                      <span style={{ display: 'block', fontSize: '0.9rem', color: theme.textSecondary, marginBottom: '5px' }}>Total Amount</span>
-                      <strong style={{ fontSize: '2.2rem', color: theme.textPrimary, letterSpacing: '-1px', textDecoration: order.status === 'CANCELLED' ? 'line-through' : 'none' }}>₹{order.totalAmount.toLocaleString()}</strong>
-                    </div>
-
-                    <div style={{ backgroundColor: theme.bg, padding: '15px', borderRadius: '12px', marginBottom: '15px', border: `1px solid ${theme.border}`, fontSize: '0.9rem', color: theme.textSecondary }}>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '8px' }}>
-                        <span>📍</span>
-                        <span style={{ lineHeight: '1.4' }}>{order.shippingAddress}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span>📞</span>
-                        <strong style={{ color: theme.textPrimary }}>{order.customerPhone || 'N/A'}</strong>
-                      </div>
-                    </div>
-                    
-                    {(order.transportName || order.trackingNumber) && (
-                      <div style={{ background: `linear-gradient(90deg, ${theme.shipped}15 0%, transparent 100%)`, borderLeft: `3px solid ${theme.shipped}`, padding: '12px 15px', borderRadius: '0 8px 8px 0', marginBottom: '15px', fontSize: '0.9rem', color: theme.textPrimary }}>
-                        <span style={{ fontSize: '0.8rem', color: theme.shipped, textTransform: 'uppercase', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Dispatch Info</span>
-                        {order.transportName} <span style={{ color: theme.textSecondary }}>• LR:</span> {order.trackingNumber}
-                      </div>
-                    )}
-                    
-                    <div style={{ padding: '10px 0', borderTop: `1px dashed ${theme.border}`, borderBottom: `1px dashed ${theme.border}`, marginBottom: '20px', maxHeight: '100px', overflowY: 'auto' }}>
-                      <ul style={{ margin: '0', paddingLeft: '0', listStyle: 'none', fontSize: '0.9rem', color: theme.textSecondary }}>
-                        {order.items.map(item => {
-                          const product = products.find(p => p.id === item.productId);
-                          return (
-                            <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                              <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: '10px' }}>{product ? product.name : 'Item'}</span>
-                              <strong style={{ color: theme.textPrimary }}>x{item.quantity}</strong>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Refined Actions */}
-                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                    <button className="action-btn" onClick={() => triggerPrint(order.id)} style={{ ...btnPrimary, padding: '10px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none', flex: 1 }}>
-                      🖨️
-                    </button>
-                    
-                    {order.customerPhone && (
-                      <a 
-                        className="action-btn"
-                        href={`https://wa.me/91${order.customerPhone.replace(/[^0-9]/g, '').slice(-10)}?text=Hello! Your Hero Crackers order %23${order.id.slice(-6).toUpperCase()} is currently ${order.status}.${order.trackingNumber ? ` It was dispatched via ${order.transportName}. Tracking LR: ${order.trackingNumber}` : ''}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ ...btnPrimary, padding: '10px', backgroundColor: '#25D36615', color: '#25D366', border: '1px solid #25D36640', boxShadow: 'none', flex: 1, textDecoration: 'none' }}
-                      >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
-                      </a>
-                    )}
+                    <div>{statusBadge(order.status)}</div>
                   </div>
                   
-                  {order.status !== 'CANCELLED' && (
-                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '10px' }}>
-                      {order.status !== 'PROCESSING' && <button className="action-btn" disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.info, boxShadow: `0 4px 15px ${theme.info}40` }}>Process</button>}
-                      {order.status !== 'SHIPPED' && <button className="action-btn" disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.shipped, boxShadow: `0 4px 15px ${theme.shipped}40` }}>Dispatch</button>}
-                      {order.status !== 'DELIVERED' && <button className="action-btn" disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.success, boxShadow: `0 4px 15px ${theme.success}40` }}>Deliver</button>}
-                      <button className="action-btn" disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'CANCELLED')} style={{ ...btnPrimary, flex: 1, backgroundColor: 'transparent', color: theme.cancelled, border: `1px solid ${theme.cancelled}`, boxShadow: 'none' }}>Cancel</button>
+                  {/* Column 2: Total & Contact */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1.5', minWidth: '220px' }}>
+                    <strong style={{ fontSize: '1.8rem', color: theme.textPrimary, letterSpacing: '-1px', textDecoration: order.status === 'CANCELLED' ? 'line-through' : 'none' }}>
+                      ₹{order.totalAmount.toLocaleString()}
+                    </strong>
+                    <div style={{ fontSize: '0.85rem', color: theme.textSecondary, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      📞 <strong style={{ color: theme.textPrimary }}>{order.customerPhone || 'N/A'}</strong> • 📍 {order.shippingAddress}
                     </div>
-                  )}
+                    {(order.transportName || order.trackingNumber) && (
+                      <div style={{ fontSize: '0.8rem', color: theme.shipped, marginTop: '2px', fontWeight: 'bold' }}>
+                        LR: {order.trackingNumber} ({order.transportName})
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Column 3: Compressed Items Summary */}
+                  <div style={{ flex: '2', minWidth: '250px', padding: '0 15px', borderLeft: `1px solid ${theme.border}`, borderRight: `1px solid ${theme.border}`, fontSize: '0.9rem', color: theme.textSecondary, display: 'flex', alignItems: 'center' }}>
+                    {(() => {
+                      const parts = order.items.map(item => {
+                        const product = products.find(p => p.id === item.productId);
+                        return product ? `${product.name} x${item.quantity}` : `Item x${item.quantity}`;
+                      });
+                      const showing = parts.slice(0, 2).join(', ');
+                      const hidden = parts.length > 2 ? ` (+${parts.length - 2} more)` : '';
+                      return <span style={{ lineHeight: '1.4' }}>{showing} <strong style={{ color: theme.textPrimary }}>{hidden}</strong></span>;
+                    })()}
+                  </div>
+
+                  {/* Column 4: Action Buttons (Right-aligned) */}
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flex: '1.5', minWidth: '280px', justifyContent: 'flex-end' }}>
+                    
+                    {/* Utility Icons (Print & WhatsApp) */}
+                    <div style={{ display: 'flex', gap: '8px', marginRight: 'auto' }}>
+                      <button className="action-btn" onClick={() => triggerPrint(order.id)} style={{ ...btnPrimary, padding: '8px 12px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>
+                        🖨️
+                      </button>
+                      
+                      {order.customerPhone && (
+                        <a 
+                          className="action-btn"
+                          href={`https://wa.me/91${order.customerPhone.replace(/[^0-9]/g, '').slice(-10)}?text=Hello! Your Hero Crackers order %23${order.id.slice(-6).toUpperCase()} is currently ${order.status}.${order.trackingNumber ? ` It was dispatched via ${order.transportName}. Tracking LR: ${order.trackingNumber}` : ''}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ ...btnPrimary, padding: '8px 12px', backgroundColor: '#25D36615', color: '#25D366', border: '1px solid #25D36640', boxShadow: 'none', textDecoration: 'none' }}
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+                        </a>
+                      )}
+                    </div>
+                    
+                    {/* Main Status Actions */}
+                    {order.status !== 'CANCELLED' && (
+                      <>
+                        {order.status !== 'PROCESSING' && <button className="action-btn" disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.info, boxShadow: 'none' }}>Process</button>}
+                        {order.status !== 'SHIPPED' && <button className="action-btn" disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.shipped, boxShadow: 'none' }}>Dispatch</button>}
+                        {order.status !== 'DELIVERED' && <button className="action-btn" disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.success, boxShadow: 'none' }}>Deliver</button>}
+                        <button className="action-btn" disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'CANCELLED')} style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: 'transparent', color: theme.cancelled, border: `1px solid ${theme.cancelled}`, boxShadow: 'none' }}>✕ Cancel</button>
+                      </>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
