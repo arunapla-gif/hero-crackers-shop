@@ -486,22 +486,24 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
         .custom-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: ${theme.accent}; }
         
         /* Global Button Hover Effects (Glowing & Lifting) */
-        button { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        button { transition: all 0.2s ease-in-out !important; }
+        .action-btn { position: relative; overflow: hidden; }
         .action-btn:hover:not(:disabled) {
-           filter: brightness(1.15); 
-           transform: translateY(-2px);
-           box-shadow: 0 6px 15px rgba(0,0,0,0.2) !important;
+           transform: scale(1.03) translateY(-2px) !important;
+           filter: brightness(1.2) !important;
+           box-shadow: 0 8px 20px rgba(0,0,0,0.3) !important;
+           opacity: 0.95;
         }
         .action-btn:active:not(:disabled) {
-           transform: translateY(0);
-           filter: brightness(0.9);
+           transform: scale(0.97) translateY(0) !important;
+           filter: brightness(0.9) !important;
         }
-        button:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); }
+        button:disabled { opacity: 0.5 !important; cursor: not-allowed !important; filter: grayscale(1) !important; }
         
-        .qty-btn:hover { background-color: ${theme.accent}20 !important; color: ${theme.accent} !important; border-color: ${theme.accent} !important; }
-        .qty-btn:active { transform: scale(0.95); }
+        .qty-btn:hover { background-color: ${theme.accent} !important; color: white !important; border-color: ${theme.accent} !important; transform: scale(1.1); }
+        .qty-btn:active { transform: scale(0.95) !important; }
         
-        .filter-btn:hover { background-color: ${theme.cardBg} !important; opacity: 0.9; }
+        .filter-btn:hover { background-color: ${theme.cardBg} !important; opacity: 0.8 !important; transform: translateY(-1px); }
       `}} />
 
       {/* Hidden Print Layouts for ALL Orders (Required so Quick Bill instantly finds it) */}
