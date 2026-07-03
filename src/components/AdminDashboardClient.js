@@ -24,6 +24,11 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   // Filters for Orders
   const [orderSearch, setOrderSearch] = useState('');
   const [orderFilter, setOrderFilter] = useState('ALL');
+  
+  // Advanced Features State
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [selectedOrders, setSelectedOrders] = useState([]);
 
   // Dispatch Modal
   const [dispatchModalOpen, setDispatchModalOpen] = useState(false);
@@ -31,25 +36,23 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   const [transportName, setTransportName] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
 
-  // Calculate Analytics
-  const todayRevenue = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
-    return orders
-      .filter(o => {
-        const dateStr = new Date(o.createdAt).toISOString();
-        return dateStr.startsWith(today) && o.status !== 'PENDING';
-      })
-      .reduce((sum, o) => sum + o.totalAmount, 0);
-  }, [orders]);
-
-  const pendingCount = orders.filter(o => o.status === 'PENDING').length;
-  const shippedCount = orders.filter(o => o.status === 'SHIPPED').length;
 
   const filteredOrders = useMemo(() => {
     let result = orders;
+    
     if (orderFilter !== 'ALL') {
       result = result.filter(o => o.status === orderFilter);
     }
+    
+    if (startDate) {
+      result = result.filter(o => new Date(o.createdAt) >= new Date(startDate));
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setDate(end.getDate() + 1);
+      result = result.filter(o => new Date(o.createdAt) < end);
+    }
+
     if (orderSearch.trim()) {
       const q = orderSearch.toLowerCase();
       result = result.filter(o => 
@@ -60,13 +63,26 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     }
     // Sort newest first
     return result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [orders, orderFilter, orderSearch]);
+  }, [orders, orderFilter, orderSearch, startDate, endDate]);
+
+  // Dynamic Analytics based on filters
+  const periodRevenue = useMemo(() => {
+    return filteredOrders
+      .filter(o => o.status !== 'PENDING' && o.status !== 'CANCELLED')
+      .reduce((sum, o) => sum + o.totalAmount, 0);
+  }, [filteredOrders]);
+
+  const periodPendingCount = filteredOrders.filter(o => o.status === 'PENDING').length;
+  const periodShippedCount = filteredOrders.filter(o => o.status === 'SHIPPED').length;
 
 
   const handleStatusChange = async (orderId, newStatus) => {
     if (newStatus === 'SHIPPED') {
       setDispatchOrderId(orderId);
       setDispatchModalOpen(true);
+      return;
+    }
+    if (newStatus === 'CANCELLED' && !confirm('Are you sure you want to cancel this order?')) {
       return;
     }
     await updateOrder(orderId, { status: newStatus });
@@ -103,6 +119,61 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
       setLoadingOrderId(null);
     }
   };
+
+  const handleSelectOrder = (id) => {
+    if (selectedOrders.includes(id)) {
+      setSelectedOrders(selectedOrders.filter(oId => oId !== id));
+    } else {
+      setSelectedOrders([...selectedOrders, id]);
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (selectedOrders.length === filteredOrders.length && filteredOrders.length > 0) {
+      setSelectedOrders([]);
+    } else {
+      setSelectedOrders(filteredOrders.map(o => o.id));
+    }
+  };
+
+  const handleBulkStatusChange = async (newStatus) => {
+    if (!confirm(`Are you sure you want to change the status of ${selectedOrders.length} orders to ${newStatus}?`)) return;
+    
+    await Promise.all(selectedOrders.map(id => 
+      fetch(`/api/orders/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+    ));
+    
+    setOrders(orders.map(o => selectedOrders.includes(o.id) ? { ...o, status: newStatus } : o));
+    setSelectedOrders([]); // Clear selection
+  };
+
+  const exportToCSV = () => {
+    const headers = ['Order ID', 'Date', 'Customer Phone', 'Address', 'Status', 'Total Amount'];
+    const rows = filteredOrders.map(o => [
+      o.id, 
+      new Date(o.createdAt).toLocaleDateString(),
+      o.customerPhone || 'N/A',
+      `"${o.shippingAddress.replace(/"/g, '""')}"`,
+      o.status,
+      o.totalAmount
+    ]);
+    
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `hero_orders_${startDate || 'all'}_to_${endDate || 'all'}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
@@ -177,6 +248,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     success: '#10b981',
     info: '#3b82f6',
     shipped: '#8b5cf6',
+    cancelled: '#ef4444',
   };
 
   const lightTheme = {
@@ -192,11 +264,11 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     success: '#059669',
     info: '#2563eb',
     shipped: '#7c3aed',
+    cancelled: '#dc2626',
   };
 
   const theme = isDarkMode ? darkTheme : lightTheme;
 
-  // Global styles for standard cards (Masters tab mostly)
   const cardStyle = {
     backgroundColor: theme.cardBg,
     borderRadius: '16px',
@@ -207,7 +279,6 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     transition: 'all 0.3s'
   };
 
-  // Premium hoverable order card style
   const orderCardStyle = {
     ...cardStyle,
     padding: '25px',
@@ -233,7 +304,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
 
   const searchInputStyle = {
     width: '100%',
-    maxWidth: '450px',
+    maxWidth: '350px',
     padding: '14px 20px',
     backgroundColor: theme.cardBg,
     border: `1px solid ${theme.border}`,
@@ -243,6 +314,14 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     outline: 'none',
     boxShadow: `inset 0 2px 4px rgba(0,0,0,${isDarkMode ? '0.2' : '0.02'})`,
     transition: 'border-color 0.3s, box-shadow 0.3s',
+  };
+
+  const dateInputStyle = {
+    ...searchInputStyle,
+    padding: '12px 20px',
+    fontSize: '0.9rem',
+    maxWidth: '160px',
+    color: theme.textSecondary,
   };
 
   const labelStyle = {
@@ -271,13 +350,13 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     gap: '8px'
   };
 
-  // Glowing status badge
   const statusBadge = (status) => {
     let color = theme.textSecondary;
     if(status === 'PENDING') color = theme.accent;
     if(status === 'PROCESSING') color = theme.info;
     if(status === 'SHIPPED') color = theme.shipped;
     if(status === 'DELIVERED') color = theme.success;
+    if(status === 'CANCELLED') color = theme.cancelled;
     
     return (
       <span style={{ 
@@ -325,7 +404,8 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
       
       <style dangerouslySetInnerHTML={{__html: `
         .order-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,${isDarkMode ? '0.4' : '0.1'}) !important; }
-        .search-input:focus { border-color: ${theme.accent} !important; box-shadow: 0 0 0 3px ${theme.accent}20 !important; }
+        .search-input:focus, .date-input:focus { border-color: ${theme.accent} !important; box-shadow: 0 0 0 3px ${theme.accent}20 !important; }
+        .custom-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: ${theme.accent}; }
       `}} />
 
       {/* Modal Overlay for Dispatch */}
@@ -378,63 +458,105 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
         {/* Orders Tab */}
         {activeTab === 'orders' && (
           <div>
-            {/* Analytics Dashboard - Glass & Glow */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '40px' }}>
-              
+            {/* Dynamic Analytics Dashboard */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '30px' }}>
               <div style={{ ...cardStyle, padding: '25px', background: `linear-gradient(135deg, ${theme.cardBg} 0%, ${theme.accent}15 100%)`, border: `1px solid ${theme.accent}40`, boxShadow: `0 10px 30px ${theme.accent}15` }}>
-                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px' }}>Today's Revenue</h4>
-                <div style={{ fontSize: '2.5rem', fontWeight: '800', color: theme.accent, textShadow: `0 2px 10px ${theme.accent}30` }}>₹{todayRevenue.toLocaleString()}</div>
+                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px' }}>Period Revenue</h4>
+                <div style={{ fontSize: '2.5rem', fontWeight: '800', color: theme.accent, textShadow: `0 2px 10px ${theme.accent}30` }}>₹{periodRevenue.toLocaleString()}</div>
               </div>
-              
               <div style={{ ...cardStyle, padding: '25px', background: `linear-gradient(135deg, ${theme.cardBg} 0%, ${theme.info}15 100%)`, border: `1px solid ${theme.info}40`, boxShadow: `0 10px 30px ${theme.info}15` }}>
                 <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px' }}>Pending Orders</h4>
                 <div style={{ fontSize: '2.5rem', fontWeight: '800', color: theme.info, textShadow: `0 2px 10px ${theme.info}30` }}>
-                  {pendingCount} <span style={{ fontSize: '1rem', fontWeight: 'normal', color: theme.textSecondary }}>Requires Action</span>
+                  {periodPendingCount} <span style={{ fontSize: '1rem', fontWeight: 'normal', color: theme.textSecondary }}>Requires Action</span>
                 </div>
               </div>
-              
               <div style={{ ...cardStyle, padding: '25px', background: `linear-gradient(135deg, ${theme.cardBg} 0%, ${theme.shipped}15 100%)`, border: `1px solid ${theme.shipped}40`, boxShadow: `0 10px 30px ${theme.shipped}15` }}>
                 <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px' }}>Total Shipped</h4>
                 <div style={{ fontSize: '2.5rem', fontWeight: '800', color: theme.shipped, textShadow: `0 2px 10px ${theme.shipped}30` }}>
-                  {shippedCount} <span style={{ fontSize: '1rem', fontWeight: 'normal', color: theme.textSecondary }}>In Transit</span>
+                  {periodShippedCount} <span style={{ fontSize: '1rem', fontWeight: 'normal', color: theme.textSecondary }}>In Transit</span>
                 </div>
               </div>
             </div>
 
-            {/* Premium Filter & Search Bar */}
-            <div style={{ display: 'flex', gap: '20px', marginBottom: '40px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-              <input 
-                type="text" 
-                className="search-input"
-                placeholder="🔍 Search by Order ID, Address, or Phone..." 
-                value={orderSearch}
-                onChange={(e) => setOrderSearch(e.target.value)}
-                style={searchInputStyle}
-              />
-              
-              {/* Segmented Control for Filters */}
-              <div style={{ display: 'flex', backgroundColor: theme.inputBg, padding: '5px', borderRadius: '30px', border: `1px solid ${theme.border}`, flexWrap: 'wrap' }}>
-                {['ALL', 'PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED'].map(f => (
-                  <button 
-                    key={f}
-                    onClick={() => setOrderFilter(f)}
-                    style={{ 
-                      padding: '8px 18px', 
-                      borderRadius: '25px', 
-                      cursor: 'pointer', 
-                      fontWeight: 'bold', 
-                      fontSize: '0.85rem',
-                      backgroundColor: orderFilter === f ? theme.cardBg : 'transparent',
-                      color: orderFilter === f ? (f === 'ALL' ? theme.textPrimary : (f === 'PENDING' ? theme.accent : f === 'SHIPPED' ? theme.shipped : f === 'DELIVERED' ? theme.success : theme.info)) : theme.textSecondary,
-                      border: 'none',
-                      boxShadow: orderFilter === f ? `0 2px 8px rgba(0,0,0,${isDarkMode ? '0.3' : '0.1'})` : 'none',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                    }}
-                  >
-                    {f}
-                  </button>
-                ))}
+            {/* Advanced Filters & Search Bar */}
+            <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'center', flex: 1 }}>
+                <input 
+                  type="text" 
+                  className="search-input"
+                  placeholder="🔍 Search ID, Phone..." 
+                  value={orderSearch}
+                  onChange={(e) => setOrderSearch(e.target.value)}
+                  style={searchInputStyle}
+                />
+                
+                {/* Date Pickers */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="date-input" style={dateInputStyle} />
+                  <span style={{ color: theme.textSecondary }}>to</span>
+                  <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="date-input" style={dateInputStyle} />
+                  {(startDate || endDate) && (
+                    <button onClick={() => { setStartDate(''); setEndDate(''); }} style={{ background: 'transparent', border: 'none', color: theme.cancelled, cursor: 'pointer', padding: '5px' }}>✕ Clear</button>
+                  )}
+                </div>
               </div>
+              
+              {/* Export Button */}
+              <button onClick={exportToCSV} style={{ ...btnPrimary, backgroundColor: theme.cardBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none', padding: '12px 20px' }}>
+                📊 Export CSV
+              </button>
+            </div>
+
+            {/* Segmented Control for Filters */}
+            <div style={{ display: 'flex', backgroundColor: theme.inputBg, padding: '5px', borderRadius: '30px', border: `1px solid ${theme.border}`, flexWrap: 'wrap', marginBottom: '30px', width: 'fit-content' }}>
+              {['ALL', 'PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map(f => (
+                <button 
+                  key={f}
+                  onClick={() => setOrderFilter(f)}
+                  style={{ 
+                    padding: '8px 18px', 
+                    borderRadius: '25px', 
+                    cursor: 'pointer', 
+                    fontWeight: 'bold', 
+                    fontSize: '0.85rem',
+                    backgroundColor: orderFilter === f ? theme.cardBg : 'transparent',
+                    color: orderFilter === f ? (f === 'ALL' ? theme.textPrimary : (f === 'PENDING' ? theme.accent : f === 'SHIPPED' ? theme.shipped : f === 'DELIVERED' ? theme.success : f === 'CANCELLED' ? theme.cancelled : theme.info)) : theme.textSecondary,
+                    border: 'none',
+                    boxShadow: orderFilter === f ? `0 2px 8px rgba(0,0,0,${isDarkMode ? '0.3' : '0.1'})` : 'none',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+
+            {/* Bulk Actions Bar */}
+            {selectedOrders.length > 0 && (
+              <div style={{ backgroundColor: `${theme.accent}15`, border: `1px solid ${theme.accent}40`, borderRadius: '12px', padding: '15px 25px', marginBottom: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: `0 5px 15px ${theme.accent}10` }}>
+                <div style={{ color: theme.textPrimary, fontWeight: 'bold' }}>
+                  <span style={{ color: theme.accent, fontSize: '1.2rem' }}>{selectedOrders.length}</span> Orders Selected
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button onClick={() => handleBulkStatusChange('PROCESSING')} style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.info, boxShadow: 'none' }}>Bulk Process</button>
+                  <button onClick={() => handleBulkStatusChange('SHIPPED')} style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.shipped, boxShadow: 'none' }}>Bulk Dispatch (No Tracking)</button>
+                  <button onClick={() => handleBulkStatusChange('DELIVERED')} style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.success, boxShadow: 'none' }}>Bulk Deliver</button>
+                  <button onClick={() => handleBulkStatusChange('CANCELLED')} style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: 'transparent', color: theme.cancelled, border: `1px solid ${theme.cancelled}`, boxShadow: 'none' }}>Bulk Cancel</button>
+                </div>
+              </div>
+            )}
+
+            {/* Select All Utility */}
+            <div style={{ marginBottom: '15px', paddingLeft: '10px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: theme.textSecondary, cursor: 'pointer', fontSize: '0.9rem' }}>
+                <input 
+                  type="checkbox" 
+                  className="custom-checkbox"
+                  checked={filteredOrders.length > 0 && selectedOrders.length === filteredOrders.length}
+                  onChange={handleSelectAll}
+                />
+                Select All {filteredOrders.length} Filtered Orders
+              </label>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '25px' }}>
@@ -442,10 +564,10 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                 <div style={{ gridColumn: '1 / -1', padding: '60px', textAlign: 'center', backgroundColor: theme.cardBg, borderRadius: '16px', border: `1px dashed ${theme.border}` }}>
                   <span style={{ fontSize: '3rem' }}>📭</span>
                   <h3 style={{ color: theme.textPrimary, margin: '15px 0 5px 0' }}>No orders found</h3>
-                  <p style={{ color: theme.textSecondary }}>Try adjusting your filters or search query.</p>
+                  <p style={{ color: theme.textSecondary }}>Try adjusting your filters or date range.</p>
                 </div>
               ) : filteredOrders.map(order => (
-                <div key={order.id} className="order-card" style={orderCardStyle}>
+                <div key={order.id} className="order-card" style={{ ...orderCardStyle, opacity: order.status === 'CANCELLED' ? 0.6 : 1 }}>
                   
                   {/* Hidden Print Layout */}
                   <div id={`print-invoice-${order.id}`} style={{ display: 'none' }}>
@@ -498,18 +620,26 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                     </div>
                   </div>
 
-                  {/* Visual Hierarchy Redesign */}
                   <div>
+                    {/* Header with Checkbox */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                        ORD-{order.id.slice(-6).toUpperCase()}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <input 
+                          type="checkbox" 
+                          className="custom-checkbox"
+                          checked={selectedOrders.includes(order.id)} 
+                          onChange={() => handleSelectOrder(order.id)} 
+                        />
+                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                          ORD-{order.id.slice(-6).toUpperCase()}
+                        </span>
+                      </div>
                       {statusBadge(order.status)}
                     </div>
                     
                     <div style={{ marginBottom: '20px' }}>
                       <span style={{ display: 'block', fontSize: '0.9rem', color: theme.textSecondary, marginBottom: '5px' }}>Total Amount</span>
-                      <strong style={{ fontSize: '2.2rem', color: theme.textPrimary, letterSpacing: '-1px' }}>₹{order.totalAmount.toLocaleString()}</strong>
+                      <strong style={{ fontSize: '2.2rem', color: theme.textPrimary, letterSpacing: '-1px', textDecoration: order.status === 'CANCELLED' ? 'line-through' : 'none' }}>₹{order.totalAmount.toLocaleString()}</strong>
                     </div>
 
                     <div style={{ backgroundColor: theme.bg, padding: '15px', borderRadius: '12px', marginBottom: '15px', border: `1px solid ${theme.border}`, fontSize: '0.9rem', color: theme.textSecondary }}>
@@ -561,18 +691,23 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
                       </a>
                     )}
-
-                    {order.status !== 'PROCESSING' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.info, boxShadow: `0 4px 15px ${theme.info}40` }}>Process</button>}
-                    {order.status !== 'SHIPPED' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.shipped, boxShadow: `0 4px 15px ${theme.shipped}40` }}>Dispatch</button>}
-                    {order.status !== 'DELIVERED' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.success, boxShadow: `0 4px 15px ${theme.success}40` }}>Deliver</button>}
                   </div>
+                  
+                  {order.status !== 'CANCELLED' && (
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '10px' }}>
+                      {order.status !== 'PROCESSING' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.info, boxShadow: `0 4px 15px ${theme.info}40` }}>Process</button>}
+                      {order.status !== 'SHIPPED' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.shipped, boxShadow: `0 4px 15px ${theme.shipped}40` }}>Dispatch</button>}
+                      {order.status !== 'DELIVERED' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.success, boxShadow: `0 4px 15px ${theme.success}40` }}>Deliver</button>}
+                      <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'CANCELLED')} style={{ ...btnPrimary, flex: 1, backgroundColor: 'transparent', color: theme.cancelled, border: `1px solid ${theme.cancelled}`, boxShadow: 'none' }}>Cancel</button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Masters Tab (Kept the same structural logic, just naturally benefits from global style updates) */}
+        {/* Masters Tab */}
         {activeTab === 'masters' && (
           <div style={cardStyle}>
             {/* Sub-navigation */}
