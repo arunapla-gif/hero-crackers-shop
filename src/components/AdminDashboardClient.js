@@ -64,13 +64,11 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
 
 
   const handleStatusChange = async (orderId, newStatus) => {
-    // If marking as shipped, open dispatch modal instead
     if (newStatus === 'SHIPPED') {
       setDispatchOrderId(orderId);
       setDispatchModalOpen(true);
       return;
     }
-
     await updateOrder(orderId, { status: newStatus });
   };
 
@@ -106,7 +104,6 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     }
   };
 
-  // Rest of the master handlers (Product, Category, Godown) remain same
   const handleAddCategory = async (e) => {
     e.preventDefault();
     const res = await fetch('/api/categories', {
@@ -157,17 +154,16 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   };
 
   const triggerPrint = (orderId) => {
-    // Hide standard UI, show print UI, trigger print, revert
     const printContent = document.getElementById(`print-invoice-${orderId}`);
     const originalContent = document.body.innerHTML;
 
     document.body.innerHTML = printContent.innerHTML;
     window.print();
     document.body.innerHTML = originalContent;
-    window.location.reload(); // Reload to restore React state bindings after native innerHTML mutation
+    window.location.reload(); 
   };
 
-  // UI Styles definition
+  // ---------------- UI THEME SYSTEM ---------------- //
   const darkTheme = {
     bg: '#0f172a',
     cardBg: '#1e293b',
@@ -180,6 +176,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     danger: '#ef4444',
     success: '#10b981',
     info: '#3b82f6',
+    shipped: '#8b5cf6',
   };
 
   const lightTheme = {
@@ -194,10 +191,12 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     danger: '#dc2626',
     success: '#059669',
     info: '#2563eb',
+    shipped: '#7c3aed',
   };
 
   const theme = isDarkMode ? darkTheme : lightTheme;
 
+  // Global styles for standard cards (Masters tab mostly)
   const cardStyle = {
     backgroundColor: theme.cardBg,
     borderRadius: '16px',
@@ -206,6 +205,17 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     border: `1px solid ${theme.border}`,
     color: theme.textPrimary,
     transition: 'all 0.3s'
+  };
+
+  // Premium hoverable order card style
+  const orderCardStyle = {
+    ...cardStyle,
+    padding: '25px',
+    display: 'flex', 
+    flexDirection: 'column', 
+    justifyContent: 'space-between',
+    cursor: 'default',
+    transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s',
   };
 
   const inputStyle = {
@@ -218,7 +228,21 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     color: theme.textPrimary,
     fontSize: '1rem',
     outline: 'none',
-    transition: 'all 0.3s',
+    transition: 'border-color 0.3s',
+  };
+
+  const searchInputStyle = {
+    width: '100%',
+    maxWidth: '450px',
+    padding: '14px 20px',
+    backgroundColor: theme.cardBg,
+    border: `1px solid ${theme.border}`,
+    borderRadius: '30px',
+    color: theme.textPrimary,
+    fontSize: '1.05rem',
+    outline: 'none',
+    boxShadow: `inset 0 2px 4px rgba(0,0,0,${isDarkMode ? '0.2' : '0.02'})`,
+    transition: 'border-color 0.3s, box-shadow 0.3s',
   };
 
   const labelStyle = {
@@ -235,25 +259,40 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     backgroundColor: theme.accent,
     color: '#fff',
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '30px',
     cursor: 'pointer',
-    fontWeight: 'bold',
-    fontSize: '1rem',
+    fontWeight: '600',
+    fontSize: '0.95rem',
     transition: 'all 0.2s',
-    boxShadow: `0 4px 10px ${theme.accent}40`
+    boxShadow: `0 4px 10px ${theme.accent}40`,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px'
   };
 
+  // Glowing status badge
   const statusBadge = (status) => {
     let color = theme.textSecondary;
     if(status === 'PENDING') color = theme.accent;
     if(status === 'PROCESSING') color = theme.info;
-    if(status === 'SHIPPED') color = '#8b5cf6';
+    if(status === 'SHIPPED') color = theme.shipped;
     if(status === 'DELIVERED') color = theme.success;
+    
     return (
       <span style={{ 
-        padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold',
-        backgroundColor: `${color}22`, color: color, border: `1px solid ${color}55`
+        padding: '6px 14px', 
+        borderRadius: '20px', 
+        fontSize: '0.75rem', 
+        fontWeight: 'bold',
+        letterSpacing: '0.5px',
+        backgroundColor: `${color}15`, 
+        color: color, 
+        border: `1px solid ${color}40`,
+        boxShadow: `0 0 10px ${color}20`,
+        textTransform: 'uppercase'
       }}>
+        <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: color, marginRight: '6px', marginBottom: '1px' }}></span>
         {status}
       </span>
     );
@@ -284,6 +323,11 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   return (
     <div style={{ backgroundColor: theme.bg, minHeight: '100vh', padding: '40px 20px', fontFamily: '"Inter", sans-serif', transition: 'background-color 0.3s' }}>
       
+      <style dangerouslySetInnerHTML={{__html: `
+        .order-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,${isDarkMode ? '0.4' : '0.1'}) !important; }
+        .search-input:focus { border-color: ${theme.accent} !important; box-shadow: 0 0 0 3px ${theme.accent}20 !important; }
+      `}} />
+
       {/* Modal Overlay for Dispatch */}
       {dispatchModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -296,7 +340,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
               <input type="text" required value={trackingNumber} onChange={e => setTrackingNumber(e.target.value)} style={inputStyle} placeholder="e.g. LR-98765432" />
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                 <button type="button" onClick={() => setDispatchModalOpen(false)} style={{ ...btnPrimary, flex: 1, backgroundColor: 'transparent', color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>Cancel</button>
-                <button type="submit" style={{ ...btnPrimary, flex: 1 }}>Confirm Dispatch</button>
+                <button type="submit" style={{ ...btnPrimary, flex: 1 }}>Confirm</button>
               </div>
             </form>
           </div>
@@ -334,42 +378,57 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
         {/* Orders Tab */}
         {activeTab === 'orders' && (
           <div>
-            {/* Analytics Dashboard */}
+            {/* Analytics Dashboard - Glass & Glow */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '40px' }}>
-              <div style={{ ...cardStyle, padding: '20px' }}>
-                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.85rem' }}>Today's Processed Revenue</h4>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: theme.accent }}>₹{todayRevenue.toLocaleString()}</div>
+              
+              <div style={{ ...cardStyle, padding: '25px', background: `linear-gradient(135deg, ${theme.cardBg} 0%, ${theme.accent}15 100%)`, border: `1px solid ${theme.accent}40`, boxShadow: `0 10px 30px ${theme.accent}15` }}>
+                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px' }}>Today's Revenue</h4>
+                <div style={{ fontSize: '2.5rem', fontWeight: '800', color: theme.accent, textShadow: `0 2px 10px ${theme.accent}30` }}>₹{todayRevenue.toLocaleString()}</div>
               </div>
-              <div style={{ ...cardStyle, padding: '20px' }}>
-                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.85rem' }}>Pending Orders</h4>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: theme.textPrimary }}>{pendingCount} <span style={{ fontSize: '0.9rem', color: theme.textSecondary }}>Requires Action</span></div>
+              
+              <div style={{ ...cardStyle, padding: '25px', background: `linear-gradient(135deg, ${theme.cardBg} 0%, ${theme.info}15 100%)`, border: `1px solid ${theme.info}40`, boxShadow: `0 10px 30px ${theme.info}15` }}>
+                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px' }}>Pending Orders</h4>
+                <div style={{ fontSize: '2.5rem', fontWeight: '800', color: theme.info, textShadow: `0 2px 10px ${theme.info}30` }}>
+                  {pendingCount} <span style={{ fontSize: '1rem', fontWeight: 'normal', color: theme.textSecondary }}>Requires Action</span>
+                </div>
               </div>
-              <div style={{ ...cardStyle, padding: '20px' }}>
-                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.85rem' }}>Total Shipped</h4>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#8b5cf6' }}>{shippedCount} <span style={{ fontSize: '0.9rem', color: theme.textSecondary }}>In Transit</span></div>
+              
+              <div style={{ ...cardStyle, padding: '25px', background: `linear-gradient(135deg, ${theme.cardBg} 0%, ${theme.shipped}15 100%)`, border: `1px solid ${theme.shipped}40`, boxShadow: `0 10px 30px ${theme.shipped}15` }}>
+                <h4 style={{ margin: '0 0 10px 0', color: theme.textSecondary, textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px' }}>Total Shipped</h4>
+                <div style={{ fontSize: '2.5rem', fontWeight: '800', color: theme.shipped, textShadow: `0 2px 10px ${theme.shipped}30` }}>
+                  {shippedCount} <span style={{ fontSize: '1rem', fontWeight: 'normal', color: theme.textSecondary }}>In Transit</span>
+                </div>
               </div>
             </div>
 
-            {/* Filter & Search Bar */}
-            <div style={{ display: 'flex', gap: '20px', marginBottom: '30px', alignItems: 'center', flexWrap: 'wrap' }}>
+            {/* Premium Filter & Search Bar */}
+            <div style={{ display: 'flex', gap: '20px', marginBottom: '40px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
               <input 
                 type="text" 
-                placeholder="Search by Order ID, Address, or Phone..." 
+                className="search-input"
+                placeholder="🔍 Search by Order ID, Address, or Phone..." 
                 value={orderSearch}
                 onChange={(e) => setOrderSearch(e.target.value)}
-                style={{ ...inputStyle, margin: 0, width: '100%', maxWidth: '450px' }}
+                style={searchInputStyle}
               />
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              
+              {/* Segmented Control for Filters */}
+              <div style={{ display: 'flex', backgroundColor: theme.inputBg, padding: '5px', borderRadius: '30px', border: `1px solid ${theme.border}`, flexWrap: 'wrap' }}>
                 {['ALL', 'PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED'].map(f => (
                   <button 
                     key={f}
                     onClick={() => setOrderFilter(f)}
                     style={{ 
-                      padding: '10px 15px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
-                      backgroundColor: orderFilter === f ? theme.accent : theme.cardBg,
-                      color: orderFilter === f ? '#fff' : theme.textSecondary,
-                      border: `1px solid ${orderFilter === f ? theme.accent : theme.border}`,
-                      transition: 'all 0.2s'
+                      padding: '8px 18px', 
+                      borderRadius: '25px', 
+                      cursor: 'pointer', 
+                      fontWeight: 'bold', 
+                      fontSize: '0.85rem',
+                      backgroundColor: orderFilter === f ? theme.cardBg : 'transparent',
+                      color: orderFilter === f ? (f === 'ALL' ? theme.textPrimary : (f === 'PENDING' ? theme.accent : f === 'SHIPPED' ? theme.shipped : f === 'DELIVERED' ? theme.success : theme.info)) : theme.textSecondary,
+                      border: 'none',
+                      boxShadow: orderFilter === f ? `0 2px 8px rgba(0,0,0,${isDarkMode ? '0.3' : '0.1'})` : 'none',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                   >
                     {f}
@@ -378,9 +437,15 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '25px' }}>
-              {filteredOrders.length === 0 ? <p style={{ color: theme.textSecondary }}>No orders found.</p> : filteredOrders.map(order => (
-                <div key={order.id} style={{ ...cardStyle, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '25px' }}>
+              {filteredOrders.length === 0 ? (
+                <div style={{ gridColumn: '1 / -1', padding: '60px', textAlign: 'center', backgroundColor: theme.cardBg, borderRadius: '16px', border: `1px dashed ${theme.border}` }}>
+                  <span style={{ fontSize: '3rem' }}>📭</span>
+                  <h3 style={{ color: theme.textPrimary, margin: '15px 0 5px 0' }}>No orders found</h3>
+                  <p style={{ color: theme.textSecondary }}>Try adjusting your filters or search query.</p>
+                </div>
+              ) : filteredOrders.map(order => (
+                <div key={order.id} className="order-card" style={orderCardStyle}>
                   
                   {/* Hidden Print Layout */}
                   <div id={`print-invoice-${order.id}`} style={{ display: 'none' }}>
@@ -433,59 +498,73 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                     </div>
                   </div>
 
+                  {/* Visual Hierarchy Redesign */}
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                      <strong style={{ fontSize: '1.2rem', color: theme.textPrimary }}>#{order.id.slice(-6).toUpperCase()}</strong>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        ORD-{order.id.slice(-6).toUpperCase()}
+                      </span>
                       {statusBadge(order.status)}
                     </div>
                     
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', color: theme.textSecondary, fontSize: '0.95rem' }}>
-                      <span>Phone: {order.customerPhone || 'N/A'}</span>
-                      <strong style={{ color: theme.accent, fontSize: '1.1rem' }}>₹{order.totalAmount}</strong>
+                    <div style={{ marginBottom: '20px' }}>
+                      <span style={{ display: 'block', fontSize: '0.9rem', color: theme.textSecondary, marginBottom: '5px' }}>Total Amount</span>
+                      <strong style={{ fontSize: '2.2rem', color: theme.textPrimary, letterSpacing: '-1px' }}>₹{order.totalAmount.toLocaleString()}</strong>
                     </div>
 
-                    <div style={{ marginBottom: '15px', color: theme.textSecondary, fontSize: '0.9rem' }}>
-                      <strong>Address:</strong> {order.shippingAddress}
+                    <div style={{ backgroundColor: theme.bg, padding: '15px', borderRadius: '12px', marginBottom: '15px', border: `1px solid ${theme.border}`, fontSize: '0.9rem', color: theme.textSecondary }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '8px' }}>
+                        <span>📍</span>
+                        <span style={{ lineHeight: '1.4' }}>{order.shippingAddress}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span>📞</span>
+                        <strong style={{ color: theme.textPrimary }}>{order.customerPhone || 'N/A'}</strong>
+                      </div>
                     </div>
                     
                     {(order.transportName || order.trackingNumber) && (
-                      <div style={{ backgroundColor: `${theme.accent}11`, border: `1px solid ${theme.accent}44`, padding: '10px', borderRadius: '8px', marginBottom: '15px', fontSize: '0.9rem', color: theme.textPrimary }}>
-                        <strong style={{ color: theme.accent }}>Dispatch Details:</strong><br/>
-                        Transport: {order.transportName}<br/>
-                        LR Number: {order.trackingNumber}
+                      <div style={{ background: `linear-gradient(90deg, ${theme.shipped}15 0%, transparent 100%)`, borderLeft: `3px solid ${theme.shipped}`, padding: '12px 15px', borderRadius: '0 8px 8px 0', marginBottom: '15px', fontSize: '0.9rem', color: theme.textPrimary }}>
+                        <span style={{ fontSize: '0.8rem', color: theme.shipped, textTransform: 'uppercase', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Dispatch Info</span>
+                        {order.transportName} <span style={{ color: theme.textSecondary }}>• LR:</span> {order.trackingNumber}
                       </div>
                     )}
                     
-                    <div style={{ backgroundColor: theme.bg, padding: '15px', borderRadius: '8px', marginBottom: '20px', maxHeight: '120px', overflowY: 'auto' }}>
-                      <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.9rem', color: theme.textSecondary }}>
+                    <div style={{ padding: '10px 0', borderTop: `1px dashed ${theme.border}`, borderBottom: `1px dashed ${theme.border}`, marginBottom: '20px', maxHeight: '100px', overflowY: 'auto' }}>
+                      <ul style={{ margin: 0, paddingLeft: '0', listStyle: 'none', fontSize: '0.9rem', color: theme.textSecondary }}>
                         {order.items.map(item => {
                           const product = products.find(p => p.id === item.productId);
-                          return <li key={item.id} style={{ marginBottom: '5px' }}>{product ? product.name : 'Item'} x {item.quantity}</li>;
+                          return (
+                            <li key={item.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                              <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: '10px' }}>{product ? product.name : 'Item'}</span>
+                              <strong style={{ color: theme.textPrimary }}>x{item.quantity}</strong>
+                            </li>
+                          );
                         })}
                       </ul>
                     </div>
                   </div>
 
-                  {/* Actions */}
+                  {/* Refined Actions */}
                   <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                    <button onClick={() => triggerPrint(order.id)} style={{ ...btnPrimary, backgroundColor: theme.bg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>🖨️ Print</button>
+                    <button onClick={() => triggerPrint(order.id)} style={{ ...btnPrimary, padding: '10px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none', flex: 1 }}>
+                      🖨️
+                    </button>
                     
                     {order.customerPhone && (
                       <a 
                         href={`https://wa.me/91${order.customerPhone.replace(/[^0-9]/g, '').slice(-10)}?text=Hello! Your Hero Crackers order %23${order.id.slice(-6).toUpperCase()} is currently ${order.status}.${order.trackingNumber ? ` It was dispatched via ${order.transportName}. Tracking LR: ${order.trackingNumber}` : ''}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ ...btnPrimary, backgroundColor: '#25D366', boxShadow: 'none', display: 'inline-block', textDecoration: 'none' }}
+                        style={{ ...btnPrimary, padding: '10px', backgroundColor: '#25D36615', color: '#25D366', border: '1px solid #25D36640', boxShadow: 'none', flex: 1, textDecoration: 'none' }}
                       >
-                        💬 WhatsApp
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
                       </a>
                     )}
 
-                    <div style={{ width: '100%', height: '1px', backgroundColor: theme.border, margin: '5px 0' }}></div>
-
-                    {order.status !== 'PROCESSING' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ ...btnPrimary, flex: 1, backgroundColor: theme.info, boxShadow: 'none' }}>Process</button>}
-                    {order.status !== 'SHIPPED' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ ...btnPrimary, flex: 1, backgroundColor: '#8b5cf6', boxShadow: 'none' }}>Ship & Dispatch</button>}
-                    {order.status !== 'DELIVERED' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ ...btnPrimary, flex: 1, backgroundColor: theme.success, boxShadow: 'none' }}>Deliver</button>}
+                    {order.status !== 'PROCESSING' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.info, boxShadow: `0 4px 15px ${theme.info}40` }}>Process</button>}
+                    {order.status !== 'SHIPPED' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.shipped, boxShadow: `0 4px 15px ${theme.shipped}40` }}>Dispatch</button>}
+                    {order.status !== 'DELIVERED' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.success, boxShadow: `0 4px 15px ${theme.success}40` }}>Deliver</button>}
                   </div>
                 </div>
               ))}
@@ -493,20 +572,25 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
           </div>
         )}
 
-        {/* Masters Tab */}
+        {/* Masters Tab (Kept the same structural logic, just naturally benefits from global style updates) */}
         {activeTab === 'masters' && (
           <div style={cardStyle}>
             {/* Sub-navigation */}
-            <div style={{ display: 'flex', gap: '15px', marginBottom: '40px' }}>
+            <div style={{ display: 'flex', gap: '15px', marginBottom: '40px', flexWrap: 'wrap' }}>
               {['product', 'category', 'godown'].map(tab => (
                 <button 
                   key={tab}
                   onClick={() => setActiveMasterTab(tab)} 
                   style={{ 
-                    padding: '10px 20px', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s',
+                    padding: '10px 24px', 
+                    borderRadius: '30px', 
+                    fontWeight: 'bold', 
+                    cursor: 'pointer', 
+                    transition: 'all 0.2s',
                     backgroundColor: activeMasterTab === tab ? theme.accent : 'transparent', 
                     color: activeMasterTab === tab ? '#fff' : theme.textSecondary,
-                    border: `1px solid ${activeMasterTab === tab ? theme.accent : theme.border}`
+                    border: `1px solid ${activeMasterTab === tab ? theme.accent : theme.border}`,
+                    boxShadow: activeMasterTab === tab ? `0 4px 12px ${theme.accent}40` : 'none'
                   }}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)} Master
@@ -516,7 +600,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
 
             {/* Product Master */}
             {activeMasterTab === 'product' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '40px' }}>
                 {/* Form */}
                 <div>
                   <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Create Product</h3>
@@ -552,7 +636,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                   <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Product Directory</h3>
                   <div style={{ overflowY: 'auto', maxHeight: '550px', border: `1px solid ${theme.border}`, borderRadius: '12px' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                      <thead style={{ position: 'sticky', top: 0, backgroundColor: theme.bg, zIndex: 1 }}>
+                      <thead style={{ position: 'sticky', top: 0, backgroundColor: theme.bg, zIndex: 1, boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
                         <tr>
                           <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Item</th>
                           <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Price</th>
@@ -562,7 +646,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                         {products.map(product => (
                           <tr key={product.id} style={{ borderBottom: `1px solid ${theme.border}`, transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.backgroundColor = theme.bg} onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                             <td style={{ padding: '15px', color: theme.textPrimary }}>{product.name}</td>
-                            <td style={{ padding: '15px', color: theme.accent }}>₹{product.price}</td>
+                            <td style={{ padding: '15px', color: theme.accent, fontWeight: 'bold' }}>₹{product.price}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -585,7 +669,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                 <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Existing Categories</h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                   {categories.map(c => (
-                    <span key={c.id} style={{ padding: '8px 16px', backgroundColor: theme.bg, border: `1px solid ${theme.border}`, borderRadius: '20px', color: theme.textSecondary }}>
+                    <span key={c.id} style={{ padding: '8px 16px', backgroundColor: theme.bg, border: `1px solid ${theme.border}`, borderRadius: '20px', color: theme.textSecondary, boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' }}>
                       {c.name}
                     </span>
                   ))}
@@ -596,8 +680,8 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
             {/* Godown Master */}
             {activeMasterTab === 'godown' && (
               <div>
-                <div style={{ display: 'flex', gap: '40px', marginBottom: '50px', alignItems: 'start' }}>
-                  <div style={{ flex: 1, maxWidth: '400px' }}>
+                <div style={{ display: 'flex', gap: '40px', marginBottom: '50px', alignItems: 'start', flexWrap: 'wrap' }}>
+                  <div style={{ flex: '1 1 400px' }}>
                     <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Register Godown</h3>
                     <form onSubmit={handleAddGodown}>
                       <label style={labelStyle}>Godown Name</label>
@@ -608,11 +692,11 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                     </form>
                   </div>
                   
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: '1 1 400px' }}>
                     <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Registered Locations</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '15px' }}>
                       {godowns.map(g => (
-                        <div key={g.id} style={{ padding: '20px', backgroundColor: theme.bg, borderRadius: '12px', border: `1px solid ${theme.border}` }}>
+                        <div key={g.id} style={{ padding: '20px', backgroundColor: theme.bg, borderRadius: '12px', border: `1px solid ${theme.border}`, boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)' }}>
                           <h4 style={{ margin: '0 0 5px 0', color: theme.accent, fontSize: '1.2rem' }}>{g.name}</h4>
                           <span style={{ color: theme.textSecondary, fontSize: '0.9rem' }}>{g.location || 'No location specified'}</span>
                         </div>
@@ -621,7 +705,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                   </div>
                 </div>
 
-                <div style={{ padding: '30px', backgroundColor: theme.bg, borderRadius: '12px', border: `1px solid ${theme.border}` }}>
+                <div style={{ padding: '30px', backgroundColor: theme.bg, borderRadius: '12px', border: `1px solid ${theme.border}`, boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.02)' }}>
                   <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', margin: '0 0 10px 0' }}>Global Stock Matrix</h3>
                   <p style={{ color: theme.textSecondary, marginBottom: '25px' }}>Click any cell to instantly update the inventory level.</p>
                   
