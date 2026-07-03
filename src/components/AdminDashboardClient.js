@@ -456,6 +456,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
 
   const TabButton = ({ active, onClick, children }) => (
     <button 
+      className="tab-btn"
       onClick={onClick}
       style={{
         padding: '14px 28px',
@@ -483,7 +484,24 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
         .order-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,${isDarkMode ? '0.4' : '0.1'}) !important; }
         .search-input:focus, .date-input:focus { border-color: ${theme.accent} !important; box-shadow: 0 0 0 3px ${theme.accent}20 !important; }
         .custom-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: ${theme.accent}; }
+        
+        /* Global Button Hover Effects (Glowing & Lifting) */
+        button { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .action-btn:hover:not(:disabled) {
+           filter: brightness(1.15); 
+           transform: translateY(-2px);
+           box-shadow: 0 6px 15px rgba(0,0,0,0.2) !important;
+        }
+        .action-btn:active:not(:disabled) {
+           transform: translateY(0);
+           filter: brightness(0.9);
+        }
+        button:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); }
+        
+        .qty-btn:hover { background-color: ${theme.accent}20 !important; color: ${theme.accent} !important; border-color: ${theme.accent} !important; }
         .qty-btn:active { transform: scale(0.95); }
+        
+        .filter-btn:hover { background-color: ${theme.cardBg} !important; opacity: 0.9; }
       `}} />
 
       {/* Hidden Print Layouts for ALL Orders (Required so Quick Bill instantly finds it) */}
@@ -552,8 +570,8 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
               <label style={labelStyle}>Lorry Receipt (LR) / Tracking Number</label>
               <input type="text" required value={trackingNumber} onChange={e => setTrackingNumber(e.target.value)} style={inputStyle} placeholder="e.g. LR-98765432" />
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <button type="button" onClick={() => setDispatchModalOpen(false)} style={{ ...btnPrimary, flex: 1, backgroundColor: 'transparent', color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>Cancel</button>
-                <button type="submit" style={{ ...btnPrimary, flex: 1 }}>Confirm</button>
+                <button type="button" onClick={() => setDispatchModalOpen(false)} className="action-btn" style={{ ...btnPrimary, flex: 1, backgroundColor: 'transparent', color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>Cancel</button>
+                <button type="submit" className="action-btn" style={{ ...btnPrimary, flex: 1 }}>Confirm</button>
               </div>
             </form>
           </div>
@@ -571,11 +589,12 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
             <p style={{ color: theme.textSecondary, margin: 0, fontSize: '1.1rem' }}>Manage orders, inventory, and masters seamlessly.</p>
           </div>
           <button 
+            className="action-btn"
             onClick={() => setIsDarkMode(!isDarkMode)}
             style={{ 
               padding: '10px 20px', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold',
               backgroundColor: theme.cardBg, color: theme.textPrimary, border: `1px solid ${theme.border}`,
-              display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s'
+              display: 'flex', alignItems: 'center', gap: '8px'
             }}
           >
             {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
@@ -630,13 +649,13 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                   <span style={{ color: theme.textSecondary }}>to</span>
                   <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="date-input" style={dateInputStyle} />
                   {(startDate || endDate) && (
-                    <button onClick={() => { setStartDate(''); setEndDate(''); }} style={{ background: 'transparent', border: 'none', color: theme.cancelled, cursor: 'pointer', padding: '5px' }}>✕ Clear</button>
+                    <button className="action-btn" onClick={() => { setStartDate(''); setEndDate(''); }} style={{ background: 'transparent', border: 'none', color: theme.cancelled, cursor: 'pointer', padding: '5px' }}>✕ Clear</button>
                   )}
                 </div>
               </div>
               
               {/* Export Button */}
-              <button onClick={exportToCSV} style={{ ...btnPrimary, backgroundColor: theme.cardBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none', padding: '12px 20px' }}>
+              <button className="action-btn" onClick={exportToCSV} style={{ ...btnPrimary, backgroundColor: theme.cardBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none', padding: '12px 20px' }}>
                 📊 Export CSV
               </button>
             </div>
@@ -646,6 +665,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
               {['ALL', 'PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map(f => (
                 <button 
                   key={f}
+                  className="filter-btn"
                   onClick={() => setOrderFilter(f)}
                   style={{ 
                     padding: '8px 18px', 
@@ -672,10 +692,10 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                   <span style={{ color: theme.accent, fontSize: '1.2rem' }}>{selectedOrders.length}</span> Orders Selected
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <button onClick={() => handleBulkStatusChange('PROCESSING')} style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.info, boxShadow: 'none' }}>Bulk Process</button>
-                  <button onClick={() => handleBulkStatusChange('SHIPPED')} style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.shipped, boxShadow: 'none' }}>Bulk Dispatch (No Tracking)</button>
-                  <button onClick={() => handleBulkStatusChange('DELIVERED')} style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.success, boxShadow: 'none' }}>Bulk Deliver</button>
-                  <button onClick={() => handleBulkStatusChange('CANCELLED')} style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: 'transparent', color: theme.cancelled, border: `1px solid ${theme.cancelled}`, boxShadow: 'none' }}>Bulk Cancel</button>
+                  <button className="action-btn" onClick={() => handleBulkStatusChange('PROCESSING')} style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.info, boxShadow: 'none' }}>Bulk Process</button>
+                  <button className="action-btn" onClick={() => handleBulkStatusChange('SHIPPED')} style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.shipped, boxShadow: 'none' }}>Bulk Dispatch (No Tracking)</button>
+                  <button className="action-btn" onClick={() => handleBulkStatusChange('DELIVERED')} style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.success, boxShadow: 'none' }}>Bulk Deliver</button>
+                  <button className="action-btn" onClick={() => handleBulkStatusChange('CANCELLED')} style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: 'transparent', color: theme.cancelled, border: `1px solid ${theme.cancelled}`, boxShadow: 'none' }}>Bulk Cancel</button>
                 </div>
               </div>
             )}
@@ -759,12 +779,13 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
 
                   {/* Refined Actions */}
                   <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                    <button onClick={() => triggerPrint(order.id)} style={{ ...btnPrimary, padding: '10px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none', flex: 1 }}>
+                    <button className="action-btn" onClick={() => triggerPrint(order.id)} style={{ ...btnPrimary, padding: '10px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none', flex: 1 }}>
                       🖨️
                     </button>
                     
                     {order.customerPhone && (
                       <a 
+                        className="action-btn"
                         href={`https://wa.me/91${order.customerPhone.replace(/[^0-9]/g, '').slice(-10)}?text=Hello! Your Hero Crackers order %23${order.id.slice(-6).toUpperCase()} is currently ${order.status}.${order.trackingNumber ? ` It was dispatched via ${order.transportName}. Tracking LR: ${order.trackingNumber}` : ''}`}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -777,10 +798,10 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                   
                   {order.status !== 'CANCELLED' && (
                     <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '10px' }}>
-                      {order.status !== 'PROCESSING' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.info, boxShadow: `0 4px 15px ${theme.info}40` }}>Process</button>}
-                      {order.status !== 'SHIPPED' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.shipped, boxShadow: `0 4px 15px ${theme.shipped}40` }}>Dispatch</button>}
-                      {order.status !== 'DELIVERED' && <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.success, boxShadow: `0 4px 15px ${theme.success}40` }}>Deliver</button>}
-                      <button disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'CANCELLED')} style={{ ...btnPrimary, flex: 1, backgroundColor: 'transparent', color: theme.cancelled, border: `1px solid ${theme.cancelled}`, boxShadow: 'none' }}>Cancel</button>
+                      {order.status !== 'PROCESSING' && <button className="action-btn" disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.info, boxShadow: `0 4px 15px ${theme.info}40` }}>Process</button>}
+                      {order.status !== 'SHIPPED' && <button className="action-btn" disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.shipped, boxShadow: `0 4px 15px ${theme.shipped}40` }}>Dispatch</button>}
+                      {order.status !== 'DELIVERED' && <button className="action-btn" disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ ...btnPrimary, flex: 2, backgroundColor: theme.success, boxShadow: `0 4px 15px ${theme.success}40` }}>Deliver</button>}
+                      <button className="action-btn" disabled={loadingOrderId === order.id} onClick={() => handleStatusChange(order.id, 'CANCELLED')} style={{ ...btnPrimary, flex: 1, backgroundColor: 'transparent', color: theme.cancelled, border: `1px solid ${theme.cancelled}`, boxShadow: 'none' }}>Cancel</button>
                     </div>
                   )}
                 </div>
@@ -871,6 +892,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
 
                 <button 
                   type="submit" 
+                  className="action-btn"
                   disabled={isBilling || Object.keys(quickBillCart).length === 0}
                   style={{ 
                     ...btnPrimary, 
@@ -896,6 +918,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
               {['product', 'category', 'godown'].map(tab => (
                 <button 
                   key={tab}
+                  className="tab-btn"
                   onClick={() => setActiveMasterTab(tab)} 
                   style={{ 
                     padding: '10px 24px', 
@@ -943,7 +966,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                     <label style={labelStyle}>Image URL</label>
                     <input type="url" value={newProduct.imageUrl} onChange={e => setNewProduct({...newProduct, imageUrl: e.target.value})} style={inputStyle} />
 
-                    <button type="submit" style={{ ...btnPrimary, width: '100%', marginTop: '10px' }}>Save Product</button>
+                    <button type="submit" className="action-btn" style={{ ...btnPrimary, width: '100%', marginTop: '10px' }}>Save Product</button>
                   </form>
                 </div>
 
@@ -979,7 +1002,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                 <form onSubmit={handleAddCategory} style={{ marginBottom: '40px' }}>
                   <label style={labelStyle}>Category Name</label>
                   <input type="text" value={categoryName} onChange={e => setCategoryName(e.target.value)} required style={inputStyle} />
-                  <button type="submit" style={btnPrimary}>Save Category</button>
+                  <button type="submit" className="action-btn" style={btnPrimary}>Save Category</button>
                 </form>
                 
                 <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Existing Categories</h3>
@@ -1004,7 +1027,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                       <input type="text" value={godownName} onChange={e => setGodownName(e.target.value)} required style={inputStyle} />
                       <label style={labelStyle}>Location / Address</label>
                       <input type="text" value={godownLocation} onChange={e => setGodownLocation(e.target.value)} style={inputStyle} />
-                      <button type="submit" style={btnPrimary}>Register Godown</button>
+                      <button type="submit" className="action-btn" style={btnPrimary}>Register Godown</button>
                     </form>
                   </div>
                   
