@@ -360,6 +360,11 @@ export default function OrderManager({ isDarkMode, products }) {
                 <div style={{ fontSize: '0.85rem', color: theme.textSecondary, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   📞 <strong style={{ color: theme.textPrimary }}>{order.customerPhone || 'N/A'}</strong> • 📍 {order.shippingAddress}
                 </div>
+                {order.referredBy && (
+                  <div style={{ fontSize: '0.8rem', color: theme.accent, marginTop: '2px', fontWeight: 'bold' }}>
+                    🏷️ Referred By: {order.referredBy}
+                  </div>
+                )}
                 {(order.transportName || order.trackingNumber) && (
                   <div style={{ fontSize: '0.8rem', color: theme.shipped, marginTop: '2px', fontWeight: 'bold' }}>
                     LR: {order.trackingNumber} ({order.transportName})

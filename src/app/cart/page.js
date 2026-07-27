@@ -12,7 +12,8 @@ export default function CartPage() {
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     phone: '',
-    address: ''
+    address: '',
+    referredBy: ''
   });
 
   const [submitting, setSubmitting] = useState(false);
@@ -75,6 +76,7 @@ export default function CartPage() {
           customerName: customerInfo.name,
           customerPhone: customerInfo.phone,
           shippingAddress: customerInfo.address,
+          referredBy: customerInfo.referredBy,
           totalAmount: cartTotal,
           items: cartItems.map(item => ({
             productId: item.product.id,
@@ -131,6 +133,9 @@ export default function CartPage() {
               
               <label style={labelStyle}>Delivery Address</label>
               <textarea required value={customerInfo.address} onChange={e => setCustomerInfo({...customerInfo, address: e.target.value})} style={{...inputStyle, height: '100px'}} placeholder="Full street address with pincode" />
+
+              <label style={labelStyle}>Referred By (Optional)</label>
+              <input type="text" value={customerInfo.referredBy} onChange={e => setCustomerInfo({...customerInfo, referredBy: e.target.value})} style={inputStyle} placeholder="Name of agent or friend" />
 
               <div style={{ backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '8px', marginTop: '10px', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>

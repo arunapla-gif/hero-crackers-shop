@@ -31,6 +31,7 @@ export async function POST(request) {
         totalAmount: parseFloat(body.totalAmount),
         shippingAddress: body.shippingAddress,
         customerPhone: body.customerPhone,
+        referredBy: body.referredBy,
         status: 'PENDING',
         items: {
           create: body.items.map(item => ({

@@ -8,7 +8,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
   const queryClient = useQueryClient();
 
   const [quickBillCart, setQuickBillCart] = useState({}); // { productId: quantity }
-  const [quickBillCustomer, setQuickBillCustomer] = useState({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '' });
+  const [quickBillCustomer, setQuickBillCustomer] = useState({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '', referredBy: '' });
   const [isMobileCartView, setIsMobileCartView] = useState(false);
   
   const updateQuickBillQty = (productId, delta) => {
@@ -115,6 +115,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
       customerName: quickBillCustomer.name || 'Walk-in Customer',
       customerPhone: quickBillCustomer.phone || '0000000000',
       shippingAddress: quickBillCustomer.address + (quickBillCustomer.city ? `, ${quickBillCustomer.city}` : ''),
+      referredBy: quickBillCustomer.referredBy,
       totalAmount: quickBillTotal,
       items
     };
@@ -280,7 +281,10 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
             <input type="text" value={quickBillCustomer.address} onChange={e => setQuickBillCustomer({...quickBillCustomer, address: e.target.value})} style={styles.inputStyle} />
 
             <label style={styles.labelStyle}>City</label>
-            <input type="text" value={quickBillCustomer.city} onChange={e => setQuickBillCustomer({...quickBillCustomer, city: e.target.value})} style={{...styles.inputStyle, marginBottom: 0}} placeholder="City Name" />
+            <input type="text" value={quickBillCustomer.city} onChange={e => setQuickBillCustomer({...quickBillCustomer, city: e.target.value})} style={styles.inputStyle} placeholder="City Name" />
+
+            <label style={styles.labelStyle}>Referred By (Optional)</label>
+            <input type="text" value={quickBillCustomer.referredBy} onChange={e => setQuickBillCustomer({...quickBillCustomer, referredBy: e.target.value})} style={{...styles.inputStyle, marginBottom: 0}} placeholder="Agent or Referral Name" />
           </div>
 
           <button 
