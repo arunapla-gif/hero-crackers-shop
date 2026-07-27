@@ -836,40 +836,35 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
             <div style={{ flex: '1 1 600px', backgroundColor: theme.cardBg, borderRadius: '16px', border: `1px solid ${theme.border}`, boxShadow: `0 10px 25px rgba(0,0,0,${isDarkMode ? '0.2' : '0.05'})`, padding: '20px', maxHeight: '800px', overflowY: 'auto' }}>
               <h2 style={{ color: theme.textPrimary, margin: '0 0 20px 0', fontSize: '1.8rem', borderBottom: `1px solid ${theme.border}`, paddingBottom: '15px' }}>Product Matrix</h2>
               
-              {categories.map(category => {
-                const catProducts = products.filter(p => p.categoryId === category.id);
-                if (catProducts.length === 0) return null;
-                
-                return (
-                  <div key={category.id} style={{ marginBottom: '30px' }}>
-                    <div style={{ backgroundColor: theme.inputBg, padding: '10px 15px', borderRadius: '8px', color: theme.accent, fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '15px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                      {category.name}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {products.map((product, index) => {
+                  const globalIndex = index + 1;
+                  const qty = quickBillCart[product.id] || 0;
+                  const cat = categories.find(c => c.id === product.categoryId);
+                  
+                  return (
+                    <div key={product.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: theme.bg, borderRadius: '10px', border: `1px solid ${theme.border}` }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ color: theme.textPrimary, fontWeight: '600', fontSize: '1.05rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                          <span style={{ color: theme.accent, minWidth: '25px' }}>{globalIndex}.</span>
+                          <span>{product.name}</span>
+                          {cat && (
+                            <span style={{ fontSize: '0.75rem', padding: '2px 6px', backgroundColor: theme.inputBg, color: theme.textSecondary, borderRadius: '4px', textTransform: 'uppercase' }}>
+                              {cat.name}
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ color: theme.textSecondary, fontSize: '0.9rem', marginTop: '4px', paddingLeft: '33px' }}>₹{product.price}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <button className="qty-btn" onClick={() => updateQuickBillQty(product.id, -1)} style={qtyBtnStyle}>-</button>
+                        <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: theme.textPrimary, width: '30px', textAlign: 'center' }}>{qty}</span>
+                        <button className="qty-btn" onClick={() => updateQuickBillQty(product.id, 1)} style={qtyBtnStyle}>+</button>
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      {catProducts.map(product => {
-                        const globalIndex = products.findIndex(p => p.id === product.id) + 1;
-                        const qty = quickBillCart[product.id] || 0;
-                        return (
-                          <div key={product.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: theme.bg, borderRadius: '10px', border: `1px solid ${theme.border}` }}>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ color: theme.textPrimary, fontWeight: '600', fontSize: '1.05rem' }}>
-                                <span style={{ color: theme.accent, marginRight: '10px' }}>{globalIndex}.</span>
-                                {product.name}
-                              </div>
-                              <div style={{ color: theme.textSecondary, fontSize: '0.9rem' }}>₹{product.price}</div>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                              <button className="qty-btn" onClick={() => updateQuickBillQty(product.id, -1)} style={qtyBtnStyle}>-</button>
-                              <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: theme.textPrimary, width: '30px', textAlign: 'center' }}>{qty}</span>
-                              <button className="qty-btn" onClick={() => updateQuickBillQty(product.id, 1)} style={qtyBtnStyle}>+</button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
 
             {/* Right Panel: Sticky Cart Summary */}
