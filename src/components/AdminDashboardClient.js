@@ -23,6 +23,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   });
   const [imageFile, setImageFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [draggedItemIndex, setDraggedItemIndex] = useState(null);
 
   // Filters for Orders
   const [orderSearch, setOrderSearch] = useState('');
@@ -1038,15 +1039,57 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                         </tr>
                       </thead>
                       <tbody>
-                        {products.map(product => (
-                          <tr key={product.id} style={{ borderBottom: `1px solid ${theme.border}`, transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.backgroundColor = theme.bg} onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}>
+                        {products.map((product, index) => (
+                          <tr 
+                            key={product.id} 
+                            draggable
+                            onDragStart={(e) => {
+                              setDraggedItemIndex(index);
+                              e.dataTransfer.effectAllowed = 'move';
+                              e.currentTarget.style.opacity = '0.5';
+                            }}
+                            onDragEnd={(e) => {
+                              e.currentTarget.style.opacity = '1';
+                              setDraggedItemIndex(null);
+                            }}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={async (e) => {
+                              e.preventDefault();
+                              if (draggedItemIndex === null || draggedItemIndex === index) return;
+                              
+                              const newProducts = [...products];
+                              const draggedItem = newProducts.splice(draggedItemIndex, 1)[0];
+                              newProducts.splice(index, 0, draggedItem);
+                              
+                              const updatedProducts = newProducts.map((p, i) => ({
+                                ...p,
+                                sequence: i + 1
+                              }));
+                              
+                              setProducts(updatedProducts);
+                              setDraggedItemIndex(null);
+                              
+                              try {
+                                await fetch('/api/products/bulk-sequence', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify(updatedProducts.map(p => ({ id: p.id, sequence: p.sequence })))
+                                });
+                              } catch (err) {
+                                console.error("Failed to sync sequence", err);
+                              }
+                            }}
+                            style={{ borderBottom: `1px solid ${theme.border}`, transition: 'background 0.2s', cursor: 'grab' }} 
+                            onMouseOver={e => e.currentTarget.style.backgroundColor = theme.bg} 
+                            onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                          >
                             <td style={{ padding: '15px' }}>
-                              <input 
-                                type="number" 
-                                defaultValue={product.sequence || 0}
-                                onBlur={(e) => e.target.value !== String(product.sequence || 0) && handleUpdateProductSequence(product.id, e.target.value)}
-                                style={{ width: '60px', padding: '8px', backgroundColor: theme.inputBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.textPrimary, outline: 'none' }}
-                              />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ color: theme.textSecondary, cursor: 'grab', fontSize: '1.2rem' }}>⠿</span>
+                                <span style={{ width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: theme.inputBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.textPrimary, fontWeight: 'bold' }}>
+                                  {product.sequence || index + 1}
+                                </span>
+                              </div>
                             </td>
                             <td style={{ padding: '15px', color: theme.textPrimary }}>{product.name}</td>
                             <td style={{ padding: '15px', color: theme.accent, fontWeight: 'bold' }}>₹{product.price}</td>
