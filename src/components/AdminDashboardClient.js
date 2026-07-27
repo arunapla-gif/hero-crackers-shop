@@ -919,7 +919,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                     <div key={product.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: theme.bg, borderRadius: '10px', border: `1px solid ${theme.border}` }}>
                       <div style={{ flex: 1 }}>
                         <div style={{ color: theme.textPrimary, fontWeight: '600', fontSize: '1.05rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                          <span style={{ color: theme.accent, minWidth: '25px' }}>{globalIndex}.</span>
+                          <span style={{ color: theme.accent, minWidth: '25px' }}>{product.sequence || globalIndex}.</span>
                           <span>{product.name}</span>
                           {cat && (
                             <span style={{ fontSize: '0.75rem', padding: '2px 6px', backgroundColor: theme.inputBg, color: theme.textSecondary, borderRadius: '4px', textTransform: 'uppercase' }}>
