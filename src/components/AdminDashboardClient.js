@@ -831,11 +831,15 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {catProducts.map(product => {
+                        const globalIndex = products.findIndex(p => p.id === product.id) + 1;
                         const qty = quickBillCart[product.id] || 0;
                         return (
                           <div key={product.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: theme.bg, borderRadius: '10px', border: `1px solid ${theme.border}` }}>
                             <div style={{ flex: 1 }}>
-                              <div style={{ color: theme.textPrimary, fontWeight: '600', fontSize: '1.05rem' }}>{product.name}</div>
+                              <div style={{ color: theme.textPrimary, fontWeight: '600', fontSize: '1.05rem' }}>
+                                <span style={{ color: theme.accent, marginRight: '10px' }}>{globalIndex}.</span>
+                                {product.name}
+                              </div>
                               <div style={{ color: theme.textSecondary, fontSize: '0.9rem' }}>₹{product.price}</div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
