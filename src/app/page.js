@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma';
 import ProductCard from '@/components/ProductCard';
+import ScrollReveal from '@/components/ScrollReveal';
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
@@ -24,7 +25,7 @@ export default async function Home() {
         borderBottom: '8px solid #ffd700'
       }}>
         
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: '800px', margin: '0 auto', padding: '40px 0' }}>
+        <ScrollReveal delay={100} style={{ position: 'relative', zIndex: 1, maxWidth: '800px', margin: '0 auto', padding: '40px 0' }}>
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '4.5rem', marginBottom: '20px', color: '#fff', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
             Celebrate with Joy.
           </h1>
@@ -48,7 +49,7 @@ export default async function Home() {
               Shop Now
             </button>
           </a>
-        </div>
+        </ScrollReveal>
         
         {/* Subtle background decoration (Mandala / Festive vibe) */}
         <div style={{ position: 'absolute', top: '-50px', left: '-50px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(255,215,0,0.4) 0%, rgba(255,215,0,0) 70%)', borderRadius: '50%' }}></div>
@@ -57,14 +58,18 @@ export default async function Home() {
 
       {/* Featured Products Section */}
       <section style={{ padding: '80px 50px', textAlign: 'center' }}>
-        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '3rem', marginBottom: '10px', color: '#d32f2f' }}>
-          Festive Favorites
-        </h2>
-        <p style={{ color: '#666', fontSize: '1.2rem', marginBottom: '60px' }}>Brighten up your celebrations with our most popular picks.</p>
+        <ScrollReveal>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '3rem', marginBottom: '10px', color: '#d32f2f' }}>
+            Festive Favorites
+          </h2>
+          <p style={{ color: '#666', fontSize: '1.2rem', marginBottom: '60px' }}>Brighten up your celebrations with our most popular picks.</p>
+        </ScrollReveal>
         
         <div style={{ display: 'flex', gap: '40px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          {featuredProducts.map(product => (
-            <ProductCard key={product.id} product={product} />
+          {featuredProducts.map((product, index) => (
+            <ScrollReveal key={product.id} delay={index * 150}>
+              <ProductCard product={product} />
+            </ScrollReveal>
           ))}
         </div>
       </section>
