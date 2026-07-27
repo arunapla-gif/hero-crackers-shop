@@ -10,6 +10,6 @@ export default defineConfig({
     seed: "node ./prisma/seed.js",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: "postgresql://postgres.gqfpfnqepdkletbbhwcx:IevuJqEtZ8V1eKhz@aws-1-ap-south-1.pooler.supabase.com:5432/postgres?schema=shop",
   },
 });
