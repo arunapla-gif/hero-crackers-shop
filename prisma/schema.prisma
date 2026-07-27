@@ -1,9 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["shop"]
 }
 
 model User {
@@ -14,11 +16,13 @@ model User {
   role      Role     @default(USER)
   createdAt DateTime @default(now())
   orders    Order[]
+  @@schema("shop")
 }
 
 enum Role {
   ADMIN
   USER
+  @@schema("shop")
 }
 
 model Product {
@@ -36,6 +40,7 @@ model Product {
   category    Category      @relation(fields: [categoryId], references: [id])
   orderItems  OrderItem[]
   godownStock GodownStock[]
+  @@schema("shop")
 }
 
 model Category {
@@ -43,6 +48,7 @@ model Category {
   name     String
   slug     String    @unique
   products Product[]
+  @@schema("shop")
 }
 
 model Order {
@@ -57,6 +63,7 @@ model Order {
   createdAt       DateTime    @default(now())
   user            User        @relation(fields: [userId], references: [id])
   items           OrderItem[]
+  @@schema("shop")
 }
 
 enum OrderStatus {
@@ -65,6 +72,7 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+  @@schema("shop")
 }
 
 model OrderItem {
@@ -75,6 +83,7 @@ model OrderItem {
   price     Float
   order     Order   @relation(fields: [orderId], references: [id])
   product   Product @relation(fields: [productId], references: [id])
+  @@schema("shop")
 }
 
 model Godown {
@@ -82,6 +91,7 @@ model Godown {
   name     String
   location String?
   stocks   GodownStock[]
+  @@schema("shop")
 }
 
 model GodownStock {
@@ -93,4 +103,5 @@ model GodownStock {
   product   Product @relation(fields: [productId], references: [id])
 
   @@unique([godownId, productId])
+  @@schema("shop")
 }

@@ -7,7 +7,13 @@ const prismaClientSingleton = () => {
   if (dbUrl && dbUrl.startsWith('prisma+postgres://')) {
     dbUrl = 'postgres://postgres:postgres@localhost:51214/template1?sslmode=disable'
   }
-  const pool = new Pool({ connectionString: dbUrl })
+  const pool = new Pool({ 
+    connectionString: dbUrl,
+    max: 1,
+    connectionTimeoutMillis: 5000,
+    idleTimeoutMillis: 15000,
+    allowExitOnIdle: true
+  })
   const adapter = new PrismaPg(pool)
   return new PrismaClient({ adapter })
 }

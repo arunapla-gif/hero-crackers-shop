@@ -11,7 +11,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   const [activeMasterTab, setActiveMasterTab] = useState('product');
   const [loadingOrderId, setLoadingOrderId] = useState(null);
   
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Forms state
   const [categoryName, setCategoryName] = useState('');
@@ -38,7 +38,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
 
   // Quick Bill POS State
   const [quickBillCart, setQuickBillCart] = useState({}); // { productId: quantity }
-  const [quickBillCustomer, setQuickBillCustomer] = useState({ name: '', phone: '', address: 'Walk-in / Store Pickup' });
+  const [quickBillCustomer, setQuickBillCustomer] = useState({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '' });
   const [isBilling, setIsBilling] = useState(false);
 
 
@@ -261,6 +261,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   const handleGenerateQuickBill = async (e) => {
     e.preventDefault();
     if (Object.keys(quickBillCart).length === 0) return alert('Cart is empty!');
+    if (quickBillTotal < 3000) return alert('Minimum order Rs.3000');
     setIsBilling(true);
     
     const items = Object.entries(quickBillCart).map(([id, qty]) => {
@@ -271,7 +272,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     const payload = {
       customerName: quickBillCustomer.name || 'Walk-in Customer',
       customerPhone: quickBillCustomer.phone || '0000000000',
-      shippingAddress: quickBillCustomer.address,
+      shippingAddress: quickBillCustomer.address + (quickBillCustomer.city ? `, ${quickBillCustomer.city}` : ''),
       totalAmount: quickBillTotal,
       items
     };
@@ -287,7 +288,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
         const order = await res.json();
         setOrders([order, ...orders]);
         setQuickBillCart({});
-        setQuickBillCustomer({ name: '', phone: '', address: 'Walk-in / Store Pickup' });
+        setQuickBillCustomer({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '' });
         
         setTimeout(() => triggerPrint(order.id), 300);
       }
@@ -863,11 +864,14 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                   {Object.entries(quickBillCart).length === 0 ? (
                     <div style={{ color: theme.textSecondary, textAlign: 'center', padding: '20px 0' }}>Cart is empty</div>
                   ) : (
-                    Object.entries(quickBillCart).map(([id, qty]) => {
+                    Object.entries(quickBillCart).map(([id, qty], index) => {
                       const p = products.find(prod => prod.id === id);
                       return (
                         <div key={id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: theme.textSecondary, fontSize: '0.95rem' }}>
-                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>{p?.name}</span>
+                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
+                            <span style={{ color: theme.accent, marginRight: '8px', fontWeight: 'bold' }}>{index + 1}.</span>
+                            {p?.name}
+                          </span>
                           <span style={{ color: theme.textPrimary, fontWeight: 'bold' }}>{qty} x ₹{p?.price}</span>
                         </div>
                       )
@@ -888,7 +892,10 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                   <input type="text" value={quickBillCustomer.phone} onChange={e => setQuickBillCustomer({...quickBillCustomer, phone: e.target.value})} style={inputStyle} placeholder="0000000000" />
                   
                   <label style={labelStyle}>Address / Notes</label>
-                  <input type="text" value={quickBillCustomer.address} onChange={e => setQuickBillCustomer({...quickBillCustomer, address: e.target.value})} style={{...inputStyle, marginBottom: 0}} />
+                  <input type="text" value={quickBillCustomer.address} onChange={e => setQuickBillCustomer({...quickBillCustomer, address: e.target.value})} style={inputStyle} />
+
+                  <label style={labelStyle}>City</label>
+                  <input type="text" value={quickBillCustomer.city} onChange={e => setQuickBillCustomer({...quickBillCustomer, city: e.target.value})} style={{...inputStyle, marginBottom: 0}} placeholder="City Name" />
                 </div>
 
                 <button 
