@@ -16,6 +16,11 @@ export default function OrderManager({ isDarkMode, products, onEditOrder, onDupl
   const [limit, setLimit] = useState(50);
   
   const [selectedOrders, setSelectedOrders] = useState([]);
+  const [expandedOrderIds, setExpandedOrderIds] = useState([]);
+  
+  const toggleExpandOrder = (id) => {
+    setExpandedOrderIds(prev => prev.includes(id) ? prev.filter(oId => oId !== id) : [...prev, id]);
+  };
   
   // Dispatch Modal
   const [dispatchModalOpen, setDispatchModalOpen] = useState(false);
@@ -336,88 +341,126 @@ export default function OrderManager({ isDarkMode, products, onEditOrder, onDupl
               <p style={{ color: theme.textSecondary }}>Try adjusting your filters or date range.</p>
             </div>
           ) : orders.map(order => (
-            <div key={order.id} className="order-card" style={{ ...styles.listCardStyle, opacity: order.status === 'CANCELLED' ? 0.6 : 1, flexWrap: 'wrap' }}>
+            <div key={order.id} className="order-card" style={{ ...styles.listCardStyle, opacity: order.status === 'CANCELLED' ? 0.6 : 1, flexDirection: 'column', alignItems: 'stretch' }}>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '150px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <input 
-                    type="checkbox" 
-                    className="custom-checkbox"
-                    checked={selectedOrders.includes(order.id)} 
-                    onChange={() => handleSelectOrder(order.id)} 
-                  />
-                  <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    ORD-{order.id.slice(-6).toUpperCase()}
-                  </span>
-                </div>
-                <div>{statusBadge(order.status, theme)}</div>
-              </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1.5', minWidth: '220px' }}>
-                <strong style={{ fontSize: '1.8rem', color: theme.textPrimary, letterSpacing: '-1px', textDecoration: order.status === 'CANCELLED' ? 'line-through' : 'none' }}>
-                  ₹{order.totalAmount.toLocaleString()}
-                </strong>
-                <div style={{ fontSize: '0.85rem', color: theme.textSecondary, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  📞 <strong style={{ color: theme.textPrimary }}>{order.customerPhone || 'N/A'}</strong> • 📍 {order.shippingAddress}
-                </div>
-                {order.referredBy && (
-                  <div style={{ fontSize: '0.8rem', color: theme.accent, marginTop: '2px', fontWeight: 'bold' }}>
-                    🏷️ Referred By: {order.referredBy}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', width: '100%' }}>
+                
+                {/* Col 1: ID & Status */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '150px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <input 
+                      type="checkbox" 
+                      className="custom-checkbox"
+                      checked={selectedOrders.includes(order.id)} 
+                      onChange={() => handleSelectOrder(order.id)} 
+                    />
+                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      ORD-{order.id.slice(-6).toUpperCase()}
+                    </span>
                   </div>
-                )}
-                {(order.transportName || order.trackingNumber) && (
-                  <div style={{ fontSize: '0.8rem', color: theme.shipped, marginTop: '2px', fontWeight: 'bold' }}>
-                    LR: {order.trackingNumber} ({order.transportName})
-                  </div>
-                )}
-              </div>
-
-              <div style={{ flex: '2', minWidth: '250px', padding: '0 15px', borderLeft: `1px solid ${theme.border}`, borderRight: `1px solid ${theme.border}`, fontSize: '0.9rem', color: theme.textSecondary, display: 'flex', alignItems: 'center' }}>
-                {(() => {
-                  const parts = order.items.map(item => {
-                    const product = products.find(p => p.id === item.productId);
-                    return product ? `${product.name} x${item.quantity}` : `Item x${item.quantity}`;
-                  });
-                  const showing = parts.slice(0, 2).join(', ');
-                  const hidden = parts.length > 2 ? ` (+${parts.length - 2} more)` : '';
-                  return <span style={{ lineHeight: '1.4' }}>{showing} <strong style={{ color: theme.textPrimary }}>{hidden}</strong></span>;
-                })()}
-              </div>
-
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flex: '1.5', minWidth: '280px', justifyContent: 'flex-end' }}>
-                  <div style={{ display: 'flex', gap: '8px', marginRight: 'auto' }}>
-                    <button className="action-btn" onClick={() => triggerPrint(order)} style={{ ...styles.btnPrimary, padding: '12px 20px', fontSize: '1.2rem', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>
-                      🖨️
-                    </button>
-                    <button className="action-btn" onClick={() => onEditOrder(order)} style={{ ...styles.btnPrimary, padding: '8px 12px', fontSize: '0.85rem', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>
-                      ✏️ Edit
-                    </button>
-                    <button className="action-btn" onClick={() => onDuplicateOrder(order)} style={{ ...styles.btnPrimary, padding: '8px 12px', fontSize: '0.85rem', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>
-                      📋 Duplicate
-                    </button>
-                    
-                    {order.customerPhone && (
-                      <a 
-                        className="action-btn"
-                        href={`https://wa.me/91${order.customerPhone.replace(/[^0-9]/g, '').slice(-10)}?text=Hello! Your Hero Crackers order %23${order.id.slice(-6).toUpperCase()} is currently ${order.status}.${order.trackingNumber ? ` It was dispatched via ${order.transportName}. Tracking LR: ${order.trackingNumber}` : ''}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ ...styles.btnPrimary, padding: '12px 20px', backgroundColor: '#25D36615', color: '#25D366', border: '1px solid #25D36640', boxShadow: 'none', textDecoration: 'none', display: 'flex', alignItems: 'center' }}
-                    >
-                      WhatsApp
-                    </a>
-                  )}
+                  <div>{statusBadge(order.status, theme)}</div>
                 </div>
                 
-                {order.status !== 'CANCELLED' && (
-                  <>
-                    {order.status !== 'PROCESSING' && <button className="action-btn" disabled={updateOrderMutation.isPending} onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ ...styles.btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.info, boxShadow: 'none' }}>Process</button>}
-                    {order.status !== 'SHIPPED' && <button className="action-btn" disabled={updateOrderMutation.isPending} onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ ...styles.btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.shipped, boxShadow: 'none' }}>Dispatch</button>}
-                    {order.status !== 'DELIVERED' && <button className="action-btn" disabled={updateOrderMutation.isPending} onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ ...styles.btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.success, boxShadow: 'none' }}>Deliver</button>}
-                    <button className="action-btn" disabled={updateOrderMutation.isPending} onClick={() => handleStatusChange(order.id, 'CANCELLED')} style={{ ...styles.btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: 'transparent', color: theme.cancelled, border: `1px solid ${theme.cancelled}`, boxShadow: 'none' }}>✕ Cancel</button>
-                  </>
-                )}
+                {/* Col 2: Customer Details */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1.5', minWidth: '250px' }}>
+                  <strong style={{ fontSize: '1.8rem', color: theme.textPrimary, letterSpacing: '-1px', textDecoration: order.status === 'CANCELLED' ? 'line-through' : 'none' }}>
+                    ₹{order.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </strong>
+                  <div style={{ fontSize: '1.05rem', fontWeight: 'bold', color: theme.textPrimary, marginTop: '5px' }}>
+                    👤 {order.user?.name || 'Walk-in Customer'}
+                  </div>
+                  <div style={{ fontSize: '0.95rem', color: theme.textSecondary }}>
+                    📞 <strong style={{ color: theme.textPrimary }}>{order.customerPhone || 'N/A'}</strong>
+                  </div>
+                  <div style={{ fontSize: '0.9rem', color: theme.textSecondary, marginTop: '2px', lineHeight: '1.4' }}>
+                    📍 {order.shippingAddress}
+                  </div>
+                  {order.referredBy && (
+                    <div style={{ fontSize: '0.85rem', color: theme.accent, marginTop: '4px', fontWeight: 'bold' }}>
+                      🏷️ Referred By: {order.referredBy}
+                    </div>
+                  )}
+                  {(order.transportName || order.trackingNumber) && (
+                    <div style={{ fontSize: '0.85rem', color: theme.shipped, marginTop: '4px', fontWeight: 'bold' }}>
+                      LR: {order.trackingNumber} ({order.transportName})
+                    </div>
+                  )}
+                </div>
+
+                {/* Col 3: Items Toggle */}
+                <div style={{ flex: '1', minWidth: '150px', padding: '0 15px', borderLeft: `1px solid ${theme.border}`, borderRight: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <button 
+                    onClick={() => toggleExpandOrder(order.id)}
+                    style={{ ...styles.btnPrimary, backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none', padding: '10px 15px', width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                  >
+                    <span>📦 {order.items.length} Items</span>
+                    <span>{expandedOrderIds.includes(order.id) ? '▲' : '▼'}</span>
+                  </button>
+                </div>
+
+                {/* Col 4: Actions */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: '1.5', minWidth: '250px', alignItems: 'flex-end' }}>
+                  
+                  {/* Secondary Actions Row */}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {order.customerPhone && (
+                      <a 
+                        href={`https://wa.me/91${order.customerPhone.replace(/[^0-9]/g, '').slice(-10)}?text=Hello! Your Hero Crackers order %23${order.id.slice(-6).toUpperCase()} is currently ${order.status}.${order.trackingNumber ? ` It was dispatched via ${order.transportName}. Tracking LR: ${order.trackingNumber}` : ''}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="action-btn"
+                        style={{...styles.btnPrimary, padding: '8px 12px', backgroundColor: '#25D36615', color: '#25D366', border: '1px solid #25D36640', boxShadow: 'none', display: 'flex', alignItems: 'center', gap: '5px', textDecoration: 'none'}}
+                      >
+                        💬 WhatsApp
+                      </a>
+                    )}
+                    <button onClick={() => triggerPrint(order)} className="action-btn" title="Print Invoice" style={{ ...styles.btnPrimary, padding: '8px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>🖨️</button>
+                    <button onClick={() => onEditOrder(order)} className="action-btn" title="Edit Order" style={{ ...styles.btnPrimary, padding: '8px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>✏️</button>
+                    <button onClick={() => onDuplicateOrder(order)} className="action-btn" title="Duplicate Order" style={{ ...styles.btnPrimary, padding: '8px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>📋</button>
+                  </div>
+                  
+                  {/* Primary Status Row */}
+                  {order.status !== 'CANCELLED' && (
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      {order.status === 'PENDING' && <button className="action-btn" onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ ...styles.btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.info, boxShadow: 'none' }}>Process</button>}
+                      {(order.status === 'PENDING' || order.status === 'PROCESSING') && <button className="action-btn" onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ ...styles.btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.shipped, boxShadow: 'none' }}>Dispatch</button>}
+                      {order.status === 'SHIPPED' && <button className="action-btn" onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ ...styles.btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.success, boxShadow: 'none' }}>Deliver</button>}
+                      <button className="action-btn" onClick={() => handleStatusChange(order.id, 'CANCELLED')} style={{ ...styles.btnPrimary, padding: '8px 12px', fontSize: '0.85rem', backgroundColor: 'transparent', color: theme.cancelled, border: `1px solid ${theme.cancelled}`, boxShadow: 'none' }}>✕ Cancel</button>
+                    </div>
+                  )}
+                </div>
               </div>
+
+              {/* Expandable Items Table */}
+              {expandedOrderIds.includes(order.id) && (
+                <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: `1px dashed ${theme.border}`, width: '100%', overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', minWidth: '600px' }}>
+                    <thead>
+                      <tr style={{ color: theme.textSecondary, textAlign: 'left', borderBottom: `1px solid ${theme.border}` }}>
+                        <th style={{ padding: '8px', width: '50px' }}>#</th>
+                        <th style={{ padding: '8px' }}>Product</th>
+                        <th style={{ padding: '8px', textAlign: 'center' }}>Qty</th>
+                        <th style={{ padding: '8px', textAlign: 'right' }}>Price</th>
+                        <th style={{ padding: '8px', textAlign: 'right' }}>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {order.items.map((item, idx) => {
+                        const product = products.find(p => p.id === item.productId);
+                        return (
+                          <tr key={item.id} style={{ borderBottom: `1px solid ${theme.border}40` }}>
+                            <td style={{ padding: '12px 8px', color: theme.textSecondary }}>{idx + 1}</td>
+                            <td style={{ padding: '12px 8px', color: theme.textPrimary, fontWeight: '500' }}>{product ? product.name : 'Unknown Item'}</td>
+                            <td style={{ padding: '12px 8px', textAlign: 'center', color: theme.textPrimary }}>{item.quantity}</td>
+                            <td style={{ padding: '12px 8px', textAlign: 'right', color: theme.textSecondary }}>₹{item.price}</td>
+                            <td style={{ padding: '12px 8px', textAlign: 'right', color: theme.textPrimary, fontWeight: 'bold' }}>₹{item.price * item.quantity}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           ))}
         </div>
