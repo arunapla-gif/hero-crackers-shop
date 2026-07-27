@@ -9,6 +9,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
 
   const [quickBillCart, setQuickBillCart] = useState({}); // { productId: quantity }
   const [quickBillCustomer, setQuickBillCustomer] = useState({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '' });
+  const [isMobileCartView, setIsMobileCartView] = useState(false);
   
   const updateQuickBillQty = (productId, delta) => {
     setQuickBillCart(prev => {
@@ -122,11 +123,79 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
   };
 
   return (
-    <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+    <>
+      <style>{`
+        .mobile-top-bar { display: none; }
+        @media (max-width: 768px) {
+          .mobile-top-bar { 
+            display: flex !important; 
+            position: sticky; 
+            top: 0; 
+            z-index: 50; 
+            background-color: ${theme.cardBg}; 
+            padding: 15px 20px; 
+            border-bottom: 1px solid ${theme.border};
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0,0,0,${isDarkMode ? '0.5' : '0.05'});
+            margin: -20px -20px 20px -20px;
+          }
+          .products-panel { 
+            display: ${isMobileCartView ? 'none' : 'block'} !important; 
+            width: 100% !important; 
+            flex: none !important; 
+            max-height: none !important; 
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            background: transparent !important;
+          }
+          .cart-panel { 
+            display: ${isMobileCartView ? 'block' : 'none'} !important; 
+            width: 100% !important; 
+            flex: none !important; 
+            position: relative !important; 
+            top: 0 !important; 
+            padding: 0 !important;
+          }
+          .pos-container { gap: 0 !important; }
+          .product-row { 
+            flex-direction: column !important; 
+            align-items: flex-start !important; 
+            gap: 15px !important; 
+            padding: 15px !important;
+          }
+          .qty-controls { 
+            width: 100% !important; 
+            justify-content: space-between !important; 
+            background-color: ${theme.cardBg};
+            padding: 5px;
+            border-radius: 10px;
+          }
+          .qty-btn { padding: 8px 25px !important; }
+        }
+      `}</style>
       
-      {/* Left Panel: Scrollable Product Matrix */}
-      <div style={{ flex: '1 1 600px', backgroundColor: theme.cardBg, borderRadius: '16px', border: `1px solid ${theme.border}`, boxShadow: `0 10px 25px rgba(0,0,0,${isDarkMode ? '0.2' : '0.05'})`, padding: '20px', maxHeight: '800px', overflowY: 'auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${theme.border}`, paddingBottom: '15px', marginBottom: '20px' }}>
+      {/* Sticky Top Bar for Mobile */}
+      <div className="mobile-top-bar">
+        <div>
+          <div style={{ color: theme.textSecondary, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Cart Total ({Object.keys(quickBillCart).length} items)</div>
+          <div style={{ color: theme.accent, fontWeight: 'bold', fontSize: '1.5rem', lineHeight: '1' }}>₹{quickBillTotal.toLocaleString()}</div>
+        </div>
+        <button 
+          type="button"
+          onClick={() => setIsMobileCartView(!isMobileCartView)}
+          style={{ ...styles.btnPrimary, padding: '10px 20px', fontSize: '1rem', backgroundColor: isMobileCartView ? theme.textSecondary : theme.accent, boxShadow: 'none' }}
+        >
+          {isMobileCartView ? '← Back to Products' : 'View Cart 🛒'}
+        </button>
+      </div>
+
+      <div className="pos-container" style={{ display: 'flex', gap: '30px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        
+        {/* Left Panel: Scrollable Product Matrix */}
+        <div className="products-panel" style={{ flex: '1 1 600px', backgroundColor: theme.cardBg, borderRadius: '16px', border: `1px solid ${theme.border}`, boxShadow: `0 10px 25px rgba(0,0,0,${isDarkMode ? '0.2' : '0.05'})`, padding: '20px', maxHeight: '800px', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${theme.border}`, paddingBottom: '15px', marginBottom: '20px' }}>
           <h2 style={{ color: theme.textPrimary, margin: 0, fontSize: '1.8rem' }}>Product Matrix</h2>
           <button 
             type="button"
@@ -144,8 +213,8 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
             const cat = categories.find(c => c.id === product.categoryId);
             
             return (
-              <div key={product.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: theme.bg, borderRadius: '10px', border: `1px solid ${theme.border}` }}>
-                <div style={{ flex: 1 }}>
+              <div key={product.id} className="product-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: theme.bg, borderRadius: '10px', border: `1px solid ${theme.border}` }}>
+                <div className="product-info" style={{ flex: 1 }}>
                   <div style={{ color: theme.textPrimary, fontWeight: '600', fontSize: '1.05rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                     <span style={{ color: theme.accent, minWidth: '25px' }}>{product.sequence || globalIndex}.</span>
                     <span>{product.name}</span>
@@ -157,10 +226,10 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
                   </div>
                   <div style={{ color: theme.textSecondary, fontSize: '0.9rem', marginTop: '4px', paddingLeft: '33px' }}>₹{product.price}</div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                  <button className="qty-btn" onClick={() => updateQuickBillQty(product.id, -1)} style={styles.qtyBtnStyle}>-</button>
+                <div className="qty-controls" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                  <button type="button" className="qty-btn action-btn" onClick={() => updateQuickBillQty(product.id, -1)} style={styles.qtyBtnStyle}>-</button>
                   <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: theme.textPrimary, width: '30px', textAlign: 'center' }}>{qty}</span>
-                  <button className="qty-btn" onClick={() => updateQuickBillQty(product.id, 1)} style={styles.qtyBtnStyle}>+</button>
+                  <button type="button" className="qty-btn action-btn" onClick={() => updateQuickBillQty(product.id, 1)} style={styles.qtyBtnStyle}>+</button>
                 </div>
               </div>
             );
@@ -169,7 +238,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
       </div>
 
       {/* Right Panel: Sticky Cart Summary */}
-      <div style={{ flex: '1 1 350px', position: 'sticky', top: '20px' }}>
+      <div className="cart-panel" style={{ flex: '1 1 350px', position: 'sticky', top: '20px' }}>
         <form onSubmit={handleGenerateQuickBill} style={{ backgroundColor: theme.cardBg, borderRadius: '16px', border: `1px solid ${theme.border}`, boxShadow: `0 10px 25px rgba(0,0,0,${isDarkMode ? '0.2' : '0.05'})`, padding: '30px' }}>
           <h2 style={{ color: theme.textPrimary, margin: '0 0 25px 0', fontSize: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
             <span>Cart Summary</span>
@@ -232,5 +301,6 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
         </form>
       </div>
     </div>
+    </>
   );
 }
