@@ -3,10 +3,13 @@
 import { useState, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 
-export default function AdminDashboardClient({ initialOrders, initialProducts, categories, initialGodowns }) {
+export default function AdminDashboardClient({ initialOrders, initialProducts, categories: initialCategories, initialGodowns }) {
   const [orders, setOrders] = useState(initialOrders);
   const [products, setProducts] = useState(initialProducts);
   const [godowns, setGodowns] = useState(initialGodowns);
+  const [categories, setCategories] = useState(initialCategories);
+  const [isDragLocked, setIsDragLocked] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const [activeTab, setActiveTab] = useState('orders'); // 'orders', 'quickbill', 'masters'
   const [activeMasterTab, setActiveMasterTab] = useState('product');
@@ -326,6 +329,26 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     window.print();
     document.body.innerHTML = originalContent;
     window.location.reload(); 
+  };
+
+  const handleRefreshData = async () => {
+    setIsRefreshing(true);
+    try {
+      const [prodRes, catRes] = await Promise.all([
+        fetch('/api/products'),
+        fetch('/api/categories')
+      ]);
+      if (prodRes.ok) {
+        const newProducts = await prodRes.json();
+        setProducts(newProducts.sort((a, b) => (a.sequence || 0) - (b.sequence || 0) || a.name.localeCompare(b.name)));
+      }
+      if (catRes.ok) {
+        const newCategories = await catRes.json();
+        setCategories(newCategories);
+      }
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   // Quick Bill Handlers
@@ -907,7 +930,16 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
             
             {/* Left Panel: Scrollable Product Matrix */}
             <div style={{ flex: '1 1 600px', backgroundColor: theme.cardBg, borderRadius: '16px', border: `1px solid ${theme.border}`, boxShadow: `0 10px 25px rgba(0,0,0,${isDarkMode ? '0.2' : '0.05'})`, padding: '20px', maxHeight: '800px', overflowY: 'auto' }}>
-              <h2 style={{ color: theme.textPrimary, margin: '0 0 20px 0', fontSize: '1.8rem', borderBottom: `1px solid ${theme.border}`, paddingBottom: '15px' }}>Product Matrix</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${theme.border}`, paddingBottom: '15px', marginBottom: '20px' }}>
+                <h2 style={{ color: theme.textPrimary, margin: 0, fontSize: '1.8rem' }}>Product Matrix</h2>
+                <button 
+                  type="button"
+                  onClick={handleRefreshData} 
+                  disabled={isRefreshing}
+                  style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.9rem', backgroundColor: theme.info, opacity: isRefreshing ? 0.7 : 1, boxShadow: 'none' }}>
+                  {isRefreshing ? '🔄 Refreshing...' : '🔄 Refresh Data'}
+                </button>
+              </div>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {products.map((product, index) => {
@@ -1083,7 +1115,15 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
 
                 {/* Table */}
                 <div>
-                  <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Product Directory</h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                    <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', margin: 0 }}>Product Directory</h3>
+                    <button 
+                      type="button"
+                      onClick={() => setIsDragLocked(!isDragLocked)} 
+                      style={{ ...btnPrimary, padding: '8px 16px', fontSize: '0.9rem', backgroundColor: isDragLocked ? theme.textSecondary : theme.accent, boxShadow: 'none' }}>
+                      {isDragLocked ? '🔒 Unlock Reordering' : '🔓 Lock Reordering'}
+                    </button>
+                  </div>
                   <div style={{ overflowY: 'auto', maxHeight: '550px', border: `1px solid ${theme.border}`, borderRadius: '12px' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                       <thead style={{ position: 'sticky', top: 0, backgroundColor: theme.bg, zIndex: 1, boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
@@ -1098,8 +1138,12 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                         {products.map((product, index) => (
                           <tr 
                             key={product.id} 
-                            draggable
+                            draggable={!isDragLocked}
                             onDragStart={(e) => {
+                              if (isDragLocked) {
+                                e.preventDefault();
+                                return;
+                              }
                               setDraggedItemIndex(index);
                               e.dataTransfer.effectAllowed = 'move';
                               e.currentTarget.style.opacity = '0.5';
@@ -1111,7 +1155,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                             onDragOver={(e) => e.preventDefault()}
                             onDrop={async (e) => {
                               e.preventDefault();
-                              if (draggedItemIndex === null || draggedItemIndex === index) return;
+                              if (isDragLocked || draggedItemIndex === null || draggedItemIndex === index) return;
                               
                               const newProducts = [...products];
                               const draggedItem = newProducts.splice(draggedItemIndex, 1)[0];
@@ -1135,13 +1179,13 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                                 console.error("Failed to sync sequence", err);
                               }
                             }}
-                            style={{ borderBottom: `1px solid ${theme.border}`, transition: 'background 0.2s', cursor: 'grab' }} 
+                            style={{ borderBottom: `1px solid ${theme.border}`, transition: 'background 0.2s', cursor: isDragLocked ? 'default' : 'grab' }} 
                             onMouseOver={e => e.currentTarget.style.backgroundColor = theme.bg} 
                             onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
                           >
                             <td style={{ padding: '15px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ color: theme.textSecondary, cursor: 'grab', fontSize: '1.2rem' }}>⠿</span>
+                                <span style={{ color: theme.textSecondary, cursor: isDragLocked ? 'default' : 'grab', fontSize: '1.2rem', opacity: isDragLocked ? 0.3 : 1 }}>⠿</span>
                                 <span style={{ width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: theme.inputBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.textPrimary, fontWeight: 'bold' }}>
                                   {product.sequence || index + 1}
                                 </span>
