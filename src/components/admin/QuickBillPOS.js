@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTheme, getStyles } from './theme';
 
-export default function QuickBillPOS({ isDarkMode, products, categories, handleRefreshData, isRefreshing }) {
+export default function QuickBillPOS({ isDarkMode, products, categories, handleRefreshData, isRefreshing, initialPosState, onClearPosState }) {
   const theme = getTheme(isDarkMode);
   const styles = getStyles(theme, isDarkMode);
   const queryClient = useQueryClient();
@@ -11,6 +11,32 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
   const [quickBillCustomer, setQuickBillCustomer] = useState({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '', referredBy: '' });
   const [isMobileCartView, setIsMobileCartView] = useState(false);
   
+  // Populate cart if initialPosState is provided (Edit or Duplicate)
+  useEffect(() => {
+    if (initialPosState && initialPosState.order) {
+      const { order, type } = initialPosState;
+      const initialCart = {};
+      if (order.items && Array.isArray(order.items)) {
+        order.items.forEach(item => {
+          initialCart[item.productId] = item.quantity;
+        });
+      }
+      setQuickBillCart(initialCart);
+      
+      // If editing, try to populate customer details
+      if (type === 'edit') {
+        setQuickBillCustomer({
+          name: order.user?.name || 'Customer',
+          phone: order.customerPhone || '',
+          address: order.shippingAddress || '',
+          city: '', // Hard to extract from concatenated address
+          referredBy: order.referredBy || ''
+        });
+      }
+      // If duplicate, leave customer blank so they can enter the new target person
+    }
+  }, [initialPosState]);
+
   const updateQuickBillQty = (productId, delta) => {
     setQuickBillCart(prev => {
       const current = prev[productId] || 0;
@@ -31,18 +57,23 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
 
   const generateBillMutation = useMutation({
     mutationFn: async (payload) => {
-      const res = await fetch('/api/orders', {
-        method: 'POST',
+      const isEdit = initialPosState?.type === 'edit';
+      const url = isEdit ? `/api/orders/${initialPosState.order.id}` : '/api/orders';
+      const method = isEdit ? 'PATCH' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      if (!res.ok) throw new Error('Failed to generate bill');
+      if (!res.ok) throw new Error(`Failed to ${isEdit ? 'update' : 'generate'} bill`);
       return res.json();
     },
     onSuccess: (order) => {
       queryClient.invalidateQueries(['orders']);
       setQuickBillCart({});
-      setQuickBillCustomer({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '' });
+      setQuickBillCustomer({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '', referredBy: '' });
+      if (onClearPosState) onClearPosState();
       
       // Quickly trigger print for walk-in
       triggerPrint(order);
@@ -241,6 +272,20 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
       {/* Right Panel: Sticky Cart Summary */}
       <div className="cart-panel" style={{ flex: '1 1 350px', position: 'sticky', top: '20px' }}>
         <form onSubmit={handleGenerateQuickBill} style={{ backgroundColor: theme.cardBg, borderRadius: '16px', border: `1px solid ${theme.border}`, boxShadow: `0 10px 25px rgba(0,0,0,${isDarkMode ? '0.2' : '0.05'})`, padding: '30px' }}>
+          
+          {initialPosState && (
+            <div style={{ padding: '10px 15px', backgroundColor: initialPosState.type === 'edit' ? `${theme.info}20` : `${theme.accent}20`, borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: initialPosState.type === 'edit' ? theme.info : theme.accent, fontWeight: 'bold' }}>
+                {initialPosState.type === 'edit' ? `Editing Order #${initialPosState.order.id.slice(-6).toUpperCase()}` : 'Duplicating Order'}
+              </span>
+              <button type="button" onClick={() => {
+                onClearPosState();
+                setQuickBillCart({});
+                setQuickBillCustomer({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '', referredBy: '' });
+              }} style={{ background: 'transparent', border: 'none', color: theme.cancelled, cursor: 'pointer', fontWeight: 'bold' }}>✕ Cancel</button>
+            </div>
+          )}
+
           <h2 style={{ color: theme.textPrimary, margin: '0 0 25px 0', fontSize: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
             <span>Cart Summary</span>
             <span style={{ color: theme.accent, fontSize: '1.2rem' }}>{Object.keys(quickBillCart).length} Items</span>
@@ -296,11 +341,11 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
               width: '100%', 
               padding: '16px', 
               fontSize: '1.2rem', 
-              backgroundColor: generateBillMutation.isPending ? theme.border : theme.success, 
-              boxShadow: generateBillMutation.isPending ? 'none' : `0 4px 15px ${theme.success}50` 
+              backgroundColor: generateBillMutation.isPending ? theme.border : (initialPosState?.type === 'edit' ? theme.info : theme.success), 
+              boxShadow: generateBillMutation.isPending ? 'none' : `0 4px 15px ${(initialPosState?.type === 'edit' ? theme.info : theme.success)}50` 
             }}
           >
-            {generateBillMutation.isPending ? 'Generating...' : '⚡ Generate Bill & Print'}
+            {generateBillMutation.isPending ? 'Processing...' : (initialPosState?.type === 'edit' ? '🔄 Save Order Changes' : '⚡ Generate Bill & Print')}
           </button>
         </form>
       </div>

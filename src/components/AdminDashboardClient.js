@@ -15,8 +15,19 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   const [activeTab, setActiveTab] = useState('orders'); // 'orders', 'quickbill', 'masters'
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [initialPosState, setInitialPosState] = useState(null); // { type: 'edit'|'duplicate', order: {} }
 
   const theme = getTheme(isDarkMode);
+
+  const handleEditOrder = (order) => {
+    setInitialPosState({ type: 'edit', order });
+    setActiveTab('quickbill');
+  };
+
+  const handleDuplicateOrder = (order) => {
+    setInitialPosState({ type: 'duplicate', order });
+    setActiveTab('quickbill');
+  };
 
   const handleRefreshData = async () => {
     setIsRefreshing(true);
@@ -123,7 +134,9 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
         {activeTab === 'orders' && (
           <OrderManager 
             isDarkMode={isDarkMode} 
-            products={products} 
+            products={products}
+            onEditOrder={handleEditOrder}
+            onDuplicateOrder={handleDuplicateOrder}
           />
         )}
 
@@ -135,6 +148,8 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
             categories={categories}
             handleRefreshData={handleRefreshData}
             isRefreshing={isRefreshing}
+            initialPosState={initialPosState}
+            onClearPosState={() => setInitialPosState(null)}
           />
         )}
 

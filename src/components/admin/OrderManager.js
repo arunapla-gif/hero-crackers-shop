@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTheme, getStyles, statusBadge } from './theme';
 
-export default function OrderManager({ isDarkMode, products }) {
+export default function OrderManager({ isDarkMode, products, onEditOrder, onDuplicateOrder }) {
   const theme = getTheme(isDarkMode);
   const styles = getStyles(theme, isDarkMode);
   const queryClient = useQueryClient();
@@ -384,16 +384,22 @@ export default function OrderManager({ isDarkMode, products }) {
                 })()}
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flex: '1.5', minWidth: '280px', justifyContent: 'flex-end' }}>
-                <div style={{ display: 'flex', gap: '8px', marginRight: 'auto' }}>
-                  <button className="action-btn" onClick={() => triggerPrint(order)} style={{ ...styles.btnPrimary, padding: '12px 20px', fontSize: '1.2rem', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>
-                    🖨️
-                  </button>
-                  
-                  {order.customerPhone && (
-                    <a 
-                      className="action-btn"
-                      href={`https://wa.me/91${order.customerPhone.replace(/[^0-9]/g, '').slice(-10)}?text=Hello! Your Hero Crackers order %23${order.id.slice(-6).toUpperCase()} is currently ${order.status}.${order.trackingNumber ? ` It was dispatched via ${order.transportName}. Tracking LR: ${order.trackingNumber}` : ''}`}
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flex: '1.5', minWidth: '280px', justifyContent: 'flex-end' }}>
+                  <div style={{ display: 'flex', gap: '8px', marginRight: 'auto' }}>
+                    <button className="action-btn" onClick={() => triggerPrint(order)} style={{ ...styles.btnPrimary, padding: '12px 20px', fontSize: '1.2rem', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>
+                      🖨️
+                    </button>
+                    <button className="action-btn" onClick={() => onEditOrder(order)} style={{ ...styles.btnPrimary, padding: '8px 12px', fontSize: '0.85rem', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>
+                      ✏️ Edit
+                    </button>
+                    <button className="action-btn" onClick={() => onDuplicateOrder(order)} style={{ ...styles.btnPrimary, padding: '8px 12px', fontSize: '0.85rem', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>
+                      📋 Duplicate
+                    </button>
+                    
+                    {order.customerPhone && (
+                      <a 
+                        className="action-btn"
+                        href={`https://wa.me/91${order.customerPhone.replace(/[^0-9]/g, '').slice(-10)}?text=Hello! Your Hero Crackers order %23${order.id.slice(-6).toUpperCase()} is currently ${order.status}.${order.trackingNumber ? ` It was dispatched via ${order.transportName}. Tracking LR: ${order.trackingNumber}` : ''}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ ...styles.btnPrimary, padding: '12px 20px', backgroundColor: '#25D36615', color: '#25D366', border: '1px solid #25D36640', boxShadow: 'none', textDecoration: 'none', display: 'flex', alignItems: 'center' }}
