@@ -24,6 +24,8 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   const [imageFile, setImageFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
+  const [editingProductId, setEditingProductId] = useState(null);
+  const [editingCategoryId, setEditingCategoryId] = useState(null);
 
   // Filters for Orders
   const [orderSearch, setOrderSearch] = useState('');
@@ -185,14 +187,27 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
-    const res = await fetch('/api/categories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: categoryName })
-    });
-    if (res.ok) {
-      alert('Category added! Refresh to see it in dropdowns.');
-      setCategoryName('');
+    if (editingCategoryId) {
+      const res = await fetch(`/api/categories/${editingCategoryId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: categoryName })
+      });
+      if (res.ok) {
+        alert('Category updated! Refresh to see it in dropdowns.');
+        setCategoryName('');
+        setEditingCategoryId(null);
+      }
+    } else {
+      const res = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: categoryName })
+      });
+      if (res.ok) {
+        alert('Category added! Refresh to see it in dropdowns.');
+        setCategoryName('');
+      }
     }
   };
   
@@ -258,18 +273,48 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
       finalImageUrl = publicUrlData.publicUrl;
     }
 
-    const res = await fetch('/api/products', {
-      method: 'POST',
+    const method = editingProductId ? 'PATCH' : 'POST';
+    const url = editingProductId ? `/api/products/${editingProductId}` : '/api/products';
+
+    const res = await fetch(url, {
+      method: method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...newProduct, imageUrls: finalImageUrl ? [finalImageUrl] : [] })
     });
     if (res.ok) {
-      const addedProduct = await res.json();
-      setProducts([...products, addedProduct].sort((a, b) => a.sequence - b.sequence || a.name.localeCompare(b.name)));
-      setNewProduct({ ...newProduct, name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', imageUrl: '', sequence: '' });
+      const savedProduct = await res.json();
+      if (editingProductId) {
+        setProducts(prev => prev.map(p => p.id === editingProductId ? savedProduct : p).sort((a, b) => a.sequence - b.sequence || a.name.localeCompare(b.name)));
+        setEditingProductId(null);
+      } else {
+        setProducts([...products, savedProduct].sort((a, b) => a.sequence - b.sequence || a.name.localeCompare(b.name)));
+      }
+      setNewProduct({ name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', categoryId: categories.length > 0 ? categories[0].id : '', imageUrl: '', sequence: '' });
       setImageFile(null);
     }
     setIsUploading(false);
+  };
+
+  const handleEditProduct = (product) => {
+    setEditingProductId(product.id);
+    setNewProduct({
+      name: product.name,
+      description: product.description || '',
+      basePrice: product.basePrice,
+      price: product.price,
+      discount: product.discount || '',
+      stockShop: product.stockShop || '',
+      categoryId: product.categoryId,
+      imageUrl: product.imageUrls?.[0] || '',
+      sequence: product.sequence || ''
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleEditCategory = (category) => {
+    setEditingCategoryId(category.id);
+    setCategoryName(category.name);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const triggerPrint = (orderId) => {
@@ -993,7 +1038,17 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '40px' }}>
                 {/* Form */}
                 <div>
-                  <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Create Product</h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                    <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', margin: 0 }}>
+                      {editingProductId ? 'Edit Product' : 'Create Product'}
+                    </h3>
+                    {editingProductId && (
+                      <button onClick={() => {
+                        setEditingProductId(null);
+                        setNewProduct({ name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', categoryId: categories.length > 0 ? categories[0].id : '', imageUrl: '', sequence: '' });
+                      }} style={{ background: 'transparent', border: 'none', color: theme.danger, cursor: 'pointer', fontWeight: 'bold' }}>✕ Cancel Edit</button>
+                    )}
+                  </div>
                   <form onSubmit={handleAddProduct}>
                     <label style={labelStyle}>Product Name</label>
                     <input type="text" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required style={inputStyle} />
@@ -1020,8 +1075,8 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                     <label style={labelStyle}>Display Order (Sequence)</label>
                     <input type="number" value={newProduct.sequence} onChange={e => setNewProduct({...newProduct, sequence: e.target.value})} style={inputStyle} placeholder="0" />
 
-                    <button type="submit" disabled={isUploading} className="action-btn" style={{ ...btnPrimary, width: '100%', marginTop: '10px', opacity: isUploading ? 0.7 : 1 }}>
-                      {isUploading ? 'Uploading & Saving...' : 'Save Product'}
+                    <button type="submit" disabled={isUploading} className="action-btn" style={{ ...btnPrimary, width: '100%', marginTop: '10px', opacity: isUploading ? 0.7 : 1, backgroundColor: editingProductId ? theme.accent : theme.primary }}>
+                      {isUploading ? 'Saving...' : editingProductId ? 'Update Product' : 'Save Product'}
                     </button>
                   </form>
                 </div>
@@ -1036,6 +1091,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                           <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Order</th>
                           <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Item</th>
                           <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Price</th>
+                          <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}`, textAlign: 'right' }}>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1093,6 +1149,9 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                             </td>
                             <td style={{ padding: '15px', color: theme.textPrimary }}>{product.name}</td>
                             <td style={{ padding: '15px', color: theme.accent, fontWeight: 'bold' }}>₹{product.price}</td>
+                            <td style={{ padding: '15px', textAlign: 'right' }}>
+                              <button onClick={() => handleEditProduct(product)} style={{ padding: '6px 12px', backgroundColor: theme.inputBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.textPrimary, cursor: 'pointer', fontSize: '0.9rem' }}>Edit</button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -1105,18 +1164,31 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
             {/* Category Master */}
             {activeMasterTab === 'category' && (
               <div style={{ maxWidth: '500px' }}>
-                <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Add Category</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                  <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', margin: 0 }}>
+                    {editingCategoryId ? 'Edit Category' : 'Add Category'}
+                  </h3>
+                  {editingCategoryId && (
+                    <button onClick={() => {
+                      setEditingCategoryId(null);
+                      setCategoryName('');
+                    }} style={{ background: 'transparent', border: 'none', color: theme.danger, cursor: 'pointer', fontWeight: 'bold' }}>✕ Cancel Edit</button>
+                  )}
+                </div>
                 <form onSubmit={handleAddCategory} style={{ marginBottom: '40px' }}>
                   <label style={labelStyle}>Category Name</label>
                   <input type="text" value={categoryName} onChange={e => setCategoryName(e.target.value)} required style={inputStyle} />
-                  <button type="submit" className="action-btn" style={btnPrimary}>Save Category</button>
+                  <button type="submit" className="action-btn" style={{...btnPrimary, backgroundColor: editingCategoryId ? theme.accent : theme.primary}}>
+                    {editingCategoryId ? 'Update Category' : 'Save Category'}
+                  </button>
                 </form>
                 
                 <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Existing Categories</h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                   {categories.map(c => (
-                    <span key={c.id} style={{ padding: '8px 16px', backgroundColor: theme.bg, border: `1px solid ${theme.border}`, borderRadius: '20px', color: theme.textSecondary, boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' }}>
+                    <span key={c.id} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: theme.bg, border: `1px solid ${theme.border}`, borderRadius: '20px', color: theme.textSecondary, boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' }}>
                       {c.name}
+                      <button onClick={() => handleEditCategory(c)} style={{ background: 'none', border: 'none', color: theme.accent, cursor: 'pointer', fontSize: '0.8rem', padding: 0 }}>✎</button>
                     </span>
                   ))}
                 </div>

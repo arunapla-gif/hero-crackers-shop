@@ -6,15 +6,21 @@ export async function PATCH(request, { params }) {
     const { id } = await params;
     const body = await request.json();
     
-    // We only expect sequence updates for now, but we could expand this to other fields
     const dataToUpdate = {};
-    if (body.sequence !== undefined) {
-      dataToUpdate.sequence = parseInt(body.sequence);
-    }
+    if (body.name !== undefined) dataToUpdate.name = body.name;
+    if (body.description !== undefined) dataToUpdate.description = body.description;
+    if (body.basePrice !== undefined) dataToUpdate.basePrice = parseFloat(body.basePrice);
+    if (body.price !== undefined) dataToUpdate.price = parseFloat(body.price);
+    if (body.discount !== undefined) dataToUpdate.discount = parseFloat(body.discount) || 0;
+    if (body.categoryId !== undefined) dataToUpdate.categoryId = body.categoryId;
+    if (body.stockShop !== undefined) dataToUpdate.stockShop = parseInt(body.stockShop) || 0;
+    if (body.sequence !== undefined && body.sequence !== '') dataToUpdate.sequence = parseInt(body.sequence);
+    if (body.imageUrls !== undefined) dataToUpdate.imageUrls = body.imageUrls;
 
     const updatedProduct = await prisma.product.update({
       where: { id },
-      data: dataToUpdate
+      data: dataToUpdate,
+      include: { category: true }
     });
 
     return NextResponse.json(updatedProduct);
