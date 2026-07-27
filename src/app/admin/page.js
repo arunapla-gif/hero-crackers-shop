@@ -14,7 +14,10 @@ export default async function AdminDashboard() {
   });
 
   const products = await prisma.product.findMany({
-    orderBy: { name: 'asc' }
+    orderBy: [
+      { sequence: 'asc' },
+      { name: 'asc' }
+    ]
   });
 
   const categories = await prisma.category.findMany({

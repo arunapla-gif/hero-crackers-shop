@@ -12,7 +12,12 @@ export default async function ShopPage() {
   // Fetch all categories with their nested products
   const categories = await prisma.category.findMany({
     include: {
-      products: true
+      products: {
+        orderBy: [
+          { sequence: 'asc' },
+          { name: 'asc' }
+        ]
+      }
     }
   });
 

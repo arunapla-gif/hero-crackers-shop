@@ -18,7 +18,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   const [godownName, setGodownName] = useState('');
   const [godownLocation, setGodownLocation] = useState('');
   const [newProduct, setNewProduct] = useState({
-    name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', categoryId: categories.length > 0 ? categories[0].id : '', imageUrl: ''
+    name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', categoryId: categories.length > 0 ? categories[0].id : '', imageUrl: '', sequence: ''
   });
 
   // Filters for Orders
@@ -214,6 +214,22 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     });
   };
 
+  const handleUpdateProductSequence = async (productId, sequence) => {
+    const newSeq = parseInt(sequence) || 0;
+    
+    // Optimistic UI update
+    setProducts(prev => {
+      const updated = prev.map(p => p.id === productId ? { ...p, sequence: newSeq } : p);
+      return updated.sort((a, b) => a.sequence - b.sequence || a.name.localeCompare(b.name));
+    });
+
+    await fetch(`/api/products/${productId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sequence: newSeq })
+    });
+  };
+
   const handleAddProduct = async (e) => {
     e.preventDefault();
     const res = await fetch('/api/products', {
@@ -223,8 +239,8 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     });
     if (res.ok) {
       const addedProduct = await res.json();
-      setProducts([...products, addedProduct]);
-      setNewProduct({ ...newProduct, name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', imageUrl: '' });
+      setProducts([...products, addedProduct].sort((a, b) => a.sequence - b.sequence || a.name.localeCompare(b.name)));
+      setNewProduct({ ...newProduct, name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', imageUrl: '', sequence: '' });
     }
   };
 
@@ -978,6 +994,9 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                     <label style={labelStyle}>Image URL</label>
                     <input type="url" value={newProduct.imageUrl} onChange={e => setNewProduct({...newProduct, imageUrl: e.target.value})} style={inputStyle} />
 
+                    <label style={labelStyle}>Display Order (Sequence)</label>
+                    <input type="number" value={newProduct.sequence} onChange={e => setNewProduct({...newProduct, sequence: e.target.value})} style={inputStyle} placeholder="0" />
+
                     <button type="submit" className="action-btn" style={{ ...btnPrimary, width: '100%', marginTop: '10px' }}>Save Product</button>
                   </form>
                 </div>
@@ -989,6 +1008,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                       <thead style={{ position: 'sticky', top: 0, backgroundColor: theme.bg, zIndex: 1, boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
                         <tr>
+                          <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Order</th>
                           <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Item</th>
                           <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Price</th>
                         </tr>
@@ -996,6 +1016,14 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                       <tbody>
                         {products.map(product => (
                           <tr key={product.id} style={{ borderBottom: `1px solid ${theme.border}`, transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.backgroundColor = theme.bg} onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}>
+                            <td style={{ padding: '15px' }}>
+                              <input 
+                                type="number" 
+                                defaultValue={product.sequence || 0}
+                                onBlur={(e) => e.target.value !== String(product.sequence || 0) && handleUpdateProductSequence(product.id, e.target.value)}
+                                style={{ width: '60px', padding: '8px', backgroundColor: theme.inputBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.textPrimary, outline: 'none' }}
+                              />
+                            </td>
                             <td style={{ padding: '15px', color: theme.textPrimary }}>{product.name}</td>
                             <td style={{ padding: '15px', color: theme.accent, fontWeight: 'bold' }}>₹{product.price}</td>
                           </tr>

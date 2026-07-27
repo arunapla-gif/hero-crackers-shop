@@ -25,6 +25,7 @@ export async function POST(request) {
         stockShop: body.stockShop ? parseInt(body.stockShop) : 0,
         stockGodown: body.stockGodown ? parseInt(body.stockGodown) : 0,
         stock: (body.stockShop ? parseInt(body.stockShop) : 0) + (body.stockGodown ? parseInt(body.stockGodown) : 0),
+        sequence: body.sequence ? parseInt(body.sequence) : 0,
         categoryId: body.categoryId,
         imageUrls: body.imageUrls || []
       }
