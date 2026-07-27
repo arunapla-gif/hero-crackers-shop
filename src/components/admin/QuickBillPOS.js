@@ -23,8 +23,8 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
       }
       setQuickBillCart(initialCart);
       
-      // If editing, try to populate customer details
-      if (type === 'edit') {
+      // If editing or repeating, try to populate customer details
+      if (type === 'edit' || type === 'repeat') {
         setQuickBillCustomer({
           name: order.user?.name || 'Customer',
           phone: order.customerPhone || '',
@@ -276,7 +276,8 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
           {initialPosState && (
             <div style={{ padding: '10px 15px', backgroundColor: initialPosState.type === 'edit' ? `${theme.info}20` : `${theme.accent}20`, borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ color: initialPosState.type === 'edit' ? theme.info : theme.accent, fontWeight: 'bold' }}>
-                {initialPosState.type === 'edit' ? `Editing Order #${initialPosState.order.id.slice(-6).toUpperCase()}` : 'Duplicating Order'}
+                {initialPosState.type === 'edit' ? `Editing Order #${initialPosState.order.id.slice(-6).toUpperCase()}` : 
+                 initialPosState.type === 'repeat' ? 'Repeating Order (Same Customer)' : 'Duplicating Order (New Customer)'}
               </span>
               <button type="button" onClick={() => {
                 onClearPosState();

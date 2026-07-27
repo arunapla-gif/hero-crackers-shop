@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTheme, getStyles, statusBadge } from './theme';
 
-export default function OrderManager({ isDarkMode, products, onEditOrder, onDuplicateOrder }) {
+export default function OrderManager({ isDarkMode, products, onEditOrder, onDuplicateOrder, onRepeatOrder }) {
   const theme = getTheme(isDarkMode);
   const styles = getStyles(theme, isDarkMode);
   const queryClient = useQueryClient();
@@ -416,7 +416,8 @@ export default function OrderManager({ isDarkMode, products, onEditOrder, onDupl
                     )}
                     <button onClick={() => triggerPrint(order)} className="action-btn" title="Print Invoice" style={{ ...styles.btnPrimary, padding: '8px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>🖨️</button>
                     <button onClick={() => onEditOrder(order)} className="action-btn" title="Edit Order" style={{ ...styles.btnPrimary, padding: '8px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>✏️</button>
-                    <button onClick={() => onDuplicateOrder(order)} className="action-btn" title="Duplicate Order" style={{ ...styles.btnPrimary, padding: '8px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>📋</button>
+                    <button onClick={() => onDuplicateOrder(order)} className="action-btn" title="Duplicate (New Customer)" style={{ ...styles.btnPrimary, padding: '8px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>📋</button>
+                    <button onClick={() => onRepeatOrder(order)} className="action-btn" title="Repeat Order (Same Customer)" style={{ ...styles.btnPrimary, padding: '8px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>🔁</button>
                   </div>
                   
                   {/* Primary Status Row */}

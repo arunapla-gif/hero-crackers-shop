@@ -29,6 +29,11 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     setActiveTab('quickbill');
   };
 
+  const handleRepeatOrder = (order) => {
+    setInitialPosState({ type: 'repeat', order });
+    setActiveTab('quickbill');
+  };
+
   const handleRefreshData = async () => {
     setIsRefreshing(true);
     try {
@@ -137,6 +142,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
             products={products}
             onEditOrder={handleEditOrder}
             onDuplicateOrder={handleDuplicateOrder}
+            onRepeatOrder={handleRepeatOrder}
           />
         )}
 
