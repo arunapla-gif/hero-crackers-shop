@@ -239,6 +239,11 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     let finalImageUrl = newProduct.imageUrl;
 
     if (imageFile) {
+      if (!supabase) {
+        alert('Supabase is not configured. Please add the environment variables.');
+        setIsUploading(false);
+        return;
+      }
       const fileExt = imageFile.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const { data, error } = await supabase.storage.from('product-images').upload(fileName, imageFile);
