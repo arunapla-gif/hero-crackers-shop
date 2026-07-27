@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export default function AdminDashboardClient({ initialOrders, initialProducts, categories, initialGodowns }) {
   const [orders, setOrders] = useState(initialOrders);
@@ -20,6 +21,8 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   const [newProduct, setNewProduct] = useState({
     name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', categoryId: categories.length > 0 ? categories[0].id : '', imageUrl: '', sequence: ''
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Filters for Orders
   const [orderSearch, setOrderSearch] = useState('');
@@ -232,16 +235,35 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
+    setIsUploading(true);
+    let finalImageUrl = newProduct.imageUrl;
+
+    if (imageFile) {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const { data, error } = await supabase.storage.from('product-images').upload(fileName, imageFile);
+      
+      if (error) {
+        alert('Error uploading image: ' + error.message);
+        setIsUploading(false);
+        return;
+      }
+      const { data: publicUrlData } = supabase.storage.from('product-images').getPublicUrl(fileName);
+      finalImageUrl = publicUrlData.publicUrl;
+    }
+
     const res = await fetch('/api/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...newProduct, imageUrls: newProduct.imageUrl ? [newProduct.imageUrl] : [] })
+      body: JSON.stringify({ ...newProduct, imageUrls: finalImageUrl ? [finalImageUrl] : [] })
     });
     if (res.ok) {
       const addedProduct = await res.json();
       setProducts([...products, addedProduct].sort((a, b) => a.sequence - b.sequence || a.name.localeCompare(b.name)));
       setNewProduct({ ...newProduct, name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', imageUrl: '', sequence: '' });
+      setImageFile(null);
     }
+    setIsUploading(false);
   };
 
   const triggerPrint = (orderId) => {
@@ -986,13 +1008,15 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
                       </div>
                     </div>
 
-                    <label style={labelStyle}>Image URL</label>
-                    <input type="url" value={newProduct.imageUrl} onChange={e => setNewProduct({...newProduct, imageUrl: e.target.value})} style={inputStyle} />
+                    <label style={labelStyle}>Product Image</label>
+                    <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files[0])} style={{ ...inputStyle, padding: '10px' }} />
 
                     <label style={labelStyle}>Display Order (Sequence)</label>
                     <input type="number" value={newProduct.sequence} onChange={e => setNewProduct({...newProduct, sequence: e.target.value})} style={inputStyle} placeholder="0" />
 
-                    <button type="submit" className="action-btn" style={{ ...btnPrimary, width: '100%', marginTop: '10px' }}>Save Product</button>
+                    <button type="submit" disabled={isUploading} className="action-btn" style={{ ...btnPrimary, width: '100%', marginTop: '10px', opacity: isUploading ? 0.7 : 1 }}>
+                      {isUploading ? 'Uploading & Saving...' : 'Save Product'}
+                    </button>
                   </form>
                 </div>
 
