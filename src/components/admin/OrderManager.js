@@ -150,55 +150,91 @@ export default function OrderManager({ isDarkMode, products, onEditOrder, onDupl
   };
 
   const triggerPrint = (order) => {
-    const originalContent = document.body.innerHTML;
-    // We will quickly generate print content since it's not rendered in bulk anymore
     const printWindow = window.open('', '_blank');
     
-    let itemsHtml = order.items.map(item => {
+    let totalMRP = 0;
+    let totalSavings = 0;
+
+    let itemsHtml = order.items.map((item, idx) => {
       const product = products.find(p => p.id === item.productId);
+      const mrp = product?.basePrice || item.price;
+      const rate = item.price;
+      const qty = item.quantity;
+      
+      totalMRP += (mrp * qty);
+      totalSavings += ((mrp - rate) * qty);
+
       return `
         <tr>
+          <td style="border: 1px solid #000; padding: 8px; text-align: center;">${idx + 1}</td>
           <td style="border: 1px solid #000; padding: 8px;">${product ? product.name : 'Item'}</td>
-          <td style="border: 1px solid #000; padding: 8px; text-align: center;">${item.quantity}</td>
-          <td style="border: 1px solid #000; padding: 8px; text-align: right;">₹${item.price * item.quantity}</td>
+          <td style="border: 1px solid #000; padding: 8px; text-align: right; color: #666; text-decoration: line-through;">₹${mrp.toFixed(2)}</td>
+          <td style="border: 1px solid #000; padding: 8px; text-align: right; font-weight: bold;">₹${rate.toFixed(2)}</td>
+          <td style="border: 1px solid #000; padding: 8px; text-align: center;">${qty}</td>
+          <td style="border: 1px solid #000; padding: 8px; text-align: right; font-weight: bold;">₹${(rate * qty).toFixed(2)}</td>
         </tr>
       `;
     }).join('');
 
     printWindow.document.write(`
       <html><head><title>Print Invoice</title></head><body>
-      <div style="padding: 40px; font-family: Arial, sans-serif; color: #000; background-color: #fff;">
-        <h1 style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px;">HERO CRACKERS</h1>
-        <h2 style="text-align: center;">PACKING SLIP / INVOICE</h2>
-        <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+      <div style="padding: 40px; font-family: Arial, sans-serif; color: #000; background-color: #fff; max-width: 800px; margin: 0 auto;">
+        <h1 style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 5px;">HERO CRACKERS</h1>
+        <h2 style="text-align: center; margin-top: 0; color: #555;">ESTIMATE / INVOICE</h2>
+        
+        <div style="display: flex; justify-content: space-between; margin-top: 30px; border: 1px solid #000; padding: 15px;">
           <div>
-            <p><strong>Order ID:</strong> ${order.id.slice(-6).toUpperCase()}</p>
-            <p><strong>Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}</p>
+            <p style="margin: 5px 0;"><strong>Order ID:</strong> ${order.id.slice(-6).toUpperCase()}</p>
+            <p style="margin: 5px 0;"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}</p>
           </div>
           <div style="text-align: right;">
-            <p><strong>Customer ID:</strong> ${order.userId.slice(-6)}</p>
-            <p><strong>Phone:</strong> ${order.customerPhone || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>Customer Name:</strong> ${order.user?.name || order.customerName || 'Walk-in Customer'}</p>
+            <p style="margin: 5px 0;"><strong>Phone:</strong> ${order.customerPhone || 'N/A'}</p>
           </div>
         </div>
-        <div style="margin-top: 20px; padding: 15px; border: 1px solid #ccc;">
-          <p><strong>Shipping Address:</strong><br/>${order.shippingAddress}</p>
+        
+        <div style="margin-top: 15px; padding: 15px; border: 1px solid #000;">
+          <p style="margin: 0;"><strong>Shipping Address:</strong><br/>${order.shippingAddress || 'Store Pickup'}</p>
         </div>
+        
         <table style="width: 100%; margin-top: 30px; border-collapse: collapse;">
-          <thead>
+          <thead style="background-color: #f5f5f5;">
             <tr>
-              <th style="border: 1px solid #000; padding: 8px; text-align: left;">Item</th>
-              <th style="border: 1px solid #000; padding: 8px; text-align: center;">Qty</th>
-              <th style="border: 1px solid #000; padding: 8px; text-align: right;">Price</th>
+              <th style="border: 1px solid #000; padding: 10px; text-align: center; width: 5%;">S.No</th>
+              <th style="border: 1px solid #000; padding: 10px; text-align: left; width: 40%;">Particulars (Item)</th>
+              <th style="border: 1px solid #000; padding: 10px; text-align: right; width: 15%;">MRP</th>
+              <th style="border: 1px solid #000; padding: 10px; text-align: right; width: 15%;">Rate</th>
+              <th style="border: 1px solid #000; padding: 10px; text-align: center; width: 10%;">Qty</th>
+              <th style="border: 1px solid #000; padding: 10px; text-align: right; width: 15%;">Amount</th>
             </tr>
           </thead>
           <tbody>${itemsHtml}</tbody>
           <tfoot>
             <tr>
-              <th colspan="2" style="border: 1px solid #000; padding: 8px; text-align: right;">Total:</th>
-              <th style="border: 1px solid #000; padding: 8px; text-align: right;">₹${order.totalAmount}</th>
+              <th colspan="5" style="border: 1px solid #000; padding: 10px; text-align: right; color: #555;">Total MRP Value:</th>
+              <th style="border: 1px solid #000; padding: 10px; text-align: right; color: #555;">₹${totalMRP.toFixed(2)}</th>
+            </tr>
+            <tr>
+              <th colspan="5" style="border: 1px solid #000; padding: 10px; text-align: right; color: #2e7d32;">Total Discount Savings:</th>
+              <th style="border: 1px solid #000; padding: 10px; text-align: right; color: #2e7d32;">- ₹${totalSavings.toFixed(2)}</th>
+            </tr>
+            <tr>
+              <th colspan="5" style="border: 1px solid #000; padding: 15px; text-align: right; font-size: 1.3em;">Net Payable Amount:</th>
+              <th style="border: 1px solid #000; padding: 15px; text-align: right; font-size: 1.3em;">₹${order.totalAmount.toFixed(2)}</th>
             </tr>
           </tfoot>
         </table>
+        
+        <div style="margin-top: 50px; display: flex; justify-content: space-between;">
+          <div style="text-align: center;">
+            <p>_______________________</p>
+            <p><strong>Customer Signature</strong></p>
+          </div>
+          <div style="text-align: center;">
+            <p>_______________________</p>
+            <p><strong>Authorized Signatory</strong></p>
+          </div>
+        </div>
       </div>
       </body></html>
     `);

@@ -23,6 +23,40 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
   
   const [editingProductId, setEditingProductId] = useState(null);
   const [editingCategoryId, setEditingCategoryId] = useState(null);
+  
+  const [globalDiscount, setGlobalDiscount] = useState('');
+  const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
+
+  const handleApplyGlobalDiscount = async (e) => {
+    e.preventDefault();
+    if (!globalDiscount || isNaN(globalDiscount) || globalDiscount < 0 || globalDiscount >= 100) {
+      return alert('Please enter a valid discount percentage between 0 and 99.');
+    }
+    
+    if (!confirm(`Are you sure you want to apply a ${globalDiscount}% global discount? This will artificially inflate the MRP (Base Price) for ALL products based on their current Selling Price.`)) return;
+    
+    setIsApplyingDiscount(true);
+    try {
+      const res = await fetch('/api/products/bulk-discount', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ discount: Number(globalDiscount) })
+      });
+      
+      if (res.ok) {
+        alert('Global discount applied successfully!');
+        // Refresh products to show updated base prices
+        window.location.reload(); 
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to apply global discount');
+      }
+    } catch (err) {
+      alert('An error occurred while applying the discount.');
+    } finally {
+      setIsApplyingDiscount(false);
+    }
+  };
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
@@ -219,8 +253,34 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
             </form>
           </div>
 
-          {/* Table */}
+          {/* Table and Global Strategy */}
           <div>
+            {/* Global Pricing Strategy */}
+            <div style={{ backgroundColor: `${theme.accent}15`, border: `1px solid ${theme.accent}50`, borderRadius: '12px', padding: '20px', marginBottom: '30px' }}>
+              <h3 style={{ color: theme.accent, fontSize: '1.2rem', margin: '0 0 15px 0' }}>Global Pricing Strategy (Reverse MRP)</h3>
+              <p style={{ color: theme.textSecondary, fontSize: '0.9rem', marginBottom: '15px', lineHeight: '1.4' }}>
+                Set a global discount percentage. The system will keep your Selling Price fixed, but will artificially inflate the MRP (Base Price) across all products so you can advertise this massive discount.
+              </p>
+              <form onSubmit={handleApplyGlobalDiscount} style={{ display: 'flex', gap: '15px', alignItems: 'flex-end' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ ...styles.labelStyle, color: theme.accent }}>Discount Percentage (%)</label>
+                  <input 
+                    type="number" 
+                    value={globalDiscount} 
+                    onChange={e => setGlobalDiscount(e.target.value)} 
+                    placeholder="e.g. 80" 
+                    min="0" 
+                    max="99" 
+                    required 
+                    style={styles.inputStyle} 
+                  />
+                </div>
+                <button type="submit" disabled={isApplyingDiscount} style={{ ...styles.btnPrimary, backgroundColor: theme.accent, padding: '12px 24px', opacity: isApplyingDiscount ? 0.7 : 1 }}>
+                  {isApplyingDiscount ? 'Applying...' : '⚡ Apply Global Discount'}
+                </button>
+              </form>
+            </div>
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
               <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', margin: 0 }}>Product Directory</h3>
               <button 
