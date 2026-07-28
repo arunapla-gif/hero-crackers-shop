@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   try {
     const categories = await prisma.category.findMany({
-      orderBy: { name: 'asc' }
+      orderBy: { sequence: 'asc' }
     });
     return NextResponse.json(categories);
   } catch (error) {

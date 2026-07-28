@@ -25,11 +25,19 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
       
       // If editing or repeating, try to populate customer details
       if (type === 'edit' || type === 'repeat') {
+        let extractedAddress = order.shippingAddress || '';
+        let extractedCity = '';
+        if (extractedAddress.includes(',')) {
+          const parts = extractedAddress.split(',');
+          extractedCity = parts.pop().trim();
+          extractedAddress = parts.join(',').trim();
+        }
+        
         setQuickBillCustomer({
-          name: order.user?.name || 'Customer',
+          name: order.user?.name || order.customerName || 'Customer',
           phone: order.customerPhone || '',
-          address: order.shippingAddress || '',
-          city: '', // Hard to extract from concatenated address
+          address: extractedAddress,
+          city: extractedCity,
           referredBy: order.referredBy || ''
         });
       }
@@ -74,68 +82,16 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
       setQuickBillCart({});
       setQuickBillCustomer({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '', referredBy: '' });
       if (onClearPosState) onClearPosState();
-      
-      // Quickly trigger print for walk-in
-      triggerPrint(order);
     }
   });
-
-  const triggerPrint = (order) => {
-    const originalContent = document.body.innerHTML;
-    const printWindow = window.open('', '_blank');
-    
-    let itemsHtml = order.items.map(item => {
-      const product = products.find(p => p.id === item.productId);
-      return `
-        <tr>
-          <td style="border: 1px solid #000; padding: 8px;">${product ? product.name : 'Item'}</td>
-          <td style="border: 1px solid #000; padding: 8px; text-align: center;">${item.quantity}</td>
-          <td style="border: 1px solid #000; padding: 8px; text-align: right;">₹${item.price * item.quantity}</td>
-        </tr>
-      `;
-    }).join('');
-
-    printWindow.document.write(`
-      <html><head><title>Print Invoice</title></head><body>
-      <div style="padding: 40px; font-family: Arial, sans-serif; color: #000; background-color: #fff;">
-        <h1 style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px;">HERO CRACKERS</h1>
-        <h2 style="text-align: center;">CASH RECEIPT / INVOICE</h2>
-        <div style="display: flex; justify-content: space-between; margin-top: 30px;">
-          <div>
-            <p><strong>Order ID:</strong> ${order.id.slice(-6).toUpperCase()}</p>
-            <p><strong>Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}</p>
-          </div>
-          <div style="text-align: right;">
-            <p><strong>Phone:</strong> ${order.customerPhone || 'Walk-in'}</p>
-          </div>
-        </div>
-        <table style="width: 100%; margin-top: 30px; border-collapse: collapse;">
-          <thead>
-            <tr>
-              <th style="border: 1px solid #000; padding: 8px; text-align: left;">Item</th>
-              <th style="border: 1px solid #000; padding: 8px; text-align: center;">Qty</th>
-              <th style="border: 1px solid #000; padding: 8px; text-align: right;">Price</th>
-            </tr>
-          </thead>
-          <tbody>${itemsHtml}</tbody>
-          <tfoot>
-            <tr>
-              <th colspan="2" style="border: 1px solid #000; padding: 8px; text-align: right;">Total:</th>
-              <th style="border: 1px solid #000; padding: 8px; text-align: right;">₹${order.totalAmount}</th>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-      </body></html>
-    `);
-    printWindow.document.close();
-    printWindow.print();
-  };
 
   const handleGenerateQuickBill = (e) => {
     e.preventDefault();
     if (Object.keys(quickBillCart).length === 0) return alert('Cart is empty!');
     if (quickBillTotal < 3000) return alert('Minimum order Rs.3000');
+    if (!quickBillCustomer.name.trim()) return alert('Customer Name is mandatory.');
+    if (!quickBillCustomer.phone.trim()) return alert('Phone Number is mandatory.');
+    if (!quickBillCustomer.city.trim()) return alert('City is mandatory.');
     
     const items = Object.entries(quickBillCart).map(([id, qty]) => {
       const p = products.find(prod => prod.id === id);
@@ -143,9 +99,9 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
     });
     
     const payload = {
-      customerName: quickBillCustomer.name || 'Walk-in Customer',
-      customerPhone: quickBillCustomer.phone || '0000000000',
-      shippingAddress: quickBillCustomer.address + (quickBillCustomer.city ? `, ${quickBillCustomer.city}` : ''),
+      customerName: quickBillCustomer.name,
+      customerPhone: quickBillCustomer.phone,
+      shippingAddress: quickBillCustomer.address + `, ${quickBillCustomer.city}`,
       referredBy: quickBillCustomer.referredBy,
       totalAmount: quickBillTotal,
       items
@@ -317,17 +273,17 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
           </div>
 
           <div style={{ marginBottom: '25px' }}>
-            <label style={styles.labelStyle}>Customer Name (Optional)</label>
-            <input type="text" value={quickBillCustomer.name} onChange={e => setQuickBillCustomer({...quickBillCustomer, name: e.target.value})} style={styles.inputStyle} placeholder="Walk-in Customer" />
+            <label style={styles.labelStyle}>Customer Name *</label>
+            <input type="text" value={quickBillCustomer.name} onChange={e => setQuickBillCustomer({...quickBillCustomer, name: e.target.value})} style={styles.inputStyle} placeholder="Customer Name" required />
             
-            <label style={styles.labelStyle}>Phone Number (Optional)</label>
-            <input type="text" value={quickBillCustomer.phone} onChange={e => setQuickBillCustomer({...quickBillCustomer, phone: e.target.value})} style={styles.inputStyle} placeholder="0000000000" />
+            <label style={styles.labelStyle}>Phone Number *</label>
+            <input type="text" value={quickBillCustomer.phone} onChange={e => setQuickBillCustomer({...quickBillCustomer, phone: e.target.value})} style={styles.inputStyle} placeholder="Phone Number" required />
             
             <label style={styles.labelStyle}>Address / Notes</label>
             <input type="text" value={quickBillCustomer.address} onChange={e => setQuickBillCustomer({...quickBillCustomer, address: e.target.value})} style={styles.inputStyle} />
 
-            <label style={styles.labelStyle}>City</label>
-            <input type="text" value={quickBillCustomer.city} onChange={e => setQuickBillCustomer({...quickBillCustomer, city: e.target.value})} style={styles.inputStyle} placeholder="City Name" />
+            <label style={styles.labelStyle}>City *</label>
+            <input type="text" value={quickBillCustomer.city} onChange={e => setQuickBillCustomer({...quickBillCustomer, city: e.target.value})} style={styles.inputStyle} placeholder="City Name" required />
 
             <label style={styles.labelStyle}>Referred By (Optional)</label>
             <input type="text" value={quickBillCustomer.referredBy} onChange={e => setQuickBillCustomer({...quickBillCustomer, referredBy: e.target.value})} style={{...styles.inputStyle, marginBottom: 0}} placeholder="Agent or Referral Name" />
@@ -346,7 +302,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
               boxShadow: generateBillMutation.isPending ? 'none' : `0 4px 15px ${(initialPosState?.type === 'edit' ? theme.info : theme.success)}50` 
             }}
           >
-            {generateBillMutation.isPending ? 'Processing...' : (initialPosState?.type === 'edit' ? '🔄 Save Order Changes' : '⚡ Generate Bill & Print')}
+            {generateBillMutation.isPending ? 'Processing...' : (initialPosState?.type === 'edit' ? '🔄 Save Order Changes' : '⚡ Submit')}
           </button>
         </form>
       </div>

@@ -23,7 +23,7 @@ export default async function AdminDashboard() {
   });
 
   const categories = await prisma.category.findMany({
-    orderBy: { name: 'asc' }
+    orderBy: { sequence: 'asc' }
   });
 
   const godowns = await prisma.godown.findMany({
