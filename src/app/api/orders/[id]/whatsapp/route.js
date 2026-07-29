@@ -27,6 +27,7 @@ export async function POST(request, { params }) {
     });
 
     // Run the WhatsApp sending logic (must await in Vercel serverless)
+    let waResult = { success: false, error: 'Unknown error' };
     await (async () => {
       try {
         const products = await prisma.product.findMany();
@@ -50,13 +51,23 @@ export async function POST(request, { params }) {
         // 'hello_world' DOES NOT support media (documents). 
         // When you move to production, change 'hello_world' to your custom template name (e.g. 'order_estimate')
         // and pass `mediaId` as the 4th argument.
-        await sendWhatsAppTemplate(order.customerPhone, 'hello_world', []);
+        waResult = await sendWhatsAppTemplate(order.customerPhone, 'hello_world', []);
         
         console.log(`Successfully sent WhatsApp manual bill for order ${order.id} with filename ${fileName}`);
       } catch (err) {
         console.error('Failed background WhatsApp task:', err);
+        waResult = { success: false, error: err.message };
       }
     })();
+
+    if (!waResult?.success) {
+      // Revert the lastSentVersion since it failed
+      await prisma.order.update({
+        where: { id },
+        data: { lastSentVersion: order.lastSentVersion }
+      });
+      return NextResponse.json({ error: waResult?.error || 'Failed to send WhatsApp message' }, { status: 400 });
+    }
 
     return NextResponse.json(updatedOrder);
   } catch (error) {

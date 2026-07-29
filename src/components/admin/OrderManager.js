@@ -99,11 +99,14 @@ export default function OrderManager({ isDarkMode, products, onEditOrder, onDupl
   const handleWhatsAppSend = async (orderId) => {
     try {
       const res = await fetch(`/api/orders/${orderId}/whatsapp`, { method: 'POST' });
-      if (!res.ok) throw new Error('Failed to trigger WhatsApp message');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to trigger WhatsApp message');
+      }
       queryClient.invalidateQueries(['orders']);
       alert('WhatsApp message triggered successfully!');
     } catch (err) {
-      alert(err.message);
+      alert(`Error: ${err.message}`);
     }
   };
 

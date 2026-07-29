@@ -93,11 +93,16 @@ export async function sendWhatsAppTemplate(phone, templateName, variables, media
     });
 
     if (!res.ok) {
-      console.error('WhatsApp Send Failed:', await res.text());
+      const errorText = await res.text();
+      console.error('WhatsApp Send Failed:', errorText);
+      return { success: false, error: errorText };
     } else {
+      const data = await res.json();
       console.log(`WhatsApp Template '${templateName}' successfully sent to ${to}`);
+      return { success: true, data };
     }
   } catch (error) {
     console.error('WhatsApp Send Error:', error);
+    return { success: false, error: error.message };
   }
 }
