@@ -44,6 +44,15 @@ export async function POST(request) {
       include: { items: true }
     });
     
+    // --- WHATSAPP INTEGRATION ---
+    // Automatically send WhatsApp estimate for new E-Commerce orders.
+    // For now, using 'hello_world' test template.
+    if (order.customerPhone) {
+      import('@/lib/whatsapp.js').then(({ sendWhatsAppTemplate }) => {
+        sendWhatsAppTemplate(order.customerPhone, 'hello_world', []).catch(console.error);
+      }).catch(console.error);
+    }
+
     return NextResponse.json(order);
   } catch (error) {
     console.error('Failed to submit estimate:', error);

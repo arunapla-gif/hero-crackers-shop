@@ -1,4 +1,4 @@
-export { generateInvoicePDFBuffer } from './pdfGenerator';
+export { generateInvoicePDFBuffer } from './pdfGenerator.js';
 
 
 export async function uploadMediaToWhatsApp(buffer, filename) {
@@ -55,7 +55,7 @@ export async function sendWhatsAppTemplate(phone, templateName, variables, media
     type: 'template',
     template: {
       name: templateName,
-      language: { code: 'en' },
+      language: { code: 'en_US' },
       components: []
     }
   };

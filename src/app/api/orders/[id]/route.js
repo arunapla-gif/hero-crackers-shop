@@ -30,6 +30,9 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'No data provided to update' }, { status: 400 });
     }
 
+    // Increment edit version on every successful edit
+    dataToUpdate.editVersion = { increment: 1 };
+
     const order = await prisma.order.update({
       where: { id },
       data: dataToUpdate
