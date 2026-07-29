@@ -7,7 +7,7 @@ export async function uploadMediaToWhatsApp(buffer, filename) {
   
   if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID) {
     console.log('Skipping WhatsApp Media Upload: Missing credentials in .env');
-    return null;
+    throw new Error('Missing WhatsApp credentials in Vercel Environment Variables');
   }
 
   const formData = new FormData();
@@ -43,7 +43,7 @@ export async function sendWhatsAppTemplate(phone, templateName, variables, media
   
   if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID) {
     console.log('Skipping WhatsApp Send: Missing credentials in .env');
-    return;
+    return { success: false, error: 'Missing WhatsApp credentials in Vercel Environment Variables' };
   }
 
   if (!phone) return;
