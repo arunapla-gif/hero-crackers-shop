@@ -26,9 +26,8 @@ export async function POST(request, { params }) {
       data: { lastSentVersion: order.editVersion }
     });
 
-    // Run the WhatsApp sending logic in the background
-    // (We do this so the API responds instantly to the frontend UI)
-    (async () => {
+    // Run the WhatsApp sending logic (must await in Vercel serverless)
+    await (async () => {
       try {
         const products = await prisma.product.findMany();
         

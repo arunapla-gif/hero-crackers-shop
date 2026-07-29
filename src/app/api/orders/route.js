@@ -48,9 +48,12 @@ export async function POST(request) {
     // Automatically send WhatsApp estimate for new E-Commerce orders.
     // For now, using 'hello_world' test template.
     if (order.customerPhone) {
-      import('@/lib/whatsapp.js').then(({ sendWhatsAppTemplate }) => {
-        sendWhatsAppTemplate(order.customerPhone, 'hello_world', []).catch(console.error);
-      }).catch(console.error);
+      try {
+        const { sendWhatsAppTemplate } = await import('@/lib/whatsapp.js');
+        await sendWhatsAppTemplate(order.customerPhone, 'hello_world', []);
+      } catch (err) {
+        console.error(err);
+      }
     }
 
     return NextResponse.json(order);

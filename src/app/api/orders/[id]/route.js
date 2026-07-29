@@ -65,8 +65,8 @@ export async function PATCH(request, { params }) {
             fullOrder.transportName || 'N/A'
           ];
           
-          // We intentionally do not await this to let the API respond immediately to the frontend
-          sendWhatsAppTemplate(fullOrder.customerPhone, 'order_shipped_with_invoice', variables, mediaId).catch(console.error);
+          // Must await this in Vercel serverless to prevent function freeze
+          await sendWhatsAppTemplate(fullOrder.customerPhone, 'order_shipped_with_invoice', variables, mediaId).catch(console.error);
         }
       } catch (waError) {
         console.error('Background WhatsApp task failed:', waError);
