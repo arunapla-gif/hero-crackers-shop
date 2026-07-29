@@ -4,7 +4,7 @@ import { generateInvoicePDFBuffer, uploadMediaToWhatsApp, sendWhatsAppTemplate }
 
 export async function POST(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     // Fetch the order with items and user
     const order = await prisma.order.findUnique({
