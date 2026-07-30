@@ -156,3 +156,35 @@ export const statusBadge = (status, theme) => {
     </span>
   );
 };
+
+export const paymentBadge = (paymentStatus, theme) => {
+  let color = theme.danger; // UNPAID
+  let label = 'Unpaid';
+  
+  if (paymentStatus === 'PAID') {
+    color = theme.success;
+    label = 'Paid';
+  } else if (paymentStatus === 'CREDIT') {
+    color = theme.shipped; // Purple-ish
+    label = 'Credit / Later';
+  }
+  
+  return (
+    <span style={{ 
+      padding: '4px 10px', 
+      borderRadius: '6px', 
+      fontSize: '0.7rem', 
+      fontWeight: 'bold',
+      letterSpacing: '0.5px',
+      backgroundColor: `${color}15`, 
+      color: color, 
+      border: `1px solid ${color}40`,
+      textTransform: 'uppercase',
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '4px'
+    }}>
+      💰 {label}
+    </span>
+  );
+};

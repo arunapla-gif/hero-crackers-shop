@@ -62,6 +62,9 @@ model Order {
   transportName   String?
   trackingNumber  String?
   referredBy      String?
+  paymentStatus   PaymentStatus @default(UNPAID)
+  paymentMethod   String?
+  paymentDetails  String?
   createdAt       DateTime    @default(now())
   editVersion     Int         @default(1)
   lastSentVersion Int         @default(0)
@@ -76,6 +79,13 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+  @@schema("shop")
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  CREDIT
   @@schema("shop")
 }
 
@@ -107,5 +117,47 @@ model GodownStock {
   product   Product @relation(fields: [productId], references: [id])
 
   @@unique([godownId, productId])
+  @@schema("shop")
+}
+
+model ReferenceMaster {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  phone     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  @@schema("shop")
+}
+
+model TransportMaster {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  phone     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  @@schema("shop")
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  date        DateTime @default(now())
+  description String
+  amount      Float
+  category    String   @default("General") // e.g. Wages, Tea, Transport
+  createdAt   DateTime @default(now())
+  @@schema("shop")
+}
+
+model CustomerMaster {
+  id              String   @id @default(cuid())
+  primaryPhone    String   @unique
+  alternatePhone  String?
+  name            String
+  fullAddress     String?
+  city            String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
   @@schema("shop")
 }

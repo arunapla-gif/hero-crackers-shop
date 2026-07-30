@@ -4,15 +4,21 @@ import { useState } from 'react';
 import OrderManager from './admin/OrderManager';
 import QuickBillPOS from './admin/QuickBillPOS';
 import MasterDataPanel from './admin/MasterDataPanel';
+import ExpenseTracker from './admin/ExpenseTracker';
+import ReportsDashboard from './admin/ReportsDashboard';
+import CustomerDirectory from './admin/CustomerDirectory';
 import { getTheme, getStyles } from './admin/theme';
 
-export default function AdminDashboardClient({ initialOrders, initialProducts, categories: initialCategories, initialGodowns }) {
+export default function AdminDashboardClient({ initialOrders, initialProducts, categories: initialCategories, initialGodowns, initialReferences, initialTransports, initialExpenses, initialCustomers }) {
   // Master states used across tabs
   const [products, setProducts] = useState(initialProducts);
   const [categories, setCategories] = useState(initialCategories);
   const [godowns, setGodowns] = useState(initialGodowns);
+  const [references, setReferences] = useState(initialReferences || []);
+  const [transports, setTransports] = useState(initialTransports || []);
+  const [expenses, setExpenses] = useState(initialExpenses || []);
   
-  const [activeTab, setActiveTab] = useState('orders'); // 'orders', 'quickbill', 'masters'
+  const [activeTab, setActiveTab] = useState('orders'); // 'orders', 'quickbill', 'masters', 'accounts'
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [initialPosState, setInitialPosState] = useState(null); // { type: 'edit'|'duplicate', order: {} }
@@ -133,6 +139,9 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
           <TabButton active={activeTab === 'orders'} onClick={() => setActiveTab('orders')}>Orders & Analytics</TabButton>
           <TabButton active={activeTab === 'quickbill'} onClick={() => setActiveTab('quickbill')}>⚡ Quick Bill (POS)</TabButton>
           <TabButton active={activeTab === 'masters'} onClick={() => setActiveTab('masters')}>Data Masters</TabButton>
+          <TabButton active={activeTab === 'customers'} onClick={() => setActiveTab('customers')}>👥 Customers</TabButton>
+          <TabButton active={activeTab === 'accounts'} onClick={() => setActiveTab('accounts')}>Accounts & Expenses</TabButton>
+          <TabButton active={activeTab === 'reports'} onClick={() => setActiveTab('reports')}>📈 Reports</TabButton>
         </div>
         
         {/* Orders Tab */}
@@ -140,6 +149,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
           <OrderManager 
             isDarkMode={isDarkMode} 
             products={products}
+            transports={transports}
             onEditOrder={handleEditOrder}
             onDuplicateOrder={handleDuplicateOrder}
             onRepeatOrder={handleRepeatOrder}
@@ -152,6 +162,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
             isDarkMode={isDarkMode}
             products={products}
             categories={categories}
+            references={references}
             handleRefreshData={handleRefreshData}
             isRefreshing={isRefreshing}
             initialPosState={initialPosState}
@@ -169,6 +180,36 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
             setCategories={setCategories}
             godowns={godowns}
             setGodowns={setGodowns}
+            references={references}
+            setReferences={setReferences}
+            transports={transports}
+            setTransports={setTransports}
+          />
+        )}
+
+        {/* Accounts Tab */}
+        {activeTab === 'accounts' && (
+          <ExpenseTracker 
+            isDarkMode={isDarkMode}
+            expenses={expenses}
+            setExpenses={setExpenses}
+          />
+        )}
+
+        {/* Reports Tab */}
+        {activeTab === 'reports' && (
+          <ReportsDashboard 
+            isDarkMode={isDarkMode}
+            products={products}
+          />
+        )}
+
+        {/* Customers Tab */}
+        {activeTab === 'customers' && (
+          <CustomerDirectory 
+            isDarkMode={isDarkMode}
+            customers={initialCustomers}
+            orders={orders}
           />
         )}
       </div>

@@ -2,14 +2,16 @@ import { useState, useMemo, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTheme, getStyles } from './theme';
 
-export default function QuickBillPOS({ isDarkMode, products, categories, handleRefreshData, isRefreshing, initialPosState, onClearPosState }) {
+export default function QuickBillPOS({ isDarkMode, products, categories, references, handleRefreshData, isRefreshing, initialPosState, onClearPosState }) {
   const theme = getTheme(isDarkMode);
   const styles = getStyles(theme, isDarkMode);
   const queryClient = useQueryClient();
 
   const [quickBillCart, setQuickBillCart] = useState({}); // { productId: quantity }
   const [quickBillCustomer, setQuickBillCustomer] = useState({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '', referredBy: '' });
+  const [paymentState, setPaymentState] = useState({ status: 'UNPAID', method: 'CASH', details: '' });
   const [isMobileCartView, setIsMobileCartView] = useState(false);
+  const [isFetchingCustomer, setIsFetchingCustomer] = useState(false);
   
   // Populate cart if initialPosState is provided (Edit or Duplicate)
   useEffect(() => {
@@ -40,10 +42,47 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
           city: extractedCity,
           referredBy: order.referredBy || ''
         });
+        setPaymentState({
+          status: order.paymentStatus || 'UNPAID',
+          method: order.paymentMethod || 'CASH',
+          details: order.paymentDetails || ''
+        });
       }
       // If duplicate, leave customer blank so they can enter the new target person
     }
   }, [initialPosState]);
+
+  // Auto-fill customer details when phone number reaches 10 digits
+  useEffect(() => {
+    const phone = quickBillCustomer.phone.replace(/[^0-9]/g, '');
+    if (phone.length === 10 && !initialPosState?.type) {
+      const fetchCustomer = async () => {
+        setIsFetchingCustomer(true);
+        try {
+          const res = await fetch(`/api/customers?phone=${phone}`);
+          if (res.ok) {
+            const customers = await res.json();
+            if (customers.length > 0) {
+              const c = customers[0];
+              setQuickBillCustomer(prev => ({
+                ...prev,
+                name: c.name || prev.name,
+                address: c.fullAddress || prev.address,
+                city: c.city || prev.city
+              }));
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching customer', err);
+        } finally {
+          setIsFetchingCustomer(false);
+        }
+      };
+      // Debounce slightly to prevent multiple calls
+      const timeoutId = setTimeout(fetchCustomer, 300);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [quickBillCustomer.phone, initialPosState]);
 
   const updateQuickBillQty = (productId, delta) => {
     setQuickBillCart(prev => {
@@ -81,6 +120,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
       queryClient.invalidateQueries(['orders']);
       setQuickBillCart({});
       setQuickBillCustomer({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '', referredBy: '' });
+      setPaymentState({ status: 'UNPAID', method: 'CASH', details: '' });
       if (onClearPosState) onClearPosState();
     }
   });
@@ -104,6 +144,9 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
       shippingAddress: quickBillCustomer.address + `, ${quickBillCustomer.city}`,
       referredBy: quickBillCustomer.referredBy,
       totalAmount: quickBillTotal,
+      paymentStatus: paymentState.status,
+      paymentMethod: paymentState.status === 'PAID' ? paymentState.method : null,
+      paymentDetails: paymentState.status === 'PAID' ? paymentState.details : null,
       items
     };
     
@@ -276,8 +319,8 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
             <label style={styles.labelStyle}>Customer Name *</label>
             <input type="text" value={quickBillCustomer.name} onChange={e => setQuickBillCustomer({...quickBillCustomer, name: e.target.value})} style={styles.inputStyle} placeholder="Customer Name" required />
             
-            <label style={styles.labelStyle}>Phone Number *</label>
-            <input type="text" value={quickBillCustomer.phone} onChange={e => setQuickBillCustomer({...quickBillCustomer, phone: e.target.value})} style={styles.inputStyle} placeholder="Phone Number" required />
+            <label style={styles.labelStyle}>Phone Number * {isFetchingCustomer && <span style={{color: theme.info, fontSize: '0.8rem'}}> (Searching...)</span>}</label>
+            <input type="text" value={quickBillCustomer.phone} onChange={e => setQuickBillCustomer({...quickBillCustomer, phone: e.target.value})} style={styles.inputStyle} placeholder="10-digit Mobile Number" required />
             
             <label style={styles.labelStyle}>Address / Notes</label>
             <input type="text" value={quickBillCustomer.address} onChange={e => setQuickBillCustomer({...quickBillCustomer, address: e.target.value})} style={styles.inputStyle} />
@@ -286,7 +329,56 @@ export default function QuickBillPOS({ isDarkMode, products, categories, handleR
             <input type="text" value={quickBillCustomer.city} onChange={e => setQuickBillCustomer({...quickBillCustomer, city: e.target.value})} style={styles.inputStyle} placeholder="City Name" required />
 
             <label style={styles.labelStyle}>Referred By (Optional)</label>
-            <input type="text" value={quickBillCustomer.referredBy} onChange={e => setQuickBillCustomer({...quickBillCustomer, referredBy: e.target.value})} style={{...styles.inputStyle, marginBottom: 0}} placeholder="Agent or Referral Name" />
+            <select 
+              value={quickBillCustomer.referredBy} 
+              onChange={e => setQuickBillCustomer({...quickBillCustomer, referredBy: e.target.value})} 
+              style={styles.inputStyle}
+            >
+              <option value="">-- None / Walk-in --</option>
+              {references?.filter(r => r.isActive).map(ref => (
+                <option key={ref.id} value={ref.name}>{ref.name} {ref.phone ? `(${ref.phone})` : ''}</option>
+              ))}
+            </select>
+
+            <div style={{ backgroundColor: `${theme.info}15`, padding: '15px', borderRadius: '12px', border: `1px solid ${theme.info}40`, marginBottom: '20px' }}>
+              <label style={styles.labelStyle}>Payment Status</label>
+              <select 
+                value={paymentState.status} 
+                onChange={e => setPaymentState({...paymentState, status: e.target.value})} 
+                style={styles.inputStyle}
+              >
+                <option value="UNPAID">🔴 Unpaid (Estimate / Pending)</option>
+                <option value="PAID">🟢 Paid in Full</option>
+                <option value="CREDIT">🟣 Credit (Collect Later)</option>
+              </select>
+
+              {paymentState.status === 'PAID' && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                  <div>
+                    <label style={styles.labelStyle}>Payment Method</label>
+                    <select 
+                      value={paymentState.method} 
+                      onChange={e => setPaymentState({...paymentState, method: e.target.value})} 
+                      style={styles.inputStyle}
+                    >
+                      <option value="CASH">Cash</option>
+                      <option value="UPI">UPI / GPay / PhonePe</option>
+                      <option value="BANK">Bank Transfer</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={styles.labelStyle}>Reference / Txn ID</label>
+                    <input 
+                      type="text" 
+                      value={paymentState.details} 
+                      onChange={e => setPaymentState({...paymentState, details: e.target.value})} 
+                      style={styles.inputStyle} 
+                      placeholder="e.g. UTR Number" 
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <button 

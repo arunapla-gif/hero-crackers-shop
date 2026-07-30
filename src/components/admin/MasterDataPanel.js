@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { getTheme, getStyles } from './theme';
 
-export default function MasterDataPanel({ isDarkMode, products, setProducts, categories, setCategories, godowns, setGodowns }) {
+export default function MasterDataPanel({ isDarkMode, products, setProducts, categories, setCategories, godowns, setGodowns, references, setReferences, transports, setTransports }) {
   const theme = getTheme(isDarkMode);
   const styles = getStyles(theme, isDarkMode);
 
@@ -15,6 +15,10 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
   const [newProduct, setNewProduct] = useState({
     name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', categoryId: categories.length > 0 ? categories[0].id : '', imageUrl: '', sequence: ''
   });
+  const [referenceName, setReferenceName] = useState('');
+  const [referencePhone, setReferencePhone] = useState('');
+  const [transportName, setTransportName] = useState('');
+  const [transportPhone, setTransportPhone] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   
@@ -23,6 +27,8 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
   
   const [editingProductId, setEditingProductId] = useState(null);
   const [editingCategoryId, setEditingCategoryId] = useState(null);
+  const [editingReferenceId, setEditingReferenceId] = useState(null);
+  const [editingTransportId, setEditingTransportId] = useState(null);
   
   const [globalDiscount, setGlobalDiscount] = useState('');
   const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
@@ -179,11 +185,107 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleAddReference = async (e) => {
+    e.preventDefault();
+    if (editingReferenceId) {
+      const res = await fetch(`/api/references/${editingReferenceId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: referenceName, phone: referencePhone })
+      });
+      if (res.ok) {
+        alert('Reference updated!');
+        const updated = await res.json();
+        setReferences(references.map(r => r.id === editingReferenceId ? updated : r));
+        setReferenceName(''); setReferencePhone(''); setEditingReferenceId(null);
+      }
+    } else {
+      const res = await fetch('/api/references', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: referenceName, phone: referencePhone })
+      });
+      if (res.ok) {
+        alert('Reference added!');
+        const added = await res.json();
+        setReferences([...references, added]);
+        setReferenceName(''); setReferencePhone('');
+      }
+    }
+  };
+
+  const handleEditReference = (ref) => {
+    setEditingReferenceId(ref.id);
+    setReferenceName(ref.name);
+    setReferencePhone(ref.phone || '');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleToggleReference = async (id, currentStatus) => {
+    const res = await fetch(`/api/references/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isActive: !currentStatus })
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setReferences(references.map(r => r.id === id ? updated : r));
+    }
+  };
+
+  const handleAddTransport = async (e) => {
+    e.preventDefault();
+    if (editingTransportId) {
+      const res = await fetch(`/api/transports/${editingTransportId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: transportName, phone: transportPhone })
+      });
+      if (res.ok) {
+        alert('Transport updated!');
+        const updated = await res.json();
+        setTransports(transports.map(t => t.id === editingTransportId ? updated : t));
+        setTransportName(''); setTransportPhone(''); setEditingTransportId(null);
+      }
+    } else {
+      const res = await fetch('/api/transports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: transportName, phone: transportPhone })
+      });
+      if (res.ok) {
+        alert('Transport added!');
+        const added = await res.json();
+        setTransports([...transports, added]);
+        setTransportName(''); setTransportPhone('');
+      }
+    }
+  };
+
+  const handleEditTransport = (t) => {
+    setEditingTransportId(t.id);
+    setTransportName(t.name);
+    setTransportPhone(t.phone || '');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleToggleTransport = async (id, currentStatus) => {
+    const res = await fetch(`/api/transports/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isActive: !currentStatus })
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setTransports(transports.map(t => t.id === id ? updated : t));
+    }
+  };
+
   return (
     <div style={styles.cardStyle}>
       {/* Sub-navigation */}
       <div style={{ display: 'flex', gap: '15px', marginBottom: '40px', flexWrap: 'wrap' }}>
-        {['product', 'category', 'godown'].map(tab => (
+        {['product', 'category', 'godown', 'reference', 'transport'].map(tab => (
           <button 
             key={tab}
             className="tab-btn"
@@ -471,6 +573,140 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
                 </table>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Reference Master */}
+      {activeMasterTab === 'reference' && (
+        <div style={{ maxWidth: '600px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+            <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', margin: 0 }}>
+              {editingReferenceId ? 'Edit Reference Agent' : 'Add Reference Agent'}
+            </h3>
+            {editingReferenceId && (
+              <button onClick={() => {
+                setEditingReferenceId(null);
+                setReferenceName(''); setReferencePhone('');
+              }} style={{ background: 'transparent', border: 'none', color: theme.danger, cursor: 'pointer', fontWeight: 'bold' }}>✕ Cancel Edit</button>
+            )}
+          </div>
+          <form onSubmit={handleAddReference} style={{ marginBottom: '40px' }}>
+            <label style={styles.labelStyle}>Agent / Referrer Name</label>
+            <input type="text" value={referenceName} onChange={e => setReferenceName(e.target.value)} required style={styles.inputStyle} placeholder="e.g. Ramesh" />
+            <label style={styles.labelStyle}>Phone Number (Optional)</label>
+            <input type="text" value={referencePhone} onChange={e => setReferencePhone(e.target.value)} style={styles.inputStyle} placeholder="e.g. 9876543210" />
+            
+            <button type="submit" className="action-btn" style={{...styles.btnPrimary, backgroundColor: editingReferenceId ? theme.accent : theme.info}}>
+              {editingReferenceId ? 'Update Agent' : 'Save Agent'}
+            </button>
+          </form>
+          
+          <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Existing Agents</h3>
+          <div style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead style={{ backgroundColor: theme.cardBg }}>
+                <tr>
+                  <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Name</th>
+                  <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Phone</th>
+                  <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Status</th>
+                  <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}`, textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {references.map(r => (
+                  <tr key={r.id} style={{ borderBottom: `1px solid ${theme.border}`, opacity: r.isActive ? 1 : 0.5 }}>
+                    <td style={{ padding: '15px', color: theme.textPrimary, fontWeight: 'bold' }}>{r.name}</td>
+                    <td style={{ padding: '15px', color: theme.textSecondary }}>{r.phone || '-'}</td>
+                    <td style={{ padding: '15px' }}>
+                      <span style={{ 
+                        padding: '4px 10px', 
+                        borderRadius: '20px', 
+                        fontSize: '0.8rem', 
+                        backgroundColor: r.isActive ? `${theme.success}20` : `${theme.danger}20`,
+                        color: r.isActive ? theme.success : theme.danger,
+                        fontWeight: 'bold'
+                      }}>
+                        {r.isActive ? 'Active' : 'Disabled'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '15px', textAlign: 'right' }}>
+                      <button onClick={() => handleEditReference(r)} style={{ padding: '6px 12px', marginRight: '8px', backgroundColor: theme.inputBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.textPrimary, cursor: 'pointer', fontSize: '0.9rem' }}>Edit</button>
+                      <button onClick={() => handleToggleReference(r.id, r.isActive)} style={{ padding: '6px 12px', backgroundColor: theme.inputBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: r.isActive ? theme.danger : theme.success, cursor: 'pointer', fontSize: '0.9rem' }}>
+                        {r.isActive ? 'Disable' : 'Enable'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Transport Master */}
+      {activeMasterTab === 'transport' && (
+        <div style={{ maxWidth: '600px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+            <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', margin: 0 }}>
+              {editingTransportId ? 'Edit Transport Agency' : 'Add Transport Agency'}
+            </h3>
+            {editingTransportId && (
+              <button onClick={() => {
+                setEditingTransportId(null);
+                setTransportName(''); setTransportPhone('');
+              }} style={{ background: 'transparent', border: 'none', color: theme.danger, cursor: 'pointer', fontWeight: 'bold' }}>✕ Cancel Edit</button>
+            )}
+          </div>
+          <form onSubmit={handleAddTransport} style={{ marginBottom: '40px' }}>
+            <label style={styles.labelStyle}>Agency Name</label>
+            <input type="text" value={transportName} onChange={e => setTransportName(e.target.value)} required style={styles.inputStyle} placeholder="e.g. KPN Travels" />
+            <label style={styles.labelStyle}>Phone / Contact (Optional)</label>
+            <input type="text" value={transportPhone} onChange={e => setTransportPhone(e.target.value)} style={styles.inputStyle} placeholder="e.g. 9876543210" />
+            
+            <button type="submit" className="action-btn" style={{...styles.btnPrimary, backgroundColor: editingTransportId ? theme.accent : theme.info}}>
+              {editingTransportId ? 'Update Agency' : 'Save Agency'}
+            </button>
+          </form>
+          
+          <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Existing Agencies</h3>
+          <div style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead style={{ backgroundColor: theme.cardBg }}>
+                <tr>
+                  <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Name</th>
+                  <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Phone</th>
+                  <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Status</th>
+                  <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}`, textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transports.map(t => (
+                  <tr key={t.id} style={{ borderBottom: `1px solid ${theme.border}`, opacity: t.isActive ? 1 : 0.5 }}>
+                    <td style={{ padding: '15px', color: theme.textPrimary, fontWeight: 'bold' }}>{t.name}</td>
+                    <td style={{ padding: '15px', color: theme.textSecondary }}>{t.phone || '-'}</td>
+                    <td style={{ padding: '15px' }}>
+                      <span style={{ 
+                        padding: '4px 10px', 
+                        borderRadius: '20px', 
+                        fontSize: '0.8rem', 
+                        backgroundColor: t.isActive ? `${theme.success}20` : `${theme.danger}20`,
+                        color: t.isActive ? theme.success : theme.danger,
+                        fontWeight: 'bold'
+                      }}>
+                        {t.isActive ? 'Active' : 'Disabled'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '15px', textAlign: 'right' }}>
+                      <button onClick={() => handleEditTransport(t)} style={{ padding: '6px 12px', marginRight: '8px', backgroundColor: theme.inputBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.textPrimary, cursor: 'pointer', fontSize: '0.9rem' }}>Edit</button>
+                      <button onClick={() => handleToggleTransport(t.id, t.isActive)} style={{ padding: '6px 12px', backgroundColor: theme.inputBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: t.isActive ? theme.danger : theme.success, cursor: 'pointer', fontSize: '0.9rem' }}>
+                        {t.isActive ? 'Disable' : 'Enable'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

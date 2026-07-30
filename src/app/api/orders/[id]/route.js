@@ -14,6 +14,9 @@ export async function PATCH(request, { params }) {
     if (body.customerPhone !== undefined) dataToUpdate.customerPhone = body.customerPhone;
     if (body.referredBy !== undefined) dataToUpdate.referredBy = body.referredBy;
     if (body.totalAmount !== undefined) dataToUpdate.totalAmount = parseFloat(body.totalAmount);
+    if (body.paymentStatus !== undefined) dataToUpdate.paymentStatus = body.paymentStatus;
+    if (body.paymentMethod !== undefined) dataToUpdate.paymentMethod = body.paymentMethod;
+    if (body.paymentDetails !== undefined) dataToUpdate.paymentDetails = body.paymentDetails;
 
     if (body.items && Array.isArray(body.items)) {
       dataToUpdate.items = {

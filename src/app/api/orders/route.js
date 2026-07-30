@@ -32,6 +32,9 @@ export async function POST(request) {
         shippingAddress: body.shippingAddress,
         customerPhone: body.customerPhone,
         referredBy: body.referredBy,
+        paymentStatus: body.paymentStatus || 'UNPAID',
+        paymentMethod: body.paymentMethod || null,
+        paymentDetails: body.paymentDetails || null,
         status: 'PENDING',
         items: {
           create: body.items.map(item => ({
@@ -43,6 +46,32 @@ export async function POST(request) {
       },
       include: { items: true }
     });
+
+    // 3. Sync with CustomerMaster
+    if (body.customerPhone) {
+      const phone = body.customerPhone.replace(/[^0-9]/g, '').slice(-10);
+      if (phone.length === 10) {
+        const existingCustomer = await prisma.customerMaster.findUnique({
+          where: { primaryPhone: phone }
+        });
+        if (existingCustomer) {
+          // Update address if it exists
+          await prisma.customerMaster.update({
+            where: { primaryPhone: phone },
+            data: { fullAddress: body.shippingAddress, name: body.customerName || existingCustomer.name }
+          });
+        } else {
+          // Create new customer profile
+          await prisma.customerMaster.create({
+            data: {
+              primaryPhone: phone,
+              name: body.customerName || 'Walk-in Customer',
+              fullAddress: body.shippingAddress
+            }
+          });
+        }
+      }
+    }
     
     // --- WHATSAPP INTEGRATION ---
     // Automatically send WhatsApp estimate for new E-Commerce orders.
@@ -94,7 +123,8 @@ export async function GET(request) {
       where.OR = [
         { id: { contains: search, mode: 'insensitive' } },
         { shippingAddress: { contains: search, mode: 'insensitive' } },
-        { customerPhone: { contains: search, mode: 'insensitive' } }
+        { customerPhone: { contains: search, mode: 'insensitive' } },
+        { referredBy: { contains: search, mode: 'insensitive' } }
       ];
     }
 

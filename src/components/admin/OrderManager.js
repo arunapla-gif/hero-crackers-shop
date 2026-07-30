@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getTheme, getStyles, statusBadge } from './theme';
+import { getTheme, getStyles, statusBadge, paymentBadge } from './theme';
 
-export default function OrderManager({ isDarkMode, products, onEditOrder, onDuplicateOrder, onRepeatOrder }) {
+export default function OrderManager({ isDarkMode, products, transports, onEditOrder, onDuplicateOrder, onRepeatOrder }) {
   const theme = getTheme(isDarkMode);
   const styles = getStyles(theme, isDarkMode);
   const queryClient = useQueryClient();
@@ -22,11 +22,16 @@ export default function OrderManager({ isDarkMode, products, onEditOrder, onDupl
     setExpandedOrderIds(prev => prev.includes(id) ? prev.filter(oId => oId !== id) : [...prev, id]);
   };
   
-  // Dispatch Modal
   const [dispatchModalOpen, setDispatchModalOpen] = useState(false);
   const [dispatchOrderId, setDispatchOrderId] = useState(null);
   const [transportName, setTransportName] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
+
+  // Payment Modal
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [paymentOrderId, setPaymentOrderId] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('CASH');
+  const [paymentDetails, setPaymentDetails] = useState('');
 
   // Fetch Orders with React Query
   const { data, isLoading } = useQuery({
@@ -80,6 +85,31 @@ export default function OrderManager({ isDarkMode, products, onEditOrder, onDupl
       return;
     }
     updateOrderMutation.mutate({ orderId, data: { status: newStatus } });
+  };
+
+  const openPaymentModal = (orderId) => {
+    setPaymentOrderId(orderId);
+    setPaymentMethod('CASH');
+    setPaymentDetails('');
+    setPaymentModalOpen(true);
+  };
+
+  const handlePaymentSubmit = async (e) => {
+    e.preventDefault();
+    if (!paymentOrderId) return;
+    
+    updateOrderMutation.mutate({ 
+      orderId: paymentOrderId, 
+      data: { paymentStatus: 'PAID', paymentMethod, paymentDetails } 
+    });
+    
+    setPaymentModalOpen(false);
+    setPaymentMethod('CASH');
+    setPaymentDetails('');
+  };
+
+  const handleSetCredit = (orderId) => {
+    updateOrderMutation.mutate({ orderId, data: { paymentStatus: 'CREDIT' } });
   };
 
   const handleDispatchSubmit = async (e) => {
@@ -140,6 +170,20 @@ export default function OrderManager({ isDarkMode, products, onEditOrder, onDupl
     setSelectedOrders([]);
   };
 
+  const handleBulkMarkPaid = async () => {
+    if (!confirm(`Are you sure you want to mark ${selectedOrders.length} orders as PAID via CASH?`)) return;
+    
+    await Promise.all(selectedOrders.map(id => 
+      fetch(`/api/orders/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentStatus: 'PAID', paymentMethod: 'CASH', paymentDetails: 'Bulk Applied' }),
+      })
+    ));
+    queryClient.invalidateQueries(['orders']);
+    setSelectedOrders([]);
+  };
+
   const exportToCSV = () => {
     const headers = ['Order ID', 'Date', 'Customer Phone', 'Address', 'Status', 'Total Amount'];
     const rows = orders.map(o => [
@@ -179,6 +223,46 @@ export default function OrderManager({ isDarkMode, products, onEditOrder, onDupl
     });
   };
 
+  const triggerPrintLabel = (order) => {
+    // Generate a simple HTML for a 4x6 label and print it
+    const printWindow = window.open('', '_blank', 'width=400,height=600');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <style>
+            body { font-family: sans-serif; margin: 0; padding: 20px; width: 4in; height: 6in; box-sizing: border-box; }
+            h2 { margin: 0 0 10px 0; font-size: 24px; }
+            p { margin: 5px 0; font-size: 16px; }
+            .address { font-size: 20px; font-weight: bold; margin-top: 15px; border: 2px solid #000; padding: 10px; }
+            .footer { margin-top: 30px; font-size: 12px; border-top: 1px dashed #000; padding-top: 10px; }
+          </style>
+        </head>
+        <body>
+          <h2>Hero Crackers</h2>
+          <p><strong>Order ID:</strong> ORD-${order.id.slice(-6).toUpperCase()}</p>
+          <p><strong>Transport:</strong> ${order.transportName || 'N/A'}</p>
+          <p><strong>Tracking LR:</strong> ${order.trackingNumber || 'N/A'}</p>
+          
+          <div class="address">
+            <p><strong>TO:</strong> ${order.user?.name || 'Walk-in Customer'}</p>
+            <p><strong>Phone:</strong> ${order.customerPhone || 'N/A'}</p>
+            <p style="margin-top:10px;">${order.shippingAddress}</p>
+          </div>
+          
+          <div class="footer">
+            <p><strong>From:</strong> Hero Crackers Shop, Sivakasi</p>
+            <p>Thank you for shopping with us!</p>
+          </div>
+          
+          <script>
+            window.onload = function() { window.print(); window.close(); }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   return (
     <div>
       {/* Modal Overlay for Dispatch */}
@@ -187,13 +271,43 @@ export default function OrderManager({ isDarkMode, products, onEditOrder, onDupl
           <div style={{ ...styles.cardStyle, width: '400px' }}>
             <h3 style={{ margin: '0 0 20px 0', fontSize: '1.5rem', color: theme.textPrimary }}>Dispatch Order</h3>
             <form onSubmit={handleDispatchSubmit}>
-              <label style={styles.labelStyle}>Transport / Courier Name</label>
-              <input type="text" required value={transportName} onChange={e => setTransportName(e.target.value)} style={styles.inputStyle} placeholder="e.g. Navata Transport" />
+              <label style={styles.labelStyle}>Transport / Courier Agency</label>
+              <select required value={transportName} onChange={e => setTransportName(e.target.value)} style={styles.inputStyle}>
+                <option value="">Select an Agency...</option>
+                {transports && transports.filter(t => t.isActive).map(t => (
+                  <option key={t.id} value={t.name}>{t.name}</option>
+                ))}
+              </select>
               <label style={styles.labelStyle}>Lorry Receipt (LR) / Tracking Number</label>
               <input type="text" required value={trackingNumber} onChange={e => setTrackingNumber(e.target.value)} style={styles.inputStyle} placeholder="e.g. LR-98765432" />
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                 <button type="button" onClick={() => setDispatchModalOpen(false)} className="action-btn" style={{ ...styles.btnPrimary, flex: 1, backgroundColor: 'transparent', color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>Cancel</button>
                 <button type="submit" className="action-btn" style={{ ...styles.btnPrimary, flex: 1 }}>Confirm</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Overlay for Payment */}
+      {paymentModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ ...styles.cardStyle, width: '400px' }}>
+            <h3 style={{ margin: '0 0 20px 0', fontSize: '1.5rem', color: theme.textPrimary }}>Record Payment</h3>
+            <form onSubmit={handlePaymentSubmit}>
+              <label style={styles.labelStyle}>Payment Method</label>
+              <select required value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)} style={styles.inputStyle}>
+                <option value="CASH">Cash</option>
+                <option value="UPI">UPI / GPay / PhonePe</option>
+                <option value="BANK">Bank Transfer</option>
+              </select>
+              
+              <label style={styles.labelStyle}>Transaction ID / Notes</label>
+              <input type="text" value={paymentDetails} onChange={e => setPaymentDetails(e.target.value)} style={styles.inputStyle} placeholder="e.g. UTR-98765432" />
+              
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <button type="button" onClick={() => setPaymentModalOpen(false)} className="action-btn" style={{ ...styles.btnPrimary, flex: 1, backgroundColor: 'transparent', color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>Cancel</button>
+                <button type="submit" className="action-btn" style={{ ...styles.btnPrimary, backgroundColor: theme.success, flex: 1 }}>Save Payment</button>
               </div>
             </form>
           </div>
@@ -226,7 +340,7 @@ export default function OrderManager({ isDarkMode, products, onEditOrder, onDupl
           <input 
             type="text" 
             className="search-input"
-            placeholder="🔍 Search ID, Phone..." 
+            placeholder="🔍 Search ID, Phone, Reference..." 
             value={orderSearch}
             onChange={(e) => setOrderSearch(e.target.value)}
             onKeyDown={(e) => { if(e.key === 'Enter') setPage(1); }}
@@ -285,6 +399,7 @@ export default function OrderManager({ isDarkMode, products, onEditOrder, onDupl
             <button className="action-btn" onClick={() => handleBulkStatusChange('PROCESSING')} style={{ ...styles.btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.info, boxShadow: 'none' }}>Bulk Process</button>
             <button className="action-btn" onClick={() => handleBulkStatusChange('SHIPPED')} style={{ ...styles.btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.shipped, boxShadow: 'none' }}>Bulk Dispatch (No Tracking)</button>
             <button className="action-btn" onClick={() => handleBulkStatusChange('DELIVERED')} style={{ ...styles.btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.success, boxShadow: 'none' }}>Bulk Deliver</button>
+            <button className="action-btn" onClick={handleBulkMarkPaid} style={{ ...styles.btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.success, border: `1px solid ${theme.success}`, boxShadow: 'none' }}>Bulk Mark Paid</button>
             <button className="action-btn" onClick={() => handleBulkStatusChange('CANCELLED')} style={{ ...styles.btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: 'transparent', color: theme.cancelled, border: `1px solid ${theme.cancelled}`, boxShadow: 'none' }}>Bulk Cancel</button>
           </div>
         </div>
@@ -332,6 +447,7 @@ export default function OrderManager({ isDarkMode, products, onEditOrder, onDupl
                     </span>
                   </div>
                   <div>{statusBadge(order.status, theme)}</div>
+                  <div style={{ marginTop: '4px' }}>{paymentBadge(order.paymentStatus, theme)}</div>
                 </div>
                 
                 {/* Col 2: Customer Details */}
@@ -358,6 +474,11 @@ export default function OrderManager({ isDarkMode, products, onEditOrder, onDupl
                       LR: {order.trackingNumber} ({order.transportName})
                     </div>
                   )}
+                  {order.paymentStatus === 'PAID' && order.paymentMethod && (
+                    <div style={{ fontSize: '0.85rem', color: theme.success, marginTop: '4px', fontWeight: 'bold' }}>
+                      Paid via {order.paymentMethod} {order.paymentDetails ? `(${order.paymentDetails})` : ''}
+                    </div>
+                  )}
                 </div>
 
                 {/* Col 3: Items Toggle */}
@@ -380,13 +501,39 @@ export default function OrderManager({ isDarkMode, products, onEditOrder, onDupl
                       {order.status === 'PENDING' && <button className="action-btn" onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ ...styles.btnPrimary, padding: '10px', fontSize: '0.9rem', backgroundColor: theme.info, boxShadow: 'none', gridColumn: 'span 2' }}>Process Order</button>}
                       {(order.status === 'PENDING' || order.status === 'PROCESSING') && <button className="action-btn" onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ ...styles.btnPrimary, padding: '10px', fontSize: '0.9rem', backgroundColor: theme.shipped, boxShadow: 'none', gridColumn: order.status === 'PROCESSING' ? 'span 2' : 'span 1' }}>Dispatch</button>}
                       {order.status === 'SHIPPED' && <button className="action-btn" onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ ...styles.btnPrimary, padding: '10px', fontSize: '0.9rem', backgroundColor: theme.success, boxShadow: 'none', gridColumn: 'span 2' }}>Deliver Order</button>}
-                      <button className="action-btn" onClick={() => handleStatusChange(order.id, 'CANCELLED')} style={{ ...styles.btnPrimary, padding: '10px', fontSize: '0.9rem', backgroundColor: 'transparent', color: theme.cancelled, border: `1px solid ${theme.cancelled}`, boxShadow: 'none' }}>✕ Cancel</button>
+                      <button className="action-btn" onClick={() => handleStatusChange(order.id, 'CANCELLED')} style={{ ...styles.btnPrimary, padding: '10px', fontSize: '0.9rem', backgroundColor: 'transparent', color: theme.cancelled, border: `1px solid ${theme.cancelled}`, boxShadow: 'none', gridColumn: 'span 2' }}>✕ Cancel</button>
                     </div>
                   )}
 
-                  {/* Utility Actions (4-Column Grid) */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', width: '100%' }}>
+                  {/* Payment Actions */}
+                  {order.status !== 'CANCELLED' && order.paymentStatus === 'UNPAID' && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%' }}>
+                      <button className="action-btn" onClick={() => openPaymentModal(order.id)} style={{ ...styles.btnPrimary, padding: '8px', fontSize: '0.85rem', backgroundColor: theme.success, boxShadow: 'none' }}>Mark Paid</button>
+                      <button className="action-btn" onClick={() => handleSetCredit(order.id)} style={{ ...styles.btnPrimary, padding: '8px', fontSize: '0.85rem', backgroundColor: theme.shipped, boxShadow: 'none' }}>Set Credit</button>
+                      {order.customerPhone && (
+                        <a 
+                          href={`https://wa.me/91${order.customerPhone.replace(/[^0-9]/g, '').slice(-10)}?text=Hello ${order.user?.name || ''}, your estimate for ₹${order.totalAmount} is ready. Please pay via UPI to our number or scan the QR code to proceed. Let us know once paid so we can dispatch your crackers!`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="action-btn"
+                          title="Send Payment Reminder via WhatsApp"
+                          style={{ gridColumn: 'span 2', width: '100%', padding: '8px', backgroundColor: 'transparent', color: '#25D366', border: '1px solid #25D366', borderRadius: '8px', cursor: 'pointer', textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '0.85rem', fontWeight: 'bold' }}
+                        >
+                          📲 Send Payment Reminder
+                        </a>
+                      )}
+                    </div>
+                  )}
+                  {order.status !== 'CANCELLED' && order.paymentStatus === 'CREDIT' && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px', width: '100%' }}>
+                      <button className="action-btn" onClick={() => openPaymentModal(order.id)} style={{ ...styles.btnPrimary, padding: '8px', fontSize: '0.85rem', backgroundColor: theme.success, boxShadow: 'none' }}>Collect Payment</button>
+                    </div>
+                  )}
+
+                  {/* Utility Actions (5-Column Grid) */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', width: '100%' }}>
                     <button className="action-btn" onClick={() => triggerPrint(order)} title="Print Invoice" style={{ padding: '8px 0', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>🖨️</button>
+                    <button className="action-btn" onClick={() => triggerPrintLabel(order)} title="Print Shipping Label (4x6 Sticker)" style={{ padding: '8px 0', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>🏷️</button>
                     <button className="action-btn" onClick={() => onEditOrder(order)} title="Edit Order" style={{ padding: '8px 0', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>✏️</button>
                     <button className="action-btn" onClick={() => onDuplicateOrder(order)} title="Duplicate (New Customer)" style={{ padding: '8px 0', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>📋</button>
                     <button className="action-btn" onClick={() => onRepeatOrder(order)} title="Repeat Order (Same Customer)" style={{ padding: '8px 0', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>🔁</button>
