@@ -26,6 +26,9 @@ export default function RootLayout({ children }) {
         </main>
         <footer style={{ backgroundColor: '#1A1A1A', color: 'var(--color-text-light)', padding: '40px 50px', textAlign: 'center', marginTop: '50px' }}>
           <p>© 2024 Hero Crackers Fireworks. All rights reserved.</p>
+          <p style={{ fontSize: '0.85rem', color: '#888', marginTop: '10px' }}>
+            Hero Crackers is a retail brand owned and operated by <strong>Arunachalam Agency</strong>.
+          </p>
         </footer>
       </body>
     </html>
