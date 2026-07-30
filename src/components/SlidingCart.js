@@ -59,47 +59,30 @@ export default function SlidingCart() {
           animation: 'slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards'
         }}
       >
-        <style>{`
-          @keyframes slideInRight {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
-          }
-          @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
-        `}</style>
-
-        {/* Header */}
         <div style={{ 
-          padding: '25px', 
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          background: 'rgba(255, 19, 97, 0.05)'
+          padding: '20px 30px', 
+          borderBottom: '1px solid rgba(0, 0, 0, 0.05)', 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center' 
         }}>
-          <h2 style={{ margin: 0, color: '#fff', fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            Shopping Cart <span style={{ fontSize: '1rem', background: '#ff1361', padding: '2px 10px', borderRadius: '15px' }}>{cartItemsCount}</span>
+          <h2 style={{ margin: 0, color: '#ff1361', fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            Shopping Cart <span style={{ fontSize: '1rem', background: '#ff1361', color: '#fff', padding: '2px 10px', borderRadius: '15px' }}>{cartItemsCount}</span>
           </h2>
           <button 
             onClick={() => setIsCartOpen(false)}
             style={{ 
               background: 'transparent', 
               border: 'none', 
-              color: '#888', 
+              color: '#333', 
               fontSize: '1.5rem', 
-              cursor: 'pointer',
-              transition: 'color 0.2s'
+              cursor: 'pointer'
             }}
-            onMouseOver={e => e.target.style.color = '#fff'}
-            onMouseOut={e => e.target.style.color = '#888'}
           >
             ✕
           </button>
         </div>
 
-        {/* Items */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
           {cartItems.length === 0 ? (
             <div style={{ textAlign: 'center', color: '#666', marginTop: '50px' }}>
@@ -125,11 +108,12 @@ export default function SlidingCart() {
               {cartItems.map((item) => (
                 <div key={item.id} style={{ 
                   display: 'flex', 
+                  alignItems: 'center',
                   gap: '15px', 
                   padding: '15px', 
-                  backgroundColor: 'rgba(255,255,255,0.03)', 
+                  backgroundColor: 'rgba(255,255,255,0.5)', 
                   borderRadius: '12px',
-                  border: '1px solid rgba(255,255,255,0.05)'
+                  border: '1px solid rgba(0,0,0,0.05)'
                 }}>
                   <div style={{ 
                     width: '60px', 
@@ -145,20 +129,20 @@ export default function SlidingCart() {
                   </div>
                   
                   <div style={{ flex: 1 }}>
-                    <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: '5px' }}>{item.name}</div>
-                    <div style={{ color: '#ffc107', fontWeight: '600' }}>₹{item.price}</div>
+                    <div style={{ color: '#000', fontWeight: 'bold', marginBottom: '5px' }}>{item.name}</div>
+                    <div style={{ color: '#ff1361', fontWeight: '600' }}>₹{item.price}</div>
                     
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
                       <div style={{ 
                         display: 'flex', 
                         alignItems: 'center', 
-                        background: 'rgba(255,255,255,0.1)', 
+                        background: 'rgba(0,0,0,0.05)', 
                         borderRadius: '20px',
                         overflow: 'hidden'
                       }}>
-                        <button onClick={() => updateQuantity(item, -1)} style={{ background: 'transparent', border: 'none', color: '#fff', padding: '5px 12px', cursor: 'pointer' }}>-</button>
-                        <span style={{ color: '#fff', fontSize: '0.9rem', width: '20px', textAlign: 'center' }}>{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item, 1)} style={{ background: 'transparent', border: 'none', color: '#fff', padding: '5px 12px', cursor: 'pointer' }}>+</button>
+                        <button onClick={() => updateQuantity(item, -1)} style={{ background: 'transparent', border: 'none', color: '#333', padding: '5px 12px', cursor: 'pointer' }}>-</button>
+                        <span style={{ color: '#333', fontSize: '0.9rem', width: '20px', textAlign: 'center' }}>{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item, 1)} style={{ background: 'transparent', border: 'none', color: '#333', padding: '5px 12px', cursor: 'pointer' }}>+</button>
                       </div>
                       <button 
                         onClick={() => removeFromCart(item.id)}
@@ -174,17 +158,15 @@ export default function SlidingCart() {
           )}
         </div>
 
-        {/* Footer */}
         {cartItems.length > 0 && (
           <div style={{ 
             padding: '25px', 
-            borderTop: '1px solid rgba(255,255,255,0.1)',
-            background: 'rgba(0,0,0,0.5)',
-            backdropFilter: 'blur(10px)'
+            borderTop: '1px solid rgba(0,0,0,0.05)',
+            background: 'rgba(255, 255, 255, 0.8)'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', color: '#fff', fontSize: '1.2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', color: '#333', fontSize: '1.2rem' }}>
               <span>Subtotal</span>
-              <span style={{ fontWeight: 'bold', color: '#ffc107' }}>₹{cartTotal.toLocaleString()}</span>
+              <span style={{ fontWeight: 'bold', color: '#ff1361' }}>₹{cartTotal.toLocaleString()}</span>
             </div>
             
             <Link href="/cart" onClick={() => setIsCartOpen(false)} style={{ textDecoration: 'none' }}>
@@ -198,7 +180,7 @@ export default function SlidingCart() {
                 fontWeight: 'bold',
                 fontSize: '1.2rem',
                 cursor: 'pointer',
-                boxShadow: '0 10px 20px rgba(255, 19, 97, 0.3)',
+                boxShadow: '0 5px 15px rgba(255, 19, 97, 0.3)',
                 transition: 'transform 0.2s',
                 textTransform: 'uppercase',
                 letterSpacing: '1px'

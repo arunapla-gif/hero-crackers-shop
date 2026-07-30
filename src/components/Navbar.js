@@ -36,25 +36,24 @@ export default function Navbar() {
         alignItems: 'center',
         padding: '15px 40px',
         transition: 'all 0.3s ease',
-        background: scrolled ? 'rgba(5, 5, 5, 0.7)' : 'rgba(5, 5, 5, 0.2)',
+        background: scrolled ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.4)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: scrolled ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid transparent',
-        boxShadow: scrolled ? '0 10px 30px rgba(0,0,0,0.5)' : 'none',
+        borderBottom: scrolled ? '1px solid rgba(0, 0, 0, 0.05)' : '1px solid transparent',
+        boxShadow: scrolled ? '0 10px 30px rgba(0,0,0,0.05)' : 'none',
       }}
     >
       <Link href="/" style={{ textDecoration: 'none' }}>
         <h2 style={{ 
           fontFamily: 'var(--font-serif)', 
           margin: 0, 
-          color: '#fff',
+          color: 'var(--color-primary)',
           fontSize: '1.8rem',
-          textShadow: '0 0 10px rgba(255,193,7,0.3)',
           display: 'flex',
           alignItems: 'center',
           gap: '10px'
         }}>
-          <span style={{ color: '#ffc107' }}>Hero</span> Crackers
+          <span style={{ color: 'var(--color-accent-gold)', textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>Hero</span> Crackers
         </h2>
       </Link>
 
@@ -62,12 +61,11 @@ export default function Navbar() {
         <Link 
           href="/" 
           style={{ 
-            color: pathname === '/' ? '#ffc107' : '#fff', 
+            color: pathname === '/' ? 'var(--color-primary)' : 'var(--color-text-dark)', 
             textDecoration: 'none', 
             fontWeight: '600',
             fontSize: '1.1rem',
             transition: 'color 0.2s',
-            textShadow: pathname === '/' ? '0 0 10px rgba(255,193,7,0.5)' : 'none'
           }}
         >
           Home
@@ -75,12 +73,11 @@ export default function Navbar() {
         <Link 
           href="/shop" 
           style={{ 
-            color: pathname === '/shop' ? '#ffc107' : '#fff', 
+            color: pathname === '/shop' ? 'var(--color-primary)' : 'var(--color-text-dark)', 
             textDecoration: 'none', 
             fontWeight: '600',
             fontSize: '1.1rem',
             transition: 'color 0.2s',
-            textShadow: pathname === '/shop' ? '0 0 10px rgba(255,193,7,0.5)' : 'none'
           }}
         >
           Shop
@@ -89,8 +86,8 @@ export default function Navbar() {
         <button 
           onClick={() => setIsCartOpen(true)}
           style={{
-            background: 'linear-gradient(135deg, rgba(255, 19, 97, 0.1), rgba(255, 87, 34, 0.1))',
-            border: '1px solid rgba(255, 87, 34, 0.3)',
+            background: 'var(--color-primary)',
+            border: 'none',
             color: '#fff',
             padding: '8px 20px',
             borderRadius: '30px',
@@ -101,20 +98,20 @@ export default function Navbar() {
             alignItems: 'center',
             gap: '8px',
             transition: 'all 0.3s ease',
-            boxShadow: '0 0 15px rgba(255, 19, 97, 0.2)',
+            boxShadow: '0 4px 15px rgba(229, 57, 53, 0.3)',
           }}
           onMouseOver={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 19, 97, 0.3), rgba(255, 87, 34, 0.3))';
-            e.currentTarget.style.boxShadow = '0 0 25px rgba(255, 19, 97, 0.4)';
+            e.currentTarget.style.transform = 'scale(1.05)';
+            e.currentTarget.style.boxShadow = '0 6px 20px rgba(229, 57, 53, 0.4)';
           }}
           onMouseOut={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 19, 97, 0.1), rgba(255, 87, 34, 0.1))';
-            e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 19, 97, 0.2)';
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 4px 15px rgba(229, 57, 53, 0.3)';
           }}
         >
           🛒 <span style={{ 
-            background: '#ff1361', 
-            color: '#fff', 
+            background: 'var(--color-accent-gold)', 
+            color: '#1a1a1a', 
             borderRadius: '50%', 
             width: '24px', 
             height: '24px', 

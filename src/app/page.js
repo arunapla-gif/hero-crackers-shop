@@ -1,7 +1,7 @@
 import prisma from '@/lib/prisma';
 import ProductCard from '@/components/ProductCard';
 import ScrollReveal from '@/components/ScrollReveal';
-import ModernHero from '@/components/ModernHero';
+import AnimatedFestivalHero from '@/components/AnimatedFestivalHero';
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
@@ -14,17 +14,17 @@ export default async function Home() {
 
   return (
     <>
-    <div style={{ backgroundColor: '#050505', color: '#fff' }}>
+    <div style={{ backgroundColor: 'var(--color-background)', color: 'var(--color-text-dark)' }}>
       
-      <ModernHero />
+      <AnimatedFestivalHero />
 
       {/* Featured Products Section */}
-      <section style={{ padding: '100px 20px', textAlign: 'center', backgroundColor: '#050505' }}>
+      <section style={{ padding: '100px 20px', textAlign: 'center', backgroundColor: 'var(--color-background)' }}>
         <ScrollReveal>
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '3.5rem', marginBottom: '15px', color: '#fff', letterSpacing: '-1px', textShadow: '0 0 20px rgba(255, 19, 97, 0.4)' }}>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '3.5rem', marginBottom: '15px', color: 'var(--color-primary)', letterSpacing: '-1px' }}>
             Festive Favorites
           </h2>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem', marginBottom: '60px', maxWidth: '600px', margin: '0 auto 60px' }}>
+          <p style={{ color: '#666', fontSize: '1.2rem', marginBottom: '60px', maxWidth: '600px', margin: '0 auto 60px' }}>
             A curated selection of our most spectacular and highest-rated firecrackers to light up your celebrations.
           </p>
         </ScrollReveal>

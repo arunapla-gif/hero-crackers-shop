@@ -1,12 +1,13 @@
 :root {
-  /* Brand Colors - Dark Premium Theme */
-  --color-primary: #050505;      /* Deep Black */
-  --color-primary-light: #1a1a1a; /* Dark Gray for hovers */
-  --color-background: #050505;   /* Deep Black */
-  --color-text-dark: #ffffff;    /* White for text */
-  --color-text-light: #ffffff;   /* White for text */
-  --color-accent-gold: #FFD700;  /* Bright Gold */
-  --color-accent-orange: #FF1361;/* Vibrant Neon Pink/Orange */
+  /* Brand Colors - Bright Festive Theme */
+  --color-primary: #E53935;      /* Deep Festive Red */
+  --color-primary-light: #FF5252; /* Lighter Red */
+  --color-background: #FFF9F0;   /* Warm Ivory */
+  --color-text-dark: #1A1A1A;    /* Dark Charcoal for text */
+  --color-text-light: #FFFFFF;   /* White for text on dark buttons */
+  --color-accent-gold: #FFC107;  /* Bright Gold */
+  --color-accent-purple: #8E24AA;/* Royal Purple */
+  --color-accent-orange: #FF5722;/* Vibrant Orange */
   
   --font-primary: 'Inter', sans-serif;
   --font-serif: 'Playfair Display', serif; /* For elegant headers */

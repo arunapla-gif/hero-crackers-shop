@@ -62,12 +62,12 @@ export default function CartPage() {
     }
   };
 
-  const inputStyle = { width: '100%', padding: '12px', margin: '8px 0 20px 0', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', fontSize: '1rem', background: 'rgba(255,255,255,0.05)', color: '#fff', outline: 'none' };
-  const labelStyle = { fontWeight: 'bold', color: 'rgba(255,255,255,0.8)' };
+  const inputStyle = { width: '100%', padding: '12px', margin: '8px 0 20px 0', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '8px', fontSize: '1rem', background: 'rgba(255,255,255,0.8)', color: '#333', outline: 'none' };
+  const labelStyle = { fontWeight: 'bold', color: '#555' };
 
   return (
     <div style={{ padding: '50px 20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '3rem', color: '#ffc107', marginBottom: '30px', textAlign: 'center', textShadow: '0 0 15px rgba(255,193,7,0.3)' }}>
+      <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '3rem', color: 'var(--color-primary)', marginBottom: '30px', textAlign: 'center' }}>
         Secure Checkout
       </h1>
 
@@ -75,8 +75,8 @@ export default function CartPage() {
         
         {/* Right Column: Checkout Form */}
         <div style={{ flex: '1 1 400px' }}>
-          <div style={{ backgroundColor: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(10px)', padding: '30px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '20px', color: '#ff1361', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>Shipping Details</h3>
+          <div style={{ backgroundColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', padding: '30px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(229,57,53,0.1)', border: '1px solid rgba(0,0,0,0.05)' }}>
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '20px', color: 'var(--color-primary)', borderBottom: '1px solid rgba(0,0,0,0.1)', paddingBottom: '10px' }}>Shipping Details</h3>
             
             <form onSubmit={handleSubmitOrder}>
               <label style={labelStyle}>Full Name</label>
@@ -91,16 +91,16 @@ export default function CartPage() {
               <label style={labelStyle}>Referred By (Optional)</label>
               <input type="text" value={customerInfo.referredBy} onChange={e => setCustomerInfo({...customerInfo, referredBy: e.target.value})} style={inputStyle} placeholder="Name of agent or friend" />
 
-              <div style={{ backgroundColor: 'rgba(0,0,0,0.3)', padding: '15px', borderRadius: '8px', marginTop: '10px', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: 'rgba(255,255,255,0.8)' }}>
+              <div style={{ backgroundColor: 'rgba(229,57,53,0.05)', padding: '15px', borderRadius: '8px', marginTop: '10px', marginBottom: '20px', border: '1px solid rgba(229,57,53,0.1)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: '#333' }}>
                   <span>Subtotal</span>
-                  <span style={{ fontWeight: 'bold', color: '#fff' }}>₹{cartTotal.toLocaleString()}</span>
+                  <span style={{ fontWeight: 'bold', color: '#111' }}>₹{cartTotal.toLocaleString()}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: 'rgba(255,255,255,0.8)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: '#333' }}>
                   <span>Shipping</span>
                   <span style={{ color: '#4caf50', fontWeight: 'bold' }}>Calculated Later</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '10px', fontSize: '1.3rem', fontWeight: 'bold', color: '#ffc107' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(229,57,53,0.2)', paddingTop: '10px', fontSize: '1.3rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>
                   <span>Total Estimate</span>
                   <span>₹{cartTotal.toLocaleString()}</span>
                 </div>
@@ -111,8 +111,8 @@ export default function CartPage() {
                 disabled={submitting || cartItems.length === 0}
                 style={{
                   width: '100%',
-                  background: submitting ? '#333' : 'linear-gradient(135deg, #FF1361, #FF5722)',
-                  color: submitting ? '#888' : '#fff',
+                  background: submitting ? '#ccc' : 'linear-gradient(135deg, var(--color-primary), var(--color-accent-orange))',
+                  color: '#fff',
                   border: 'none',
                   padding: '15px',
                   fontSize: '1.2rem',
@@ -120,13 +120,13 @@ export default function CartPage() {
                   borderRadius: '8px',
                   cursor: submitting ? 'not-allowed' : 'pointer',
                   transition: 'background 0.3s ease',
-                  boxShadow: submitting ? 'none' : '0 5px 15px rgba(255,19,97,0.3)'
+                  boxShadow: submitting ? 'none' : '0 5px 15px rgba(229, 57, 53, 0.3)'
                 }}
               >
                 {submitting ? 'Submitting...' : 'Submit Estimate Request'}
               </button>
               
-              <p style={{ textAlign: 'center', marginTop: '15px', fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)' }}>
+              <p style={{ textAlign: 'center', marginTop: '15px', fontSize: '0.9rem', color: '#666' }}>
                 No payment required now. We will contact you to confirm shipping logistics and final amount.
               </p>
             </form>
@@ -135,33 +135,33 @@ export default function CartPage() {
 
         {/* Left Column: Cart Items */}
         <div style={{ flex: '1 1 600px' }}>
-          <h3 style={{ fontSize: '1.5rem', marginBottom: '20px', color: '#fff' }}>Order Items ({cartItems.length})</h3>
+          <h3 style={{ fontSize: '1.5rem', marginBottom: '20px', color: '#333' }}>Order Items ({cartItems.length})</h3>
           
           {cartItems.length === 0 ? (
-            <div style={{ padding: '40px', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <p style={{ fontSize: '1.2rem', color: 'rgba(255,255,255,0.6)' }}>Your cart is empty.</p>
-              <button onClick={() => router.push('/shop')} style={{ marginTop: '20px', padding: '10px 20px', background: 'transparent', border: '1px solid #ff1361', color: '#ff1361', borderRadius: '30px', cursor: 'pointer' }}>Return to Shop</button>
+            <div style={{ padding: '40px', backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(0,0,0,0.05)' }}>
+              <p style={{ fontSize: '1.2rem', color: '#666' }}>Your cart is empty.</p>
+              <button onClick={() => router.push('/shop')} style={{ marginTop: '20px', padding: '10px 20px', background: 'transparent', border: '1px solid var(--color-primary)', color: 'var(--color-primary)', borderRadius: '30px', cursor: 'pointer' }}>Return to Shop</button>
             </div>
           ) : (
             cartItems.map(item => (
-              <div key={item.id} style={{ backgroundColor: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '12px', marginBottom: '15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div key={item.id} style={{ backgroundColor: 'rgba(255,255,255,0.9)', padding: '20px', borderRadius: '12px', marginBottom: '15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                  <div style={{ width: '80px', height: '80px', backgroundColor: 'rgba(255,19,97,0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  <div style={{ width: '80px', height: '80px', backgroundColor: 'rgba(229,57,53,0.05)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                     <span style={{ fontSize: '2rem' }}>{item.price > 300 ? '🌋' : '✨'}</span>
                   </div>
                   <div>
-                    <h4 style={{ fontSize: '1.1rem', margin: '0 0 5px 0', color: '#fff' }}>{item.name}</h4>
-                    <p style={{ color: '#ffc107', fontWeight: 'bold', margin: 0 }}>₹{item.price}</p>
+                    <h4 style={{ fontSize: '1.1rem', margin: '0 0 5px 0', color: '#1A1A1A' }}>{item.name}</h4>
+                    <p style={{ color: 'var(--color-primary)', fontWeight: 'bold', margin: 0 }}>₹{item.price}</p>
                   </div>
                 </div>
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.1)', borderRadius: '20px', overflow: 'hidden' }}>
-                    <button onClick={() => updateQuantity(item, -1)} style={{ padding: '8px 12px', background: 'transparent', color: '#fff', border: 'none', cursor: 'pointer' }}>-</button>
-                    <span style={{ padding: '8px 15px', fontWeight: 'bold', color: '#fff' }}>{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item, 1)} style={{ padding: '8px 12px', background: 'transparent', color: '#fff', border: 'none', cursor: 'pointer' }}>+</button>
+                  <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.05)', borderRadius: '20px', overflow: 'hidden' }}>
+                    <button onClick={() => updateQuantity(item, -1)} style={{ padding: '8px 12px', background: 'transparent', color: '#333', border: 'none', cursor: 'pointer' }}>-</button>
+                    <span style={{ padding: '8px 15px', fontWeight: 'bold', color: '#333' }}>{item.quantity}</span>
+                    <button onClick={() => updateQuantity(item, 1)} style={{ padding: '8px 12px', background: 'transparent', color: '#333', border: 'none', cursor: 'pointer' }}>+</button>
                   </div>
-                  <div style={{ width: '100px', textAlign: 'right', fontWeight: 'bold', fontSize: '1.1rem', color: '#fff' }}>
+                  <div style={{ width: '100px', textAlign: 'right', fontWeight: 'bold', fontSize: '1.1rem', color: 'var(--color-primary)' }}>
                     ₹{(item.price * item.quantity).toLocaleString()}
                   </div>
                 </div>
