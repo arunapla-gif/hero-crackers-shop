@@ -56,7 +56,7 @@ export default async function AdminDashboard() {
       <AdminDashboardClient 
         initialOrders={orders} 
         initialProducts={products} 
-        initialCategories={JSON.parse(JSON.stringify(categories))}
+        categories={JSON.parse(JSON.stringify(categories))}
         initialGodowns={JSON.parse(JSON.stringify(godowns))}
         initialReferences={JSON.parse(JSON.stringify(references))}
         initialTransports={JSON.parse(JSON.stringify(transports))}
