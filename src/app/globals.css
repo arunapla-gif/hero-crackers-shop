@@ -1,12 +1,12 @@
 :root {
-  /* Brand Colors - Dynamic Fireworks Theme */
-  --color-primary: #8B0000;      /* Deep Festive Red */
-  --color-primary-light: #B22222; /* Lighter Red for hovers */
-  --color-background: #FFF9F0;   /* Warm Ivory */
-  --color-text-dark: #1A1A1A;    /* Dark Charcoal for text */
-  --color-text-light: #FFF9F0;   /* Ivory for text on red backgrounds */
+  /* Brand Colors - Dark Premium Theme */
+  --color-primary: #050505;      /* Deep Black */
+  --color-primary-light: #1a1a1a; /* Dark Gray for hovers */
+  --color-background: #050505;   /* Deep Black */
+  --color-text-dark: #ffffff;    /* White for text */
+  --color-text-light: #ffffff;   /* White for text */
   --color-accent-gold: #FFD700;  /* Bright Gold */
-  --color-accent-orange: #FF4500;/* Vibrant Orange for buttons */
+  --color-accent-orange: #FF1361;/* Vibrant Neon Pink/Orange */
   
   --font-primary: 'Inter', sans-serif;
   --font-serif: 'Playfair Display', serif; /* For elegant headers */

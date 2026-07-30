@@ -14,17 +14,17 @@ export default async function Home() {
 
   return (
     <>
-    <div style={{ backgroundColor: '#faf9f6', color: '#333' }}>
+    <div style={{ backgroundColor: '#050505', color: '#fff' }}>
       
       <ModernHero />
 
       {/* Featured Products Section */}
-      <section style={{ padding: '100px 20px', textAlign: 'center', backgroundColor: '#faf9f6' }}>
+      <section style={{ padding: '100px 20px', textAlign: 'center', backgroundColor: '#050505' }}>
         <ScrollReveal>
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '3.5rem', marginBottom: '15px', color: '#1a1a1a', letterSpacing: '-1px' }}>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '3.5rem', marginBottom: '15px', color: '#fff', letterSpacing: '-1px', textShadow: '0 0 20px rgba(255, 19, 97, 0.4)' }}>
             Festive Favorites
           </h2>
-          <p style={{ color: '#666', fontSize: '1.2rem', marginBottom: '60px', maxWidth: '600px', margin: '0 auto 60px' }}>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem', marginBottom: '60px', maxWidth: '600px', margin: '0 auto 60px' }}>
             A curated selection of our most spectacular and highest-rated firecrackers to light up your celebrations.
           </p>
         </ScrollReveal>

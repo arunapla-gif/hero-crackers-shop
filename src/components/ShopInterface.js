@@ -1,89 +1,73 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import ProductCard from './ProductCard';
 import styles from './ShopInterface.module.css';
+import { useCart } from '@/context/CartContext';
 
 export default function ShopInterface({ categories }) {
   const [viewMode, setViewMode] = useState('quick'); // default to quick buy on mobile
-  const [cart, setCart] = useState({}); // { [productId]: quantity }
   const [selectedImage, setSelectedImage] = useState(null); // for thumbnail modal
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  const { cart, updateQuantity, setIsCartOpen, cartItemsCount, cartTotal } = useCart();
 
-  // Load cart from local storage on mount
-  useEffect(() => {
-    const savedCart = localStorage.getItem('hero_cart');
-    if (savedCart) {
-      try {
-        setCart(JSON.parse(savedCart));
-      } catch (e) {
-        console.error('Failed to parse cart');
-      }
-    }
-    setIsLoaded(true);
-  }, []);
+  // Filter categories based on search
+  const filteredCategories = useMemo(() => {
+    if (!searchQuery) return categories;
+    const lowerQ = searchQuery.toLowerCase();
+    return categories.map(cat => ({
+      ...cat,
+      products: cat.products.filter(p => p.name.toLowerCase().includes(lowerQ))
+    })).filter(cat => cat.products.length > 0);
+  }, [categories, searchQuery]);
 
-  // Save cart to local storage whenever it changes
-  useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem('hero_cart', JSON.stringify(cart));
-    }
-  }, [cart, isLoaded]);
-
-  // Create a fast lookup for product prices to calculate totals
-  const productsLookup = {};
-  categories.forEach(cat => {
-    cat.products.forEach(prod => {
-      productsLookup[prod.id] = prod;
-    });
-  });
-
-  const handleUpdateQuantity = (productId, delta) => {
-    setCart(prev => {
-      const currentQty = prev[productId] || 0;
-      const newQty = Math.max(0, currentQty + delta);
-      
-      const newCart = { ...prev };
-      if (newQty === 0) {
-        delete newCart[productId];
-      } else {
-        newCart[productId] = newQty;
-      }
-      return newCart;
-    });
+  const handleAddToCartFromGrid = (product) => {
+    updateQuantity(product, 1);
+    setIsCartOpen(true);
   };
-
-  const handleAddToCartFromGrid = (productId) => {
-    handleUpdateQuantity(productId, 1);
-  };
-
-  const cartItemsCount = Object.values(cart).reduce((a, b) => a + b, 0);
-  const cartTotal = Object.entries(cart).reduce((total, [id, qty]) => {
-    return total + (productsLookup[id]?.price || 0) * qty;
-  }, 0);
 
   return (
     <div className={styles.container}>
       
-      {/* Toggle Controls */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '2px solid #eee', paddingBottom: '20px' }}>
-        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', color: '#333', display: 'none' /* hidden on mobile for space */ }}>
-          Browse Catalog
-        </h2>
+      {/* Search and Controls */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '30px' }}>
         
-        <div style={{ display: 'flex', gap: '10px', background: '#fff', padding: '5px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', width: '100%', justifyContent: 'center' }}>
+        <input 
+          type="text"
+          placeholder="Search for fireworks..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '15px 25px',
+            borderRadius: '30px',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            background: 'rgba(255, 255, 255, 0.05)',
+            color: '#fff',
+            fontSize: '1.2rem',
+            outline: 'none',
+            backdropFilter: 'blur(10px)',
+            transition: 'border-color 0.3s'
+          }}
+          onFocus={e => e.target.style.borderColor = '#ff1361'}
+          onBlur={e => e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)'}
+        />
+
+        <div style={{ display: 'flex', gap: '10px', background: 'rgba(0,0,0,0.5)', padding: '5px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.1)', width: '100%', maxWidth: '400px', margin: '0 auto', justifyContent: 'center' }}>
           <button 
             onClick={() => setViewMode('quick')}
             style={{ 
               flex: 1,
-              padding: '10px 20px', 
+              padding: '12px 20px', 
               border: 'none', 
-              borderRadius: '6px', 
+              borderRadius: '25px', 
               cursor: 'pointer',
               fontWeight: 'bold',
-              background: viewMode === 'quick' ? '#d32f2f' : 'transparent',
-              color: viewMode === 'quick' ? '#fff' : '#666',
-              transition: 'all 0.2s'
+              background: viewMode === 'quick' ? 'linear-gradient(135deg, #FF1361, #FF5722)' : 'transparent',
+              color: viewMode === 'quick' ? '#fff' : 'rgba(255,255,255,0.6)',
+              transition: 'all 0.2s',
+              boxShadow: viewMode === 'quick' ? '0 5px 15px rgba(255, 19, 97, 0.3)' : 'none'
             }}
           >
             Quick Buy
@@ -92,14 +76,15 @@ export default function ShopInterface({ categories }) {
             onClick={() => setViewMode('grid')}
             style={{ 
               flex: 1,
-              padding: '10px 20px', 
+              padding: '12px 20px', 
               border: 'none', 
-              borderRadius: '6px', 
+              borderRadius: '25px', 
               cursor: 'pointer',
               fontWeight: 'bold',
-              background: viewMode === 'grid' ? '#d32f2f' : 'transparent',
-              color: viewMode === 'grid' ? '#fff' : '#666',
-              transition: 'all 0.2s'
+              background: viewMode === 'grid' ? 'linear-gradient(135deg, #FF1361, #FF5722)' : 'transparent',
+              color: viewMode === 'grid' ? '#fff' : 'rgba(255,255,255,0.6)',
+              transition: 'all 0.2s',
+              boxShadow: viewMode === 'grid' ? '0 5px 15px rgba(255, 19, 97, 0.3)' : 'none'
             }}
           >
             Grid View
@@ -108,9 +93,14 @@ export default function ShopInterface({ categories }) {
       </div>
 
       {/* Product Display */}
-      {categories.map((category) => (
-        <div key={category.id} style={{ marginBottom: '40px' }}>
-          <h2 className={styles.categoryTitle}>
+      {filteredCategories.length === 0 ? (
+        <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)', padding: '50px 0' }}>
+          <p style={{ fontSize: '1.5rem', marginBottom: '10px' }}>No fireworks found matching "{searchQuery}"</p>
+          <p>Try searching for something else!</p>
+        </div>
+      ) : filteredCategories.map((category) => (
+        <div key={category.id} style={{ marginBottom: '60px' }}>
+          <h2 className={styles.categoryTitle} style={{ color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
             {category.name}
           </h2>
           
@@ -145,14 +135,36 @@ export default function ShopInterface({ categories }) {
                     </div>
                     <div className={styles.productAction}>
                       <div className={styles.priceBlock}>
-                        <span className={styles.mrp}><s>₹{Math.round(product.price * 1.5)}</s></span>
-                        <span className={styles.price}>₹{product.price}</span>
+                        <span className={styles.price} style={{ color: isPremium ? '#ffc107' : '#ff1361' }}>₹{product.price}</span>
                       </div>
-                      <div className={styles.qtyControl}>
-                        <button className={styles.qtyBtn} onClick={() => handleUpdateQuantity(product.id, -1)}>-</button>
-                        <span className={styles.qtyValue}>{cart[product.id] || 0}</span>
-                        <button className={`${styles.qtyBtn} ${styles.qtyBtnPlus}`} onClick={() => handleUpdateQuantity(product.id, 1)}>+</button>
-                      </div>
+                      
+                      {cart[product.id] ? (
+                        <div className={styles.qtyControl} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.1)', padding: '5px 10px', borderRadius: '20px' }}>
+                          <button onClick={() => updateQuantity(product, -1)} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer' }}>-</button>
+                          <span style={{ color: '#fff', fontWeight: 'bold' }}>{cart[product.id].quantity}</span>
+                          <button onClick={() => updateQuantity(product, 1)} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer' }}>+</button>
+                        </div>
+                      ) : (
+                        <button 
+                          className={styles.addToCartBtn} 
+                          onClick={() => {
+                            updateQuantity(product, 1);
+                            setIsCartOpen(true);
+                          }}
+                          style={{
+                            background: 'linear-gradient(135deg, rgba(255,255,255,0.1), transparent)',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            color: '#fff',
+                            padding: '8px 20px',
+                            borderRadius: '30px',
+                            cursor: 'pointer',
+                            fontWeight: 'bold',
+                            backdropFilter: 'blur(5px)'
+                          }}
+                        >
+                          Add
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -164,17 +176,29 @@ export default function ShopInterface({ categories }) {
 
       {/* Sticky Cart Summary */}
       {cartItemsCount > 0 && (
-        <div className={styles.stickyFooter}>
+        <div className={styles.stickyFooter} style={{
+          background: 'rgba(0, 0, 0, 0.8)',
+          backdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(255, 19, 97, 0.3)',
+          boxShadow: '0 -10px 30px rgba(0,0,0,0.5)'
+        }}>
           <div className={styles.footerTotals}>
-            <span className={styles.footerTotalLabel}>Total Estimate</span>
-            <span className={styles.footerTotalValue}>₹{cartTotal.toLocaleString()}</span>
-            <span className={styles.footerItems}>{cartItemsCount} items selected</span>
+            <span className={styles.footerTotalLabel} style={{ color: 'rgba(255,255,255,0.7)' }}>Total Estimate</span>
+            <span className={styles.footerTotalValue} style={{ color: '#ffc107' }}>₹{cartTotal.toLocaleString()}</span>
+            <span className={styles.footerItems} style={{ color: '#fff' }}>{cartItemsCount} items selected</span>
           </div>
-          <a href="/cart" style={{ textDecoration: 'none' }}>
-            <button className={styles.footerBtn}>
-              Submit
-            </button>
-          </a>
+          <button 
+            className={styles.footerBtn}
+            onClick={() => setIsCartOpen(true)}
+            style={{
+              background: 'linear-gradient(135deg, #FF1361, #FF5722)',
+              color: '#fff',
+              border: 'none',
+              boxShadow: '0 0 15px rgba(255, 19, 97, 0.4)'
+            }}
+          >
+            View Cart
+          </button>
         </div>
       )}
 
