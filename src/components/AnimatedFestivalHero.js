@@ -67,8 +67,8 @@ export default function AnimatedFestivalHero() {
       {/* Background Fireworks */}
       {fireworks.map(fw => (
         <div key={fw.id} className="fw" style={{
-          top: \`\${fw.top}%\`,
-          left: \`\${fw.left}%\`,
+          top: `${fw.top}%`,
+          left: `${fw.left}%`,
           backgroundColor: fw.color,
           color: fw.color
         }}>
@@ -76,7 +76,7 @@ export default function AnimatedFestivalHero() {
             position: 'absolute', 
             width: '100px', 
             height: '100px', 
-            background: \`radial-gradient(circle, \${fw.color}33 0%, transparent 70%)\`,
+            background: `radial-gradient(circle, ${fw.color}33 0%, transparent 70%)`,
             transform: 'translate(-50%, -50%)',
             borderRadius: '50%'
           }} />

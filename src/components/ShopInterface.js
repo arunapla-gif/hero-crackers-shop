@@ -166,7 +166,7 @@ export default function ShopInterface({ categories }) {
                             borderRadius: '30px',
                             cursor: 'pointer',
                             fontWeight: 'bold',
-                            boxShadow: \`0 4px 10px \${isPremium ? 'rgba(255, 193, 7, 0.3)' : 'rgba(229, 57, 53, 0.3)'}\`
+                            boxShadow: `0 4px 10px ${isPremium ? 'rgba(255, 193, 7, 0.3)' : 'rgba(229, 57, 53, 0.3)'}`
                           }}
                         >
                           Add
