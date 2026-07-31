@@ -36,7 +36,7 @@ export async function POST(request, { params }) {
         // Truncate name and city for the PDF filename (max 8 chars)
         const name = (order.user?.name || order.customerName || 'Cust').replace(/[^a-zA-Z0-9]/g, '').substring(0, 8);
         const city = (order.shippingAddress || 'City').replace(/[^a-zA-Z0-9]/g, '').substring(0, 8);
-        const shortId = formatOrderNumber(order.orderNumber);
+        const shortId = formatOrderNumber(order.orderNumber, order.createdAt);
         const version = order.editVersion;
         
         const fileName = `${shortId}-${name}-${city}-v${version}.pdf`;
@@ -54,7 +54,7 @@ export async function POST(request, { params }) {
         // and pass `mediaId` as the 4th argument.
         waResult = await sendWhatsAppTemplate(order.customerPhone, 'hello_world', []);
         
-        console.log(`Successfully sent WhatsApp manual bill for order ${formatOrderNumber(order.orderNumber)} with filename ${fileName}`);
+        console.log(`Successfully sent WhatsApp manual bill for order ${formatOrderNumber(order.orderNumber, order.createdAt)} with filename ${fileName}`);
       } catch (err) {
         console.error('Failed background WhatsApp task:', err);
         waResult = { success: false, error: err.message };

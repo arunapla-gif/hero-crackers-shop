@@ -1,4 +1,5 @@
-export const formatOrderNumber = (orderNumber) => {
+export const formatOrderNumber = (orderNumber, dateInput) => {
   if (!orderNumber) return 'ORD-UNKNOWN';
-  return `ORD-${String(orderNumber).padStart(5, '0')}`;
+  const year = dateInput ? new Date(dateInput).getFullYear() : new Date().getFullYear();
+  return `ORD-${year}-${String(orderNumber).padStart(5, '0')}`;
 };

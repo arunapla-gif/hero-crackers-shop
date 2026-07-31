@@ -51,7 +51,7 @@ export default function CartPage() {
       if (res.ok) {
         const order = await res.json();
         clearCart();
-        alert(`Order submitted successfully! Your Order ID is ${formatOrderNumber(order.orderNumber)}`);
+        alert(`Order submitted successfully! Your Order ID is ${formatOrderNumber(order.orderNumber, order.createdAt)}`);
         router.push('/');
       } else {
         const error = await res.json();

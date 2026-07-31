@@ -277,7 +277,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
           {initialPosState && (
             <div style={{ padding: '10px 15px', backgroundColor: initialPosState.type === 'edit' ? `${theme.info}20` : `${theme.accent}20`, borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ color: initialPosState.type === 'edit' ? theme.info : theme.accent, fontWeight: 'bold' }}>
-                {initialPosState.type === 'edit' ? `Editing Order #${formatOrderNumber(initialPosState.order.orderNumber)}` : 
+                {initialPosState.type === 'edit' ? `Editing Order #${formatOrderNumber(initialPosState.order.orderNumber, initialPosState.order.createdAt)}` : 
                  initialPosState.type === 'repeat' ? 'Repeating Order (Same Customer)' : 'Duplicating Order (New Customer)'}
               </span>
               <button type="button" onClick={() => {

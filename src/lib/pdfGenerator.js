@@ -46,7 +46,7 @@ export async function generateInvoicePDFBuffer(order, products) {
         {
           columns: [
             [
-              { text: `Order ID: ${formatOrderNumber(order.orderNumber)}`, bold: true, margin: [0, 2] },
+              { text: `Order ID: ${formatOrderNumber(order.orderNumber, order.createdAt)}`, bold: true, margin: [0, 2] },
               { text: `Date: ${new Date(order.createdAt).toLocaleDateString()}`, margin: [0, 2] }
             ],
             [

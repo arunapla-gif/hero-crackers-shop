@@ -240,7 +240,7 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
         </head>
         <body>
           <h2>Hero Crackers</h2>
-          <p><strong>Order ID:</strong> ${formatOrderNumber(order.orderNumber)}</p>
+          <p><strong>Order ID:</strong> ${formatOrderNumber(order.orderNumber, order.createdAt)}</p>
           <p><strong>Transport:</strong> ${order.transportName || 'N/A'}</p>
           <p><strong>Tracking LR:</strong> ${order.trackingNumber || 'N/A'}</p>
           
@@ -444,7 +444,7 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
                       onChange={() => handleSelectOrder(order.id)} 
                     />
                     <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                      {formatOrderNumber(order.orderNumber)}
+                      {formatOrderNumber(order.orderNumber, order.createdAt)}
                     </span>
                   </div>
                   <div>{statusBadge(order.status, theme)}</div>
@@ -572,7 +572,7 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
                   {/* WhatsApp Manual Fallback */}
                   {order.customerPhone && (
                     <a 
-                      href={`https://wa.me/91${order.customerPhone.replace(/[^0-9]/g, '').slice(-10)}?text=Hello! Your Hero Crackers order %23${formatOrderNumber(order.orderNumber)} is currently ${order.status}.${order.trackingNumber ? ` It was dispatched via ${order.transportName}. Tracking LR: ${order.trackingNumber}` : ''}`}
+                      href={`https://wa.me/91${order.customerPhone.replace(/[^0-9]/g, '').slice(-10)}?text=Hello! Your Hero Crackers order %23${formatOrderNumber(order.orderNumber, order.createdAt)} is currently ${order.status}.${order.trackingNumber ? ` It was dispatched via ${order.transportName}. Tracking LR: ${order.trackingNumber}` : ''}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="action-btn"

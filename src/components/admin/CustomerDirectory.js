@@ -133,7 +133,7 @@ export default function CustomerDirectory({ isDarkMode, customers = [], orders =
                 {selectedCustomer.orders.map(order => (
                   <div key={order.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', backgroundColor: theme.bg, border: `1px solid ${theme.border}`, borderRadius: '8px' }}>
                     <div>
-                      <div style={{ color: theme.textPrimary, fontWeight: 'bold', marginBottom: '5px' }}>{formatOrderNumber(order.orderNumber)}</div>
+                      <div style={{ color: theme.textPrimary, fontWeight: 'bold', marginBottom: '5px' }}>{formatOrderNumber(order.orderNumber, order.createdAt)}</div>
                       <div style={{ color: theme.textSecondary, fontSize: '0.85rem' }}>{new Date(order.createdAt).toLocaleString()}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
