@@ -209,7 +209,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
           <CustomerDirectory 
             isDarkMode={isDarkMode}
             customers={initialCustomers}
-            orders={orders}
+            orders={initialOrders}
           />
         )}
       </div>

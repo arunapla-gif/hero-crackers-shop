@@ -82,6 +82,23 @@ export default function Navbar() {
         >
           Shop
         </Link>
+        <Link 
+          href="/admin" 
+          style={{ 
+            color: 'var(--color-text-dark)', 
+            textDecoration: 'none', 
+            fontWeight: '600',
+            fontSize: '1.1rem',
+            transition: 'color 0.2s',
+            background: 'rgba(0,0,0,0.05)',
+            padding: '5px 15px',
+            borderRadius: '20px'
+          }}
+          onMouseOver={e => e.currentTarget.style.color = 'var(--color-primary)'}
+          onMouseOut={e => e.currentTarget.style.color = 'var(--color-text-dark)'}
+        >
+          Admin
+        </Link>
         
         <button 
           onClick={() => setIsCartOpen(true)}
