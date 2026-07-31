@@ -1,4 +1,5 @@
 import pdfMake from 'pdfmake';
+import { formatOrderNumber } from './utils';
 
 export async function generateInvoicePDFBuffer(order, products) {
   try {
@@ -45,7 +46,7 @@ export async function generateInvoicePDFBuffer(order, products) {
         {
           columns: [
             [
-              { text: `Order ID: ${order.id.slice(-6).toUpperCase()}`, bold: true, margin: [0, 2] },
+              { text: `Order ID: ${formatOrderNumber(order.orderNumber)}`, bold: true, margin: [0, 2] },
               { text: `Date: ${new Date(order.createdAt).toLocaleDateString()}`, margin: [0, 2] }
             ],
             [

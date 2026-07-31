@@ -1,6 +1,8 @@
 import prisma from '@/lib/prisma';
 import { generateInvoicePDFBuffer } from '@/lib/pdfGenerator';
 import { NextResponse } from 'next/server';
+import { formatOrderNumber } from '@/lib/utils';
+
 
 export async function GET(request, { params }) {
   try {
@@ -25,7 +27,7 @@ export async function GET(request, { params }) {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="Invoice_${order.id.slice(-6).toUpperCase()}.pdf"`,
+        'Content-Disposition': `inline; filename="Invoice_${formatOrderNumber(order.orderNumber)}.pdf"`,
       },
     });
   } catch (error) {

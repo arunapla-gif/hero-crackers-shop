@@ -54,6 +54,7 @@ model Category {
 
 model Order {
   id              String      @id @default(cuid())
+  orderNumber     Int         @unique @default(autoincrement())
   userId          String
   totalAmount     Float
   status          OrderStatus @default(PENDING)

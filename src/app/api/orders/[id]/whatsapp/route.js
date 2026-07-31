@@ -1,6 +1,7 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { generateInvoicePDFBuffer, uploadMediaToWhatsApp, sendWhatsAppTemplate } from '@/lib/whatsapp.js';
+import { formatOrderNumber } from '@/lib/utils';
 
 export async function POST(request, { params }) {
   try {
@@ -35,10 +36,10 @@ export async function POST(request, { params }) {
         // Truncate name and city for the PDF filename (max 8 chars)
         const name = (order.user?.name || order.customerName || 'Cust').replace(/[^a-zA-Z0-9]/g, '').substring(0, 8);
         const city = (order.shippingAddress || 'City').replace(/[^a-zA-Z0-9]/g, '').substring(0, 8);
-        const shortId = order.id.slice(-4);
+        const shortId = formatOrderNumber(order.orderNumber);
         const version = order.editVersion;
         
-        const fileName = `Hero-EST-${shortId}-${name}-${city}-v${version}.pdf`;
+        const fileName = `${shortId}-${name}-${city}-v${version}.pdf`;
         
         // 1. Build PDF
         const pdfBuffer = await generateInvoicePDFBuffer(order, products);
@@ -53,7 +54,7 @@ export async function POST(request, { params }) {
         // and pass `mediaId` as the 4th argument.
         waResult = await sendWhatsAppTemplate(order.customerPhone, 'hello_world', []);
         
-        console.log(`Successfully sent WhatsApp manual bill for order ${order.id} with filename ${fileName}`);
+        console.log(`Successfully sent WhatsApp manual bill for order ${formatOrderNumber(order.orderNumber)} with filename ${fileName}`);
       } catch (err) {
         console.error('Failed background WhatsApp task:', err);
         waResult = { success: false, error: err.message };

@@ -1,10 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   serverExternalPackages: ['pdfmake', 'pdfkit'],
-  experimental: {
-    outputFileTracingIncludes: {
-      '/api/**/*': ['./node_modules/pdfkit/js/data/**/*']
-    }
+  outputFileTracingIncludes: {
+    '/api/**/*': ['./node_modules/pdfkit/js/data/**/*']
   }
 };
 

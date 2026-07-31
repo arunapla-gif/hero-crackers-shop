@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTheme, getStyles } from './theme';
+import { formatOrderNumber } from '@/lib/utils';
+
 
 export default function QuickBillPOS({ isDarkMode, products, categories, references, handleRefreshData, isRefreshing, initialPosState, onClearPosState }) {
   const theme = getTheme(isDarkMode);
@@ -275,7 +277,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
           {initialPosState && (
             <div style={{ padding: '10px 15px', backgroundColor: initialPosState.type === 'edit' ? `${theme.info}20` : `${theme.accent}20`, borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ color: initialPosState.type === 'edit' ? theme.info : theme.accent, fontWeight: 'bold' }}>
-                {initialPosState.type === 'edit' ? `Editing Order #${initialPosState.order.id.slice(-6).toUpperCase()}` : 
+                {initialPosState.type === 'edit' ? `Editing Order #${formatOrderNumber(initialPosState.order.orderNumber)}` : 
                  initialPosState.type === 'repeat' ? 'Repeating Order (Same Customer)' : 'Duplicating Order (New Customer)'}
               </span>
               <button type="button" onClick={() => {

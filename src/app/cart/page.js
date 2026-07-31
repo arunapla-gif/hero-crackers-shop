@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
+import { formatOrderNumber } from '@/lib/utils';
+
 
 export default function CartPage() {
   const router = useRouter();
@@ -49,7 +51,7 @@ export default function CartPage() {
       if (res.ok) {
         const order = await res.json();
         clearCart();
-        alert(`Order submitted successfully! Your Order ID is ${order.id.slice(-6).toUpperCase()}`);
+        alert(`Order submitted successfully! Your Order ID is ${formatOrderNumber(order.orderNumber)}`);
         router.push('/');
       } else {
         const error = await res.json();
