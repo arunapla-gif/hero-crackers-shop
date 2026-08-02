@@ -16,6 +16,13 @@ export default async function Home() {
     <>
     <div style={{ backgroundColor: 'var(--color-background)', color: 'var(--color-text-dark)' }}>
       
+      {/* Temporary Link to Mascot Comparison Page */}
+      <div style={{ backgroundColor: '#FF1361', color: 'white', textAlign: 'center', padding: '12px', fontSize: '1.1rem' }}>
+        <a href="/mascot-test" style={{ color: 'white', fontWeight: 'bold', textDecoration: 'underline' }}>
+          ✨ Click here to view the new Mascot Design Comparisons! ✨
+        </a>
+      </div>
+
       <AnimatedFestivalHero />
 
       {/* Featured Products Section */}
