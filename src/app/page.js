@@ -46,16 +46,7 @@ export default function Home() {
               Deepavali Mega Sale
             </div>
             
-            <h1 style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 'clamp(4rem, 8vw, 6.5rem)',
-              lineHeight: 1.05,
-              marginBottom: '35px',
-              color: '#fff',
-              textShadow: '0 15px 40px rgba(0,0,0,0.9)'
-            }}>
-              Experience <br/><span style={{ color: '#ffc107', filter: 'drop-shadow(0 0 20px rgba(255,193,7,0.4))' }}>the Magic.</span>
-            </h1>
+
             
             <p style={{ fontSize: '1.4rem', lineHeight: '1.7', marginBottom: '50px', color: 'rgba(255,255,255,0.9)', fontWeight: '400', textShadow: '0 4px 15px rgba(0,0,0,1)', maxWidth: '550px' }}>
               Bring home the joy with our exclusive collection of vibrant, premium Sivakasi fireworks. Safe, certified, and spectacular.
