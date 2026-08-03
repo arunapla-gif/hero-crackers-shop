@@ -115,8 +115,8 @@ export default async function Home() {
           </div>
 
           {/* Premium Image Card */}
-          <div style={{ flex: '1 1 450px', display: 'flex', justifyContent: 'center' }}>
-            <ScrollReveal delay={200}>
+          <div style={{ flex: '1 1 450px', display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <ScrollReveal delay={200} style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
               <div className="premium-image-wrapper" style={{ width: '100%', maxWidth: '550px', aspectRatio: '4/4', position: 'relative' }}>
                 <Image 
                   src="/images/mockup_family_hero.png" // Re-using the beautiful family mockup image, but as a card!
@@ -137,8 +137,8 @@ export default async function Home() {
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap-reverse', gap: '60px' }}>
           
           {/* History Image */}
-          <div style={{ flex: '1 1 450px', display: 'flex', justifyContent: 'center' }}>
-            <ScrollReveal>
+          <div style={{ flex: '1 1 450px', display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <ScrollReveal style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
               <div className="premium-image-wrapper" style={{ width: '100%', maxWidth: '500px', aspectRatio: '4/5', position: 'relative', borderRadius: '20px' }}>
                 <Image 
                   src="/images/sivakasi_history.png"
