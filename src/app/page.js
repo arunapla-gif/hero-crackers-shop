@@ -50,6 +50,19 @@ export default async function Home() {
           color: #fff;
         }
 
+        /* Floating Mascot Styles */
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
+          100% { transform: translateY(0px); }
+        }
+        
+        .floating-mascot {
+          mix-blend-mode: multiply;
+          animation: float 6s ease-in-out infinite;
+          filter: drop-shadow(0 15px 25px rgba(0,0,0,0.1));
+        }
+
         .category-card {
           background: #fff;
           border: 1px solid #eee;
@@ -78,52 +91,58 @@ export default async function Home() {
         }
       `}</style>
       
-      {/* 1. MODERN SPLIT HERO */}
+      {/* 1. MODERN FLOATING CHARACTER HERO */}
       <section style={{
-        padding: '60px 5%',
+        padding: '20px 5%',
         background: 'linear-gradient(135deg, #FFFAF0 0%, #FFF3E0 100%)',
-        position: 'relative'
+        position: 'relative',
+        minHeight: '80vh',
+        display: 'flex',
+        alignItems: 'center',
+        overflow: 'hidden'
       }}>
         {/* Decorative background shapes */}
-        <div style={{ position: 'absolute', top: '-10%', right: '-5%', width: '400px', height: '400px', background: '#FFC107', opacity: '0.1', borderRadius: '50%', filter: 'blur(80px)' }} />
-        <div style={{ position: 'absolute', bottom: '-10%', left: '-5%', width: '300px', height: '300px', background: '#FF5722', opacity: '0.1', borderRadius: '50%', filter: 'blur(80px)' }} />
+        <div style={{ position: 'absolute', top: '10%', right: '15%', width: '400px', height: '400px', background: '#FFC107', opacity: '0.15', borderRadius: '50%', filter: 'blur(80px)' }} />
+        <div style={{ position: 'absolute', bottom: '10%', left: '5%', width: '300px', height: '300px', background: '#FF5722', opacity: '0.1', borderRadius: '50%', filter: 'blur(80px)' }} />
 
-        <div style={{ maxWidth: '1300px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '50px', position: 'relative', zIndex: 10 }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '30px', position: 'relative', zIndex: 10, width: '100%' }}>
           
           {/* Text Content */}
-          <div style={{ flex: '1 1 450px', maxWidth: '600px' }}>
+          <div style={{ flex: '1 1 500px', maxWidth: '650px' }}>
             <ScrollReveal>
-              <div style={{ display: 'inline-block', padding: '8px 20px', background: '#FFF3E0', color: '#D84315', borderRadius: '30px', fontWeight: 'bold', fontSize: '0.9rem', letterSpacing: '1px', border: '1px solid #FFE0B2', marginBottom: '20px' }}>
-                🎉 Deepavali 2026 Collection
+              <div style={{ display: 'inline-block', padding: '10px 25px', background: 'rgba(255, 243, 224, 0.8)', color: '#D84315', borderRadius: '30px', fontWeight: 'bold', fontSize: '1rem', letterSpacing: '2px', border: '1px solid #FFE0B2', marginBottom: '25px', textTransform: 'uppercase' }}>
+                ✨ 2026 Collection Live
               </div>
               
-              <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: '#1A1A1A', lineHeight: 1.1, marginBottom: '25px' }}>
+              <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(3.5rem, 6vw, 5.5rem)', color: '#1A1A1A', lineHeight: 1.05, marginBottom: '25px' }}>
                 The True Spirit of <span style={{ color: '#D84315' }}>Diwali.</span>
               </h1>
               
-              <p style={{ fontSize: '1.2rem', color: '#555', lineHeight: '1.7', marginBottom: '40px', maxWidth: '500px' }}>
+              <p style={{ fontSize: '1.25rem', color: '#444', lineHeight: '1.7', marginBottom: '45px', maxWidth: '500px' }}>
                 Experience the joy of authentic Sivakasi fireworks. 
                 Premium quality, spectacular colors, and safe celebrations delivered straight to your door.
               </p>
               
               <Link href="/shop" style={{ textDecoration: 'none' }}>
-                <button className="primary-btn">
-                  Explore The Magic
+                <button className="primary-btn" style={{ fontSize: '1.2rem', padding: '18px 40px' }}>
+                  Shop The Magic
                 </button>
               </Link>
             </ScrollReveal>
           </div>
 
-          {/* Premium Image Card */}
-          <div style={{ flex: '1 1 450px', display: 'flex', justifyContent: 'center', width: '100%' }}>
-            <ScrollReveal delay={200} style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-              <div className="premium-image-wrapper" style={{ width: '100%', maxWidth: '550px', aspectRatio: '4/4', position: 'relative' }}>
+          {/* Floating Full-Page Character */}
+          <div style={{ flex: '1 1 500px', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', height: '700px', width: '100%' }}>
+            <ScrollReveal delay={200} style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <div style={{ position: 'relative', width: '100%', height: '100%', maxWidth: '750px' }}>
                 <Image 
-                  src="/images/mockup_family_hero.png" // Re-using the beautiful family mockup image, but as a card!
-                  alt="Happy Diwali Family"
+                  src="/images/floating_mascot.png" 
+                  alt="3D Diwali Mascot"
                   fill
-                  style={{ objectFit: 'cover' }}
+                  style={{ objectFit: 'contain' }}
+                  className="floating-mascot"
                   priority
+                  quality={100}
                 />
               </div>
             </ScrollReveal>
