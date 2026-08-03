@@ -13,40 +13,25 @@ export default async function Home() {
   });
 
   return (
-    <div style={{ backgroundColor: '#FAF8F5', color: '#333', minHeight: '100vh', overflowX: 'hidden' }}>
+    <div style={{ backgroundColor: '#FCFAFF', color: '#333', minHeight: '100vh', overflowX: 'hidden' }}>
       <style>{`
-        /* Global Button Styles */
-        .terracotta-btn {
+        /* Global Styles */
+        .primary-btn {
           background-color: #D84315;
           color: #fff;
           border: none;
-          padding: 12px 24px;
-          border-radius: 25px;
-          font-weight: bold;
-          font-size: 0.95rem;
+          padding: 16px 36px;
+          border-radius: 50px;
+          font-weight: 700;
+          font-size: 1.1rem;
           cursor: pointer;
-          transition: background-color 0.2s ease, transform 0.2s ease;
-          width: 100%;
+          transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+          box-shadow: 0 4px 15px rgba(216, 67, 21, 0.3);
         }
-        .terracotta-btn:hover {
+        .primary-btn:hover {
           background-color: #BF360C;
           transform: translateY(-2px);
-        }
-
-        /* Hero Text Styles */
-        .hero-title {
-          font-family: 'var(--font-serif)';
-          font-size: clamp(2.5rem, 5vw, 4rem);
-          color: #FFC107;
-          text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
-          margin-bottom: 5px;
-          line-height: 1.1;
-        }
-        .hero-subtitle {
-          font-size: 1.2rem;
-          color: #fff;
-          text-shadow: 1px 1px 5px rgba(0,0,0,0.8);
-          font-weight: 500;
+          box-shadow: 0 8px 25px rgba(216, 67, 21, 0.4);
         }
 
         .view-all-btn {
@@ -58,84 +43,171 @@ export default async function Home() {
           font-weight: bold;
           font-size: 1.1rem;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.3s;
         }
         .view-all-btn:hover {
           background-color: #D84315;
           color: #fff;
         }
+
+        .category-card {
+          background: #fff;
+          border: 1px solid #eee;
+          border-radius: 20px;
+          padding: 30px 20px;
+          text-align: center;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+        .category-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+          border-color: #D84315;
+        }
+
+        /* Image Containers */
+        .premium-image-wrapper {
+          border-radius: 30px;
+          overflow: hidden;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+          transition: transform 0.3s ease;
+        }
+        .premium-image-wrapper:hover {
+          transform: scale(1.02);
+        }
       `}</style>
       
-      {/* 1. HERO MASCOT SHOWCASE (Unpixelated Contained Layout) */}
+      {/* 1. MODERN SPLIT HERO */}
       <section style={{
-        position: 'relative',
-        width: '100%',
-        minHeight: '600px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-        backgroundColor: '#091024', // Matches the exact dark blue of the generated image
+        padding: '60px 5%',
+        background: 'linear-gradient(135deg, #FFFAF0 0%, #FFF3E0 100%)',
+        position: 'relative'
       }}>
-        {/* CSS Animated Fireworks Background to replace the pixelated ones */}
-        <style>{`
-          .firework { position: absolute; width: 6px; height: 6px; border-radius: 50%; box-shadow: 0 0 10px 2px rgba(255,193,7,0.8); animation: shoot 2s infinite ease-out; }
-          @keyframes shoot { 0% { transform: translateY(200px) scale(0); opacity: 0; } 50% { opacity: 1; transform: translateY(0) scale(1.5); } 100% { transform: translateY(-50px) scale(0); opacity: 0; } }
-          
-          .sparkle { position: absolute; width: 3px; height: 3px; background: #fff; border-radius: 50%; animation: twinkle 1.5s infinite ease-in-out alternate; }
-          @keyframes twinkle { 0% { opacity: 0.2; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 8px #fff; } }
-        `}</style>
-        
-        {/* Generative Sparks in the sky */}
-        {[...Array(30)].map((_, i) => (
-          <div key={i} className="sparkle" style={{
-            left: `${Math.random() * 100}%`, top: `${Math.random() * 80}%`,
-            animationDelay: `${Math.random() * 2}s`
-          }} />
-        ))}
+        {/* Decorative background shapes */}
+        <div style={{ position: 'absolute', top: '-10%', right: '-5%', width: '400px', height: '400px', background: '#FFC107', opacity: '0.1', borderRadius: '50%', filter: 'blur(80px)' }} />
+        <div style={{ position: 'absolute', bottom: '-10%', left: '-5%', width: '300px', height: '300px', background: '#FF5722', opacity: '0.1', borderRadius: '50%', filter: 'blur(80px)' }} />
 
-        {/* Content Wrapper */}
-        <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: '1400px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 5%' }}>
+        <div style={{ maxWidth: '1300px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '50px', position: 'relative', zIndex: 10 }}>
           
-          {/* Left Text */}
-          <div style={{ flex: '1', textAlign: 'left', maxWidth: '350px', zIndex: 20 }}>
+          {/* Text Content */}
+          <div style={{ flex: '1 1 450px', maxWidth: '600px' }}>
             <ScrollReveal>
-              <h1 className="hero-title">HAPPY DIWALI!</h1>
-              <p className="hero-subtitle">Illuminate Your Celebrations!</p>
+              <div style={{ display: 'inline-block', padding: '8px 20px', background: '#FFF3E0', color: '#D84315', borderRadius: '30px', fontWeight: 'bold', fontSize: '0.9rem', letterSpacing: '1px', border: '1px solid #FFE0B2', marginBottom: '20px' }}>
+                🎉 Deepavali 2026 Collection
+              </div>
+              
+              <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(3rem, 5vw, 4.5rem)', color: '#1A1A1A', lineHeight: 1.1, marginBottom: '25px' }}>
+                The True Spirit of <span style={{ color: '#D84315' }}>Diwali.</span>
+              </h1>
+              
+              <p style={{ fontSize: '1.2rem', color: '#555', lineHeight: '1.7', marginBottom: '40px', maxWidth: '500px' }}>
+                Experience the joy of authentic Sivakasi fireworks. 
+                Premium quality, spectacular colors, and safe celebrations delivered straight to your door.
+              </p>
+              
+              <Link href="/shop" style={{ textDecoration: 'none' }}>
+                <button className="primary-btn">
+                  Explore The Magic
+                </button>
+              </Link>
             </ScrollReveal>
           </div>
 
-          {/* Center Mascot (Contained, NEVER stretched) */}
-          <div style={{ flex: '0 0 auto', position: 'relative', width: '500px', height: '500px', zIndex: 15 }}>
-             <Image 
-                src="/images/family_hero_solid_bg.png"
-                alt="Happy Diwali Family"
-                fill
-                style={{ objectFit: 'contain' }}
-                priority
-                quality={100}
-              />
-          </div>
-
-          {/* Right Text */}
-          <div style={{ flex: '1', textAlign: 'right', maxWidth: '350px', zIndex: 20 }}>
+          {/* Premium Image Card */}
+          <div style={{ flex: '1 1 450px', display: 'flex', justifyContent: 'center' }}>
             <ScrollReveal delay={200}>
-              <h1 className="hero-title" style={{ color: '#fff' }}>
-                SPARKLE<br/><span style={{ color: '#FFC107' }}>AND SHINE!</span>
-              </h1>
-              <p className="hero-subtitle">Get Ready for Diwali</p>
+              <div className="premium-image-wrapper" style={{ width: '100%', maxWidth: '550px', aspectRatio: '4/4', position: 'relative' }}>
+                <Image 
+                  src="/images/mockup_family_hero.png" // Re-using the beautiful family mockup image, but as a card!
+                  alt="Happy Diwali Family"
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  priority
+                />
+              </div>
             </ScrollReveal>
           </div>
 
         </div>
       </section>
 
-      {/* 2. FEATURED COLLECTIONS (Products) */}
-      <section style={{ padding: '80px 5%' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+      {/* 2. THE LEGACY OF SIVAKASI (History Section) */}
+      <section style={{ padding: '100px 5%', backgroundColor: '#fff' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap-reverse', gap: '60px' }}>
+          
+          {/* History Image */}
+          <div style={{ flex: '1 1 450px', display: 'flex', justifyContent: 'center' }}>
+            <ScrollReveal>
+              <div className="premium-image-wrapper" style={{ width: '100%', maxWidth: '500px', aspectRatio: '4/5', position: 'relative', borderRadius: '20px' }}>
+                <Image 
+                  src="/images/sivakasi_history.png"
+                  alt="Sivakasi Fireworks Heritage"
+                  fill
+                  style={{ objectFit: 'cover' }}
+                />
+              </div>
+            </ScrollReveal>
+          </div>
+
+          {/* History Text */}
+          <div style={{ flex: '1 1 450px', maxWidth: '550px' }}>
+            <ScrollReveal delay={200}>
+              <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', color: '#1A1A1A', marginBottom: '20px' }}>
+                The Legacy of Sivakasi
+              </h2>
+              <div style={{ width: '50px', height: '4px', backgroundColor: '#FFC107', marginBottom: '30px' }} />
+              
+              <p style={{ fontSize: '1.15rem', color: '#555', lineHeight: '1.8', marginBottom: '20px' }}>
+                Known as the "Mini Japan" of India, Sivakasi has been the beating heart of India's fireworks industry for nearly a century. The dry climate and generations of unparalleled craftsmanship make it unique in the world.
+              </p>
+              
+              <p style={{ fontSize: '1.15rem', color: '#555', lineHeight: '1.8' }}>
+                At Hero Crackers, we honor this rich heritage. Every sparkler, rocket, and fountain we offer is a testament to the dedication of local artisans. We bring the magic of Sivakasi directly from the factories to your family's celebration, ensuring tradition, quality, and safety in every spark.
+              </p>
+            </ScrollReveal>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 3. SHOP BY CATEGORY */}
+      <section style={{ padding: '80px 5%', backgroundColor: '#FAFAFA' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <ScrollReveal>
             <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-              <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.2rem', color: '#222', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', color: '#222' }}>
+                Browse by Category
+              </h2>
+            </div>
+          </ScrollReveal>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '30px' }}>
+            {[
+              { name: 'Sparklers', emoji: '✨' },
+              { name: 'Rockets', emoji: '🚀' },
+              { name: 'Chakkars', emoji: '🌀' },
+              { name: 'Gift Boxes', emoji: '🎁' }
+            ].map((cat, i) => (
+              <ScrollReveal key={cat.name} delay={i * 100}>
+                <Link href="/shop" style={{ textDecoration: 'none' }}>
+                  <div className="category-card">
+                    <div style={{ fontSize: '3rem', marginBottom: '15px' }}>{cat.emoji}</div>
+                    <h3 style={{ color: '#333', fontSize: '1.2rem', margin: 0, fontWeight: '600' }}>{cat.name}</h3>
+                  </div>
+                </Link>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. FEATURED COLLECTIONS (Products) */}
+      <section style={{ padding: '100px 5%', backgroundColor: '#fff' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <ScrollReveal>
+            <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+              <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', color: '#222' }}>
                 Featured Collections
               </h2>
               <div style={{ width: '60px', height: '3px', backgroundColor: '#D84315', margin: '15px auto' }} />
@@ -144,51 +216,46 @@ export default async function Home() {
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}>
             {featuredProducts.map((product, index) => (
-              <ScrollReveal key={product.id} delay={index * 100}>
-                {/* 
-                  We render the standard ProductCard. 
-                  Since the page background is light (#FAF8F5), the default ProductCard will look clean. 
-                  We can wrap it in a container to enforce the mockup's soft shadow and terracotta button style 
-                  if needed, but ProductCard handles its own layout well.
-                */}
+              <ScrollReveal key={product.id} delay={index * 150}>
                 <ProductCard product={product} />
               </ScrollReveal>
             ))}
           </div>
           
-          <div style={{ textAlign: 'center', marginTop: '50px' }}>
+          <div style={{ textAlign: 'center', marginTop: '60px' }}>
              <Link href="/shop" style={{ textDecoration: 'none' }}>
                 <button className="view-all-btn">
-                  View All Products
+                  View Full Catalog
                 </button>
              </Link>
           </div>
         </div>
       </section>
 
-      {/* 3. WHY SHOP WITH US (Trust Banner) */}
-      <section style={{ padding: '40px 5%', backgroundColor: '#F0EBE1', borderTop: '1px solid #E5E0D5', borderBottom: '1px solid #E5E0D5' }}>
+      {/* 5. WHY SHOP WITH US (Trust Banner) */}
+      <section style={{ padding: '50px 5%', backgroundColor: '#FFF8E1', borderTop: '1px solid #FFE0B2', borderBottom: '1px solid #FFE0B2' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           <ScrollReveal>
-            <h3 style={{ textAlign: 'center', fontFamily: 'var(--font-serif)', fontSize: '1.8rem', color: '#333', marginBottom: '30px' }}>
-              WHY SHOP WITH US?
+            <h3 style={{ textAlign: 'center', fontFamily: 'var(--font-serif)', fontSize: '1.8rem', color: '#333', marginBottom: '40px' }}>
+              Why Shop With Us?
             </h3>
             
-            <div style={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', gap: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', gap: '30px' }}>
               {[
-                { title: 'Secure Shopping' },
-                { title: 'Fast Delivery' },
-                { title: 'Safe Fireworks' }
+                { title: 'Secure Shopping', desc: '100% safe checkout' },
+                { title: 'Fast Delivery', desc: 'Guaranteed festival shipping' },
+                { title: 'Safe Fireworks', desc: 'Certified Sivakasi quality' }
               ].map(feature => (
-                <div key={feature.title} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div key={feature.title} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', textAlign: 'center' }}>
                   <div style={{ 
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    width: '24px', height: '24px', backgroundColor: '#D84315', color: '#fff', 
-                    borderRadius: '50%', fontSize: '0.8rem', fontWeight: 'bold' 
+                    width: '40px', height: '40px', backgroundColor: '#D84315', color: '#fff', 
+                    borderRadius: '50%', fontSize: '1.2rem', fontWeight: 'bold' 
                   }}>
                     ✓
                   </div>
-                  <span style={{ color: '#444', fontWeight: '600', fontSize: '1.1rem' }}>{feature.title}</span>
+                  <span style={{ color: '#222', fontWeight: '700', fontSize: '1.1rem' }}>{feature.title}</span>
+                  <span style={{ color: '#666', fontSize: '0.9rem' }}>{feature.desc}</span>
                 </div>
               ))}
             </div>
