@@ -25,7 +25,7 @@ export default function RootLayout({ children }) {
             <div style={{ marginBottom: '20px', fontSize: '0.9rem', color: '#555', lineHeight: '1.6' }}>
               <strong>Arunachalam Agency</strong><br/>
               📍 17, Thattu Mettu Street, Sattur Road, Sivakasi, Virudhunagar, Tamil Nadu - 626123<br/>
-              📞 +91 90474 88862 | ✉️ sales@herocrackers.com
+              📞 +91 90474 88862 | ✉️ admin@herocrackers.com
             </div>
             <p>© {new Date().getFullYear()} Hero Crackers Fireworks. All rights reserved.</p>
             <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '10px' }}>
