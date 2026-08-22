@@ -312,88 +312,17 @@ export default function DynamicLandingPage() {
             SHOP NOW
           </Link>
 
-          {/* CSS-based 2D Mockup Graphic Elements */}
-          <div style={{ position: 'relative', width: '100%', height: '350px', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px' }}>
-            <style>{`
-              @keyframes floatBoxLeft {
-                0% { transform: translateY(0) rotate(-12deg); }
-                50% { transform: translateY(-15px) rotate(-14deg); }
-                100% { transform: translateY(0) rotate(-12deg); }
-              }
-              @keyframes floatBoxRight {
-                0% { transform: translateY(0) rotate(15deg); }
-                50% { transform: translateY(-20px) rotate(12deg); }
-                100% { transform: translateY(0) rotate(15deg); }
-              }
-              @keyframes floatCrackers {
-                0% { transform: translateY(0) scale(1); filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); }
-                50% { transform: translateY(-10px) scale(1.05); filter: drop-shadow(0 20px 15px rgba(0,0,0,0.3)); }
-                100% { transform: translateY(0) scale(1); filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); }
-              }
-            `}</style>
-            
-            {/* Left Box */}
-            <div style={{
-              position: 'absolute',
-              left: 'calc(50% - 220px)',
-              top: '20px',
-              width: '180px',
-              height: '240px',
-              background: 'linear-gradient(135deg, #FF0055, #8B0000)',
-              border: '6px solid #FFD700',
-              borderRadius: '8px',
-              boxShadow: '10px 10px 0 rgba(0,0,0,0.4)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              padding: '15px 10px',
-              animation: 'floatBoxLeft 4s ease-in-out infinite',
-              zIndex: 2
-            }}>
-              <div style={{ color: '#FFD700', fontFamily: '"Bangers", cursive', fontSize: '2rem', textAlign: 'center', lineHeight: '1', textShadow: '2px 2px 0 #CC3700, 4px 4px 0 rgba(0,0,0,0.5)' }}>
-                ROCKET<br/>RAMPAGE
-              </div>
-              <div style={{ marginTop: 'auto', fontSize: '4rem', filter: 'drop-shadow(0 5px 5px rgba(0,0,0,0.5))' }}>🚀</div>
+          {/* Static 2D Mockup Graphic Elements */}
+          <div style={{ marginTop: '20px', width: '100%', maxWidth: '700px', display: 'flex', justifyContent: 'center' }}>
+            <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', zIndex: 10 }}>
+              <Image 
+                src="/mockup_boxes.png" 
+                alt="Explosive Fun Fireworks Boxes" 
+                fill
+                style={{ objectFit: 'contain', mixBlendMode: 'multiply' }}
+                priority
+              />
             </div>
-
-            {/* Right Box */}
-            <div style={{
-              position: 'absolute',
-              right: 'calc(50% - 220px)',
-              top: '40px',
-              width: '200px',
-              height: '220px',
-              background: 'linear-gradient(135deg, #4A00E0, #8E2DE2)',
-              border: '6px solid #00FFFF',
-              borderRadius: '8px',
-              boxShadow: '-10px 10px 0 rgba(0,0,0,0.4)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              padding: '15px 10px',
-              animation: 'floatBoxRight 5s ease-in-out infinite',
-              zIndex: 1
-            }}>
-              <div style={{ color: '#00FFFF', fontFamily: '"Bangers", cursive', fontSize: '2rem', textAlign: 'center', lineHeight: '1', textShadow: '2px 2px 0 #00008B, 4px 4px 0 rgba(0,0,0,0.5)' }}>
-                NIGHT<br/>BLASTER
-              </div>
-              <div style={{ marginTop: 'auto', fontSize: '4rem', filter: 'drop-shadow(0 5px 5px rgba(0,0,0,0.5))' }}>🎇</div>
-            </div>
-
-            {/* Center Mini Firecrackers */}
-            <div style={{
-              position: 'absolute',
-              bottom: '10px',
-              fontSize: '5rem',
-              animation: 'floatCrackers 3s ease-in-out infinite',
-              zIndex: 3,
-              display: 'flex',
-              gap: '10px'
-            }}>
-              <span style={{ transform: 'rotate(-20deg)' }}>🧨</span>
-              <span style={{ transform: 'rotate(10deg) translateY(-10px)' }}>🧨</span>
-            </div>
-
           </div>
         </div>
       </section>
