@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import OrderManager from './admin/OrderManager';
 import QuickBillPOS from './admin/QuickBillPOS';
 import MasterDataPanel from './admin/MasterDataPanel';
@@ -121,17 +122,31 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
             </h1>
             <p style={{ color: theme.textSecondary, margin: 0, fontSize: '1.1rem' }}>Manage orders, inventory, and masters seamlessly.</p>
           </div>
-          <button 
-            className="action-btn"
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            style={{ 
-              padding: '10px 20px', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold',
-              backgroundColor: theme.cardBg, color: theme.textPrimary, border: `1px solid ${theme.border}`,
-              display: 'flex', alignItems: 'center', gap: '8px'
-            }}
-          >
-            {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
-          </button>
+          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+            <Link href="/" passHref>
+              <button 
+                className="action-btn"
+                style={{ 
+                  padding: '10px 20px', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold',
+                  backgroundColor: theme.accent, color: 'white', border: 'none',
+                  display: 'flex', alignItems: 'center', gap: '8px'
+                }}
+              >
+                🏠 Storefront
+              </button>
+            </Link>
+            <button 
+              className="action-btn"
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              style={{ 
+                padding: '10px 20px', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold',
+                backgroundColor: theme.cardBg, color: theme.textPrimary, border: `1px solid ${theme.border}`,
+                display: 'flex', alignItems: 'center', gap: '8px'
+              }}
+            >
+              {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+            </button>
+          </div>
         </div>
         
         {/* Main Navigation */}
