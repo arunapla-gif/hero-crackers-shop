@@ -548,7 +548,8 @@ export default function DynamicLandingPage() {
           color: '#777',
           fontSize: '0.9rem'
         }}>
-          &copy; {new Date().getFullYear()} Hero Crackers. All Rights Reserved. Designed for a brighter, safer Diwali.
+          <p style={{ marginBottom: '10px' }}>&copy; {new Date().getFullYear()} Hero Crackers. All Rights Reserved. Designed for a brighter, safer Diwali.</p>
+          <p>Hero Crackers is a part of <strong>Arunachalam Agency</strong> which is the verified Meta Business Portfolio.</p>
         </div>
       </footer>
 
