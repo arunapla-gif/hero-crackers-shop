@@ -24,8 +24,8 @@ export default function RootLayout({ children }) {
           <footer style={{ backgroundColor: '#fff', borderTop: '2px solid rgba(229, 57, 53, 0.1)', color: '#333', padding: '40px 50px', textAlign: 'center', marginTop: 'auto' }}>
             <div style={{ marginBottom: '20px', fontSize: '0.9rem', color: '#555', lineHeight: '1.6' }}>
               <strong>Arunachalam Agency</strong><br/>
-              📍 123 Firework Ave, Sivakasi, TN<br/>
-              📞 +91 98765 43210 | ✉️ sales@herocrackers.com
+              📍 17, Thattu Mettu Street, Sattur Road, Sivakasi, Virudhunagar, Tamil Nadu - 626123<br/>
+              📞 +91 90474 88862 | ✉️ sales@herocrackers.com
             </div>
             <p>© {new Date().getFullYear()} Hero Crackers Fireworks. All rights reserved.</p>
             <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '10px' }}>
