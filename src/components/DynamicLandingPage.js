@@ -181,9 +181,9 @@ export default function DynamicLandingPage() {
           `}</style>
           {[...Array(20)].map((_, i) => (
             <div key={i} className="bg-spark" style={{
-              left: \`\${Math.random() * 100}%\`,
-              animationDuration: \`\${Math.random() * 3 + 2}s\`,
-              animationDelay: \`\${Math.random() * 2}s\`
+              left: `${Math.random() * 100}%`,
+              animationDuration: `${Math.random() * 3 + 2}s`,
+              animationDelay: `${Math.random() * 2}s`
             }}></div>
           ))}
         </div>
