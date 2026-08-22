@@ -156,29 +156,37 @@ export default function DynamicLandingPage() {
         alignItems: 'center',
         justifyContent: 'center',
         padding: '120px 5% 60px',
-        borderBottom: '4px solid #D4AF37',
-        overflow: 'hidden'
+        borderBottom: '6px solid #FF4500',
+        overflow: 'hidden',
+        background: 'linear-gradient(135deg, #FF4500 0%, #9B30FF 100%)',
       }}>
         
-        {/* Photorealistic Diwali Background */}
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1 }}>
-          <Image 
-            src="/premium_diwali.png" 
-            alt="Beautiful Diwali Diyas and Sparkles" 
-            fill
-            style={{ objectFit: 'cover', objectPosition: 'center' }}
-            priority
-          />
+        {/* Animated Background Particles */}
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, overflow: 'hidden' }}>
+          <style>{`
+            .bg-spark {
+              position: absolute;
+              width: 4px; height: 4px;
+              background: #FFF;
+              border-radius: 50%;
+              box-shadow: 0 0 10px #FFF, 0 0 20px #FFD700;
+              animation: floatBgSpark linear infinite;
+              opacity: 0.6;
+            }
+            @keyframes floatBgSpark {
+              0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+              50% { opacity: 0.8; }
+              100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+            }
+          `}</style>
+          {[...Array(20)].map((_, i) => (
+            <div key={i} className="bg-spark" style={{
+              left: \`\${Math.random() * 100}%\`,
+              animationDuration: \`\${Math.random() * 3 + 2}s\`,
+              animationDelay: \`\${Math.random() * 2}s\`
+            }}></div>
+          ))}
         </div>
-
-        {/* Dark overlay for text readability */}
-        <div style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0, bottom: 0,
-          background: 'radial-gradient(circle at center, rgba(0,0,0,0.5) 0%, rgba(20, 5, 5, 0.9) 100%)',
-          zIndex: 2,
-          pointerEvents: 'none'
-        }}></div>
 
         <div style={{ 
           position: 'relative', 
@@ -195,202 +203,113 @@ export default function DynamicLandingPage() {
           {/* Left Side: Typography & Call to Action */}
           <div style={{ flex: '1 1 400px', textAlign: 'left' }}>
             <div style={{
-              color: '#D4AF37',
-              fontWeight: '700',
-              letterSpacing: '3px',
+              color: '#FFD700',
+              fontWeight: '900',
+              letterSpacing: '4px',
               textTransform: 'uppercase',
               marginBottom: '15px',
-              fontSize: '1rem',
+              fontSize: '1.2rem',
               display: 'inline-block',
-              borderBottom: '2px solid #D4AF37',
-              paddingBottom: '5px'
+              textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              background: 'rgba(0,0,0,0.2)',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              border: '2px solid rgba(255, 215, 0, 0.3)'
             }}>
-              Direct from Sivakasi
+              🔥 Direct from Sivakasi
             </div>
 
             <h1 style={{
-              fontSize: 'clamp(2.8rem, 5vw, 4.5rem)',
-              lineHeight: '1.1',
+              fontSize: 'clamp(3.5rem, 6vw, 6rem)',
+              lineHeight: '1',
               color: '#FFF',
               marginBottom: '20px',
-              fontFamily: '"Playfair Display", serif',
-              fontWeight: '800',
-              textShadow: '0 4px 15px rgba(0,0,0,0.5)'
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              fontWeight: '900',
+              textTransform: 'uppercase',
+              letterSpacing: '-2px',
+              textShadow: '3px 3px 0 #FF4500, 6px 6px 0 #9B30FF, 0 10px 20px rgba(0,0,0,0.5)',
+              transform: 'rotate(-2deg)'
             }}>
-              Unleash the <br/>
-              <span style={{ color: '#D4AF37' }}>Hero</span> in Your <br/>
-              Celebration.
+              EXPLOSIVE <br/>
+              <span style={{ color: '#FFD700' }}>FUN!</span>
             </h1>
             
             <p style={{
-              fontSize: '1.2rem',
-              lineHeight: '1.6',
-              color: '#E0E0E0',
-              marginBottom: '35px',
-              fontWeight: '400',
+              fontSize: '1.4rem',
+              lineHeight: '1.4',
+              color: '#FFF',
+              marginBottom: '40px',
+              fontWeight: '700',
               maxWidth: '500px',
+              textShadow: '0 2px 4px rgba(0,0,0,0.4)',
+              transform: 'rotate(-1deg)'
             }}>
-              Discover premium, safety-first green crackers at wholesale prices. 
-              <br/><br/>
-              <strong style={{ color: '#fff' }}>👉 Hover over the magic card to ignite the fun!</strong>
+              Spark the Celebration! <br/>
+              Shop premium fireworks for unforgettable nights.
             </p>
 
             <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-              <Link href="#catalog" className="premium-btn">
-                Shop The Catalog
+              <Link href="#catalog" style={{
+                background: 'linear-gradient(to bottom, #FF8C00, #FF4500)',
+                color: '#FFF',
+                fontWeight: '900',
+                fontSize: '1.3rem',
+                textTransform: 'uppercase',
+                padding: '16px 40px',
+                borderRadius: '50px',
+                textDecoration: 'none',
+                boxShadow: '0 8px 0 #CC3700, 0 15px 25px rgba(0,0,0,0.4)',
+                transition: 'all 0.1s ease',
+                display: 'inline-block',
+                cursor: 'pointer',
+                transform: 'rotate(-2deg)'
+              }}
+              onMouseDown={(e) => {
+                e.currentTarget.style.transform = 'rotate(-2deg) translateY(6px)';
+                e.currentTarget.style.boxShadow = '0 2px 0 #CC3700, 0 5px 10px rgba(0,0,0,0.4)';
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.transform = 'rotate(-2deg) translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 0 #CC3700, 0 15px 25px rgba(0,0,0,0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'rotate(-2deg) translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 0 #CC3700, 0 15px 25px rgba(0,0,0,0.4)';
+              }}
+              >
+                SHOP NOW
               </Link>
             </div>
           </div>
 
-          {/* Right Side: Cinematic Interactive Character */}
+          {/* Right Side: Floating 3D Element */}
           <div style={{ flex: '1 1 400px', display: 'flex', justifyContent: 'center' }}>
             <style>{`
-              .cinematic-container {
+              .fun-container {
                 position: relative;
                 width: 100%;
-                max-width: 450px;
+                max-width: 500px;
                 aspect-ratio: 1/1;
-                cursor: pointer;
-                border-radius: 20px;
-                overflow: hidden;
-                box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-                border: 4px solid #D4AF37;
-                animation: floatCharacter 4s ease-in-out infinite;
-                transition: border-color 0.4s ease, box-shadow 0.4s ease;
-                transition-delay: 0.4s; /* Sync with flash peak */
+                animation: float3DAsset 4s ease-in-out infinite;
+                filter: drop-shadow(0 30px 40px rgba(0,0,0,0.5));
               }
 
-              .cinematic-container:hover {
-                border-color: #60A5FA; /* Magical blue glow */
-                box-shadow: 0 0 60px rgba(59, 130, 246, 0.7);
-              }
-
-              .character-layer {
-                position: absolute;
-                top: 0; left: 0; width: 100%; height: 100%;
-                transition: opacity 0s; /* Instant swap, hidden by flash */
-                background: #fff;
-              }
-
-              .kid-layer {
-                opacity: 1;
-                transition-delay: 0.4s; /* Wait for flash to peak before hiding */
-              }
-              
-              .hero-layer {
-                opacity: 0;
-                transition-delay: 0.4s; /* Wait for flash to peak before showing */
-              }
-
-              .cinematic-container:hover .kid-layer {
-                opacity: 0;
-              }
-              
-              .cinematic-container:hover .hero-layer {
-                opacity: 1;
-              }
-
-              /* The Magical Flash Explosion */
-              .magic-flash {
-                position: absolute;
-                top: 50%; left: 50%;
-                width: 10px; height: 10px;
-                background: radial-gradient(circle, #ffffff 20%, #FFD700 80%, transparent 100%);
-                border-radius: 50%;
-                transform: translate(-50%, -50%) scale(0);
-                opacity: 0;
-                z-index: 10;
-                pointer-events: none;
-                transition: all 0s; /* Instant reset when not hovered */
-              }
-
-              .cinematic-container:hover .magic-flash {
-                animation: cinematicFlash 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-              }
-
-              @keyframes cinematicFlash {
-                0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-                15% { opacity: 1; }
-                40% { transform: translate(-50%, -50%) scale(150); opacity: 1; background: #fff; } /* Pure whiteout */
-                100% { transform: translate(-50%, -50%) scale(200); opacity: 0; }
-              }
-
-              /* Floating Particle Sparks */
-              .hero-sparks {
-                position: absolute;
-                top: 0; left: 0; width: 100%; height: 100%;
-                opacity: 0;
-                pointer-events: none;
-                z-index: 5;
-                transition: opacity 0.5s;
-                transition-delay: 0.6s; /* Appear after flash */
-              }
-
-              .cinematic-container:hover .hero-sparks {
-                opacity: 1;
-              }
-              
-              .spark {
-                position: absolute;
-                width: 6px; height: 6px;
-                background: #FFD700;
-                border-radius: 50%;
-                box-shadow: 0 0 10px #FFD700, 0 0 20px #FF4500;
-                animation: floatSpark linear infinite;
-                opacity: 0;
-              }
-
-              .spark:nth-child(1) { left: 20%; top: 80%; animation-duration: 2s; animation-delay: 0.6s; }
-              .spark:nth-child(2) { left: 80%; top: 70%; animation-duration: 2.5s; animation-delay: 1.1s; }
-              .spark:nth-child(3) { left: 50%; top: 90%; animation-duration: 1.8s; animation-delay: 0.8s; }
-              .spark:nth-child(4) { left: 30%; top: 60%; animation-duration: 3s; animation-delay: 1.5s; }
-              .spark:nth-child(5) { left: 70%; top: 85%; animation-duration: 2.2s; animation-delay: 0.9s; }
-
-              @keyframes floatSpark {
-                0% { transform: translateY(0) scale(1); opacity: 0; }
-                20% { opacity: 1; }
-                80% { opacity: 1; }
-                100% { transform: translateY(-150px) scale(0.5); opacity: 0; }
-              }
-
-              @keyframes floatCharacter {
-                0% { transform: translateY(0px); }
-                50% { transform: translateY(-15px); }
-                100% { transform: translateY(0px); }
+              @keyframes float3DAsset {
+                0% { transform: translateY(0px) rotate(0deg) scale(1); }
+                50% { transform: translateY(-20px) rotate(2deg) scale(1.02); }
+                100% { transform: translateY(0px) rotate(0deg) scale(1); }
               }
             `}</style>
             
-            <div className="cinematic-container">
-              {/* Layer 1: The Kid */}
-              <div className="character-layer kid-layer">
-                <Image 
-                  src="/kid_placeholder.png" 
-                  alt="Energetic Kid" 
-                  fill
-                  style={{ objectFit: 'contain' }}
-                />
-              </div>
-              
-              {/* Layer 2: The Hero */}
-              <div className="character-layer hero-layer">
-                <Image 
-                  src="/hero_placeholder.png" 
-                  alt="Magical Safety Hero" 
-                  fill
-                  style={{ objectFit: 'contain' }}
-                />
-                {/* Layer 2.5: The Sparks (Only visible when Hero is active) */}
-                <div className="hero-sparks">
-                  <div className="spark"></div>
-                  <div className="spark"></div>
-                  <div className="spark"></div>
-                  <div className="spark"></div>
-                  <div className="spark"></div>
-                </div>
-              </div>
-
-              {/* Layer 3: The Flashbang Transition */}
-              <div className="magic-flash"></div>
+            <div className="fun-container">
+              <Image 
+                src="/explosive_fun.png" 
+                alt="Explosive Fun Fireworks Box" 
+                fill
+                style={{ objectFit: 'contain' }}
+                priority
+              />
             </div>
           </div>
         </div>
