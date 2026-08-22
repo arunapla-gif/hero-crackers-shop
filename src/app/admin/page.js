@@ -54,8 +54,8 @@ export default async function AdminDashboard() {
   return (
     <ReactQueryProvider>
       <AdminDashboardClient 
-        initialOrders={orders} 
-        initialProducts={products} 
+        initialOrders={JSON.parse(JSON.stringify(orders))} 
+        initialProducts={JSON.parse(JSON.stringify(products))} 
         categories={JSON.parse(JSON.stringify(categories))}
         initialGodowns={JSON.parse(JSON.stringify(godowns))}
         initialReferences={JSON.parse(JSON.stringify(references))}
