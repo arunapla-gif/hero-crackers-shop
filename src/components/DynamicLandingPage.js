@@ -68,28 +68,33 @@ export default function DynamicLandingPage() {
 
         .category-tab {
           padding: 10px 25px;
-          background: #fff;
-          border: 1px solid #ddd;
-          color: #666;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: #E0E0E0;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s;
+          border-radius: 30px;
+          transition: all 0.3s ease;
+          backdrop-filter: blur(10px);
         }
         .category-tab:hover {
-          border-color: #B71C1C;
-          color: #B71C1C;
+          background: rgba(255, 255, 255, 0.1);
+          border-color: #D4AF37;
+          color: #D4AF37;
+          box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
         }
         .category-tab.active {
-          background: #B71C1C;
+          background: linear-gradient(135deg, #B71C1C, #FF4B2B);
           color: #fff;
-          border-color: #B71C1C;
+          border-color: transparent;
+          box-shadow: 0 4px 15px rgba(229, 57, 53, 0.4);
         }
 
         .product-card {
-          background: rgba(255, 255, 255, 0.8);
+          background: rgba(15, 23, 42, 0.8);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.6);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 20px;
           padding: 0;
           transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -97,12 +102,12 @@ export default function DynamicLandingPage() {
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         .product-card:hover {
-          transform: translateY(-10px);
-          box-shadow: 0 20px 40px rgba(212, 175, 55, 0.15);
-          border-color: #D4AF37;
+          transform: translateY(-10px) rotate(1deg);
+          box-shadow: 0 20px 40px rgba(212, 175, 55, 0.2);
+          border-color: rgba(212, 175, 55, 0.5);
         }
 
         .discount-badge {
@@ -121,25 +126,27 @@ export default function DynamicLandingPage() {
 
         .add-to-cart-btn {
           width: 100%;
-          padding: 15px;
-          background: #f8f9fa;
+          padding: 16px;
+          background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
           border: none;
-          border-top: 1px solid #eee;
-          color: #B71C1C;
+          border-top: 1px solid rgba(255,255,255,0.05);
+          color: #D4AF37;
           font-weight: 700;
           text-transform: uppercase;
           cursor: pointer;
-          transition: all 0.3s;
+          transition: all 0.3s ease;
           display: flex;
           justify-content: center;
           align-items: center;
           gap: 10px;
           font-size: 1rem;
+          letter-spacing: 1px;
         }
         
         .add-to-cart-btn:hover {
-          background: #B71C1C;
+          background: linear-gradient(135deg, #B71C1C, #FF4B2B);
           color: white;
+          border-top-color: transparent;
         }
 
         .add-to-cart-btn:active {
@@ -400,22 +407,23 @@ export default function DynamicLandingPage() {
       <section id="catalog" style={{ 
         position: 'relative', 
         padding: '80px 5%',
-        background: '#FAFAFA', 
+        background: '#0b0f19', /* Dark Midnight Theme */
+        color: '#FFF'
       }}>
         
         <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
           
           <div style={{ textAlign: 'center', marginBottom: '50px' }}>
             <h2 style={{ 
-              fontSize: '2.5rem', color: '#111', marginBottom: '15px', fontFamily: '"Playfair Display", serif'
+              fontSize: '2.5rem', color: '#FFF', marginBottom: '15px', fontFamily: '"Playfair Display", serif'
             }}>
               Diwali Collection 2024
             </h2>
-            <div style={{ width: '60px', height: '3px', background: '#B71C1C', margin: '0 auto' }}></div>
+            <div style={{ width: '60px', height: '3px', background: 'linear-gradient(90deg, #D4AF37, #FF4B2B)', margin: '0 auto' }}></div>
           </div>
 
           {/* Categories */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '10px', marginBottom: '40px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '15px', marginBottom: '40px' }}>
             {categories.map(cat => (
               <button 
                 key={cat}
@@ -438,32 +446,33 @@ export default function DynamicLandingPage() {
                   {/* Product Image Placeholder */}
                   <div style={{ 
                     height: '250px', 
-                    background: '#f8f9fa', 
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.5) 100%)', 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
                     fontSize: '5rem',
-                    borderBottom: '1px solid #eee',
-                    position: 'relative'
+                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                    position: 'relative',
+                    overflow: 'hidden'
                   }}>
                     {product.image.startsWith('/') ? (
-                       <Image src={product.image} alt={product.name} fill style={{ objectFit: 'contain', padding: '20px' }} />
+                       <Image src={product.image} alt={product.name} fill style={{ objectFit: 'contain', padding: '20px', filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.5))' }} />
                     ) : (
-                       product.image
+                       <span style={{ filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.5))' }}>{product.image}</span>
                     )}
                   </div>
 
                   <div style={{ padding: '25px 20px', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ fontSize: '0.8rem', color: '#B71C1C', fontWeight: '700', textTransform: 'uppercase', marginBottom: '8px' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#D4AF37', fontWeight: '700', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '1px' }}>
                       {product.category}
                     </div>
-                    <h3 style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#111', fontWeight: '600', flexGrow: 1 }}>
+                    <h3 style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#FFF', fontWeight: '600', flexGrow: 1 }}>
                       {product.name}
                     </h3>
                     
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '20px' }}>
-                      <span style={{ fontSize: '1.4rem', fontWeight: '700', color: '#111' }}>₹{product.price}</span>
-                      <span style={{ fontSize: '1rem', color: '#999', textDecoration: 'line-through' }}>₹{product.originalPrice}</span>
+                      <span style={{ fontSize: '1.4rem', fontWeight: '700', color: '#FFF' }}>₹{product.price}</span>
+                      <span style={{ fontSize: '1rem', color: '#666', textDecoration: 'line-through' }}>₹{product.originalPrice}</span>
                     </div>
                   </div>
 
@@ -473,9 +482,9 @@ export default function DynamicLandingPage() {
                     onClick={(e) => {
                       // Small visual click effect
                       const btn = e.currentTarget;
-                      btn.innerHTML = '🛒 Added!';
-                      btn.style.background = '#4CAF50';
-                      btn.style.color = '#fff';
+                      btn.innerHTML = '✨ Added!';
+                      btn.style.background = 'linear-gradient(135deg, #D4AF37, #FFD700)';
+                      btn.style.color = '#111';
                       setTimeout(() => {
                         btn.innerHTML = 'Add to Cart';
                         btn.style.background = '';
