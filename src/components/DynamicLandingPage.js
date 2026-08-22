@@ -33,6 +33,7 @@ export default function DynamicLandingPage() {
       fontFamily: '"Inter", system-ui, sans-serif' 
     }}>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Bangers&display=swap');
         * { box-sizing: border-box; }
         
         .premium-btn {
@@ -150,154 +151,188 @@ export default function DynamicLandingPage() {
       <section style={{
         position: 'relative',
         width: '100%',
-        minHeight: '85vh',
+        minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: '120px 5% 60px',
-        borderBottom: '6px solid #FF4500',
+        padding: '0 0 60px 0',
         overflow: 'hidden',
-        background: 'linear-gradient(135deg, #FF4500 0%, #9B30FF 100%)',
+        background: 'linear-gradient(135deg, #FF4500 0%, #7A28CB 50%, #4A00E0 100%)',
       }}>
-        
+        {/* Faint Grid Background Overlay */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundSize: '40px 40px',
+          backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px)',
+          zIndex: 1
+        }}></div>
+
         {/* Animated Background Particles */}
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2, overflow: 'hidden' }}>
           <style>{`
             .bg-spark {
               position: absolute;
-              width: 4px; height: 4px;
+              width: 5px; height: 5px;
               background: #FFF;
               border-radius: 50%;
-              box-shadow: 0 0 10px #FFF, 0 0 20px #FFD700;
+              box-shadow: 0 0 15px #FFF, 0 0 25px #FFD700;
               animation: floatBgSpark linear infinite;
-              opacity: 0.6;
+              opacity: 0.8;
             }
             @keyframes floatBgSpark {
               0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
-              50% { opacity: 0.8; }
+              20% { opacity: 1; }
+              80% { opacity: 1; }
               100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
             }
           `}</style>
-          {[...Array(20)].map((_, i) => (
+          {[...Array(25)].map((_, i) => (
             <div key={i} className="bg-spark" style={{
               left: `${Math.random() * 100}%`,
-              animationDuration: `${Math.random() * 3 + 2}s`,
-              animationDelay: `${Math.random() * 2}s`
+              animationDuration: `${Math.random() * 4 + 3}s`,
+              animationDelay: `${Math.random() * 3}s`
             }}></div>
           ))}
         </div>
 
+        {/* TOP NAVIGATION BAR */}
+        <nav style={{
+          position: 'relative',
+          zIndex: 20,
+          width: '100%',
+          maxWidth: '1200px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '20px 40px',
+          color: '#FFF',
+          fontFamily: 'system-ui, -apple-system, sans-serif'
+        }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '1.8rem' }}>🎆</span>
+            <div style={{ lineHeight: '1' }}>
+              <div style={{ fontWeight: '900', fontSize: '1.2rem', letterSpacing: '1px' }}>FIREWORKS</div>
+              <div style={{ fontWeight: '900', fontSize: '1.2rem', letterSpacing: '1px' }}>FRENZY</div>
+            </div>
+          </div>
+
+          {/* Links */}
+          <div style={{ display: 'flex', gap: '30px', fontWeight: '700', fontSize: '0.9rem', letterSpacing: '1px' }}>
+            <span style={{ color: '#FFD700', cursor: 'pointer' }}>HOME</span>
+            <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e => e.target.style.color = '#FFD700'} onMouseOut={e => e.target.style.color = '#FFF'}>CATEGORIES</span>
+            <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e => e.target.style.color = '#FFD700'} onMouseOut={e => e.target.style.color = '#FFF'}>BESTSELLERS</span>
+            <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e => e.target.style.color = '#FFD700'} onMouseOut={e => e.target.style.color = '#FFF'}>SHOWS</span>
+            <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={e => e.target.style.color = '#FFD700'} onMouseOut={e => e.target.style.color = '#FFF'}>ACCOUNT</span>
+            <span style={{ cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              CART <span style={{ fontSize: '1.2rem' }}>🛒</span>
+              <span style={{
+                position: 'absolute', top: '-8px', right: '-12px',
+                background: '#FF8C00', color: '#FFF', fontSize: '0.7rem',
+                padding: '2px 6px', borderRadius: '50%', fontWeight: '900'
+              }}>4</span>
+            </span>
+          </div>
+
+          {/* Icons */}
+          <div style={{ display: 'flex', gap: '20px', fontSize: '1.2rem', cursor: 'pointer' }}>
+            <span>🔍</span>
+            <span>🤍</span>
+            <span>👤</span>
+          </div>
+        </nav>
+
+        {/* HERO CONTENT (Stacked Vertically) */}
         <div style={{ 
           position: 'relative', 
           zIndex: 10, 
           width: '100%',
-          maxWidth: '1200px', 
+          maxWidth: '1000px', 
           display: 'flex',
-          flexWrap: 'wrap',
+          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '40px'
+          marginTop: '60px',
+          gap: '20px',
+          textAlign: 'center'
         }}>
           
-          {/* Left Side: Typography & Call to Action */}
-          <div style={{ flex: '1 1 400px', textAlign: 'left' }}>
-            <div style={{
-              color: '#FFD700',
-              fontWeight: '900',
-              letterSpacing: '4px',
-              textTransform: 'uppercase',
-              marginBottom: '15px',
-              fontSize: '1.2rem',
-              display: 'inline-block',
-              textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-              background: 'rgba(0,0,0,0.2)',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              border: '2px solid rgba(255, 215, 0, 0.3)'
-            }}>
-              🔥 Direct from Sivakasi
-            </div>
-
-            <h1 style={{
-              fontSize: 'clamp(3.5rem, 6vw, 6rem)',
-              lineHeight: '1',
-              color: '#FFF',
-              marginBottom: '20px',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              fontWeight: '900',
-              textTransform: 'uppercase',
-              letterSpacing: '-2px',
-              textShadow: '3px 3px 0 #FF4500, 6px 6px 0 #9B30FF, 0 10px 20px rgba(0,0,0,0.5)',
-              transform: 'rotate(-2deg)'
-            }}>
-              EXPLOSIVE <br/>
-              <span style={{ color: '#FFD700' }}>FUN!</span>
-            </h1>
-            
-            <p style={{
-              fontSize: '1.4rem',
-              lineHeight: '1.4',
-              color: '#FFF',
-              marginBottom: '40px',
-              fontWeight: '700',
-              maxWidth: '500px',
-              textShadow: '0 2px 4px rgba(0,0,0,0.4)',
-              transform: 'rotate(-1deg)'
-            }}>
-              Spark the Celebration! <br/>
+          <h1 style={{
+            fontSize: 'clamp(4rem, 10vw, 9rem)',
+            lineHeight: '0.9',
+            color: '#FFD700',
+            fontFamily: '"Bangers", system-ui, sans-serif',
+            letterSpacing: '4px',
+            margin: '0',
+            textShadow: '0px 4px 0px #CC3700, 0px 8px 0px #8B0000, 0px 15px 20px rgba(0,0,0,0.6), -2px -2px 0 #FFF, 2px -2px 0 #FFF, -2px 2px 0 #FFF, 2px 2px 0 #FFF',
+            transform: 'rotate(-2deg)'
+          }}>
+            EXPLOSIVE FUN!
+          </h1>
+          
+          <p style={{
+            fontSize: '1.8rem',
+            lineHeight: '1.4',
+            color: '#FFF',
+            margin: '10px 0 30px',
+            fontWeight: '900',
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            textTransform: 'uppercase',
+            textShadow: '0 4px 8px rgba(0,0,0,0.6)',
+            transform: 'rotate(-1deg)'
+          }}>
+            Spark the Celebration! <br/>
+            <span style={{ fontSize: '1.2rem', fontWeight: '600', textTransform: 'none' }}>
               Shop premium fireworks for unforgettable nights.
-            </p>
+            </span>
+          </p>
 
-            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-              <Link href="#catalog" style={{
-                background: 'linear-gradient(to bottom, #FF8C00, #FF4500)',
-                color: '#FFF',
-                fontWeight: '900',
-                fontSize: '1.3rem',
-                textTransform: 'uppercase',
-                padding: '16px 40px',
-                borderRadius: '50px',
-                textDecoration: 'none',
-                boxShadow: '0 8px 0 #CC3700, 0 15px 25px rgba(0,0,0,0.4)',
-                transition: 'all 0.1s ease',
-                display: 'inline-block',
-                cursor: 'pointer',
-                transform: 'rotate(-2deg)'
-              }}
-              onMouseDown={(e) => {
-                e.currentTarget.style.transform = 'rotate(-2deg) translateY(6px)';
-                e.currentTarget.style.boxShadow = '0 2px 0 #CC3700, 0 5px 10px rgba(0,0,0,0.4)';
-              }}
-              onMouseUp={(e) => {
-                e.currentTarget.style.transform = 'rotate(-2deg) translateY(0)';
-                e.currentTarget.style.boxShadow = '0 8px 0 #CC3700, 0 15px 25px rgba(0,0,0,0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'rotate(-2deg) translateY(0)';
-                e.currentTarget.style.boxShadow = '0 8px 0 #CC3700, 0 15px 25px rgba(0,0,0,0.4)';
-              }}
-              >
-                SHOP NOW
-              </Link>
-            </div>
-          </div>
+          <Link href="#catalog" style={{
+            background: 'linear-gradient(to bottom, #FFB900, #FF7B00)',
+            color: '#FFF',
+            fontWeight: '900',
+            fontSize: '1.6rem',
+            textTransform: 'uppercase',
+            padding: '18px 60px',
+            borderRadius: '50px',
+            textDecoration: 'none',
+            border: '3px solid #FFF',
+            boxShadow: '0 10px 0 #CC3700, 0 20px 30px rgba(0,0,0,0.5), inset 0 4px 10px rgba(255,255,255,0.5)',
+            transition: 'all 0.1s ease',
+            display: 'inline-block',
+            cursor: 'pointer',
+            zIndex: 15
+          }}
+          onMouseDown={(e) => {
+            e.currentTarget.style.transform = 'translateY(8px)';
+            e.currentTarget.style.boxShadow = '0 2px 0 #CC3700, 0 10px 15px rgba(0,0,0,0.5), inset 0 4px 10px rgba(255,255,255,0.5)';
+          }}
+          onMouseUp={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 10px 0 #CC3700, 0 20px 30px rgba(0,0,0,0.5), inset 0 4px 10px rgba(255,255,255,0.5)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 10px 0 #CC3700, 0 20px 30px rgba(0,0,0,0.5), inset 0 4px 10px rgba(255,255,255,0.5)';
+          }}
+          >
+            SHOP NOW
+          </Link>
 
-          {/* Right Side: Floating 3D Element */}
-          <div style={{ flex: '1 1 400px', display: 'flex', justifyContent: 'center' }}>
+          {/* Floating 3D Element over the bottom edge */}
+          <div style={{ marginTop: '-40px', width: '100%', maxWidth: '700px', display: 'flex', justifyContent: 'center' }}>
             <style>{`
               .fun-container {
                 position: relative;
                 width: 100%;
-                max-width: 500px;
                 aspect-ratio: 1/1;
-                animation: float3DAsset 4s ease-in-out infinite;
-                filter: drop-shadow(0 30px 40px rgba(0,0,0,0.5));
+                animation: float3DAsset 5s ease-in-out infinite;
+                filter: drop-shadow(0 40px 50px rgba(0,0,0,0.6));
+                z-index: 10;
               }
 
               @keyframes float3DAsset {
                 0% { transform: translateY(0px) rotate(0deg) scale(1); }
-                50% { transform: translateY(-20px) rotate(2deg) scale(1.02); }
+                50% { transform: translateY(-25px) rotate(2deg) scale(1.03); }
                 100% { transform: translateY(0px) rotate(0deg) scale(1); }
               }
             `}</style>
