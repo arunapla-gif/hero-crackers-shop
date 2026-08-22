@@ -41,40 +41,6 @@ export async function PATCH(request, { params }) {
       data: dataToUpdate
     });
     
-    // --- WHATSAPP INTEGRATION ---
-    // If the status is updated to SHIPPED, trigger the automated WhatsApp message with the PDF Invoice
-    if (body.status === 'SHIPPED') {
-      try {
-        const fullOrder = await prisma.order.findUnique({
-          where: { id },
-          include: { items: true, user: true }
-        });
-        
-        if (fullOrder.customerPhone) {
-          const { generateInvoicePDFBuffer, uploadMediaToWhatsApp, sendWhatsAppTemplate } = await import('@/lib/whatsapp');
-          const products = await prisma.product.findMany();
-          
-          // 1. Build the PDF in the background
-          const pdfBuffer = await generateInvoicePDFBuffer(fullOrder, products);
-          
-          // 2. Upload it to Meta to get a Media ID
-          const mediaId = await uploadMediaToWhatsApp(pdfBuffer, `Invoice_${fullOrder.id.slice(-6)}.pdf`);
-          
-          // 3. Send the automated WhatsApp template
-          // Variables mapped to the template: {{1}}=Name, {{2}}=Tracking, {{3}}=Transport
-          const variables = [
-            fullOrder.user?.name || fullOrder.customerName || 'Customer', 
-            fullOrder.trackingNumber || 'N/A', 
-            fullOrder.transportName || 'N/A'
-          ];
-          
-          // Must await this in Vercel serverless to prevent function freeze
-          await sendWhatsAppTemplate(fullOrder.customerPhone, 'order_shipped_with_invoice', variables, mediaId).catch(console.error);
-        }
-      } catch (waError) {
-        console.error('Background WhatsApp task failed:', waError);
-      }
-    }
     
     return NextResponse.json(order);
   } catch (error) {

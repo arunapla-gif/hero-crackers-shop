@@ -127,19 +127,7 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
     setTrackingNumber('');
   };
 
-  const handleWhatsAppSend = async (orderId) => {
-    try {
-      const res = await fetch(`/api/orders/${orderId}/whatsapp`, { method: 'POST' });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to trigger WhatsApp message');
-      }
-      queryClient.invalidateQueries(['orders']);
-      alert('WhatsApp message triggered successfully!');
-    } catch (err) {
-      alert(`Error: ${err.message}`);
-    }
-  };
+
 
   const handleSelectOrder = (id) => {
     if (selectedOrders.includes(id)) {
@@ -214,7 +202,7 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
     const printJS = require('print-js');
     
     // Instead of building HTML, we just point printJS to our backend API 
-    // which generates the exact same PDF used for WhatsApp!
+    // which generates the invoice PDF.
     printJS({
       printable: `/api/orders/${order.id}/invoice`,
       type: 'pdf',
@@ -511,18 +499,7 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%' }}>
                       <button className="action-btn" onClick={() => openPaymentModal(order.id)} style={{ ...styles.btnPrimary, padding: '8px', fontSize: '0.85rem', backgroundColor: theme.success, boxShadow: 'none' }}>Mark Paid</button>
                       <button className="action-btn" onClick={() => handleSetCredit(order.id)} style={{ ...styles.btnPrimary, padding: '8px', fontSize: '0.85rem', backgroundColor: theme.shipped, boxShadow: 'none' }}>Set Credit</button>
-                      {order.customerPhone && (
-                        <a 
-                          href={`https://wa.me/91${order.customerPhone.replace(/[^0-9]/g, '').slice(-10)}?text=Hello ${order.user?.name || ''}, your estimate for ₹${order.totalAmount} is ready. Please pay via UPI to our number or scan the QR code to proceed. Let us know once paid so we can dispatch your crackers!`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="action-btn"
-                          title="Send Payment Reminder via WhatsApp"
-                          style={{ gridColumn: 'span 2', width: '100%', padding: '8px', backgroundColor: 'transparent', color: '#25D366', border: '1px solid #25D366', borderRadius: '8px', cursor: 'pointer', textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '0.85rem', fontWeight: 'bold' }}
-                        >
-                          📲 Send Payment Reminder
-                        </a>
-                      )}
+
                     </div>
                   )}
                   {order.status !== 'CANCELLED' && order.paymentStatus === 'CREDIT' && (
@@ -540,48 +517,7 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
                     <button className="action-btn" onClick={() => onRepeatOrder(order)} title="Repeat Order (Same Customer)" style={{ padding: '8px 0', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>🔁</button>
                   </div>
                   
-                  {/* WhatsApp Smart Button */}
-                  {order.customerPhone && (
-                    <button 
-                      onClick={() => handleWhatsAppSend(order.id)}
-                      title="Send automated PDF via WhatsApp API"
-                      style={{ 
-                        width: '100%', 
-                        padding: '10px', 
-                        backgroundColor: order.lastSentVersion === 0 ? theme.info : (order.lastSentVersion < order.editVersion ? theme.accent : theme.success), 
-                        color: '#fff', 
-                        border: 'none', 
-                        borderRadius: '8px', 
-                        cursor: 'pointer', 
-                        display: 'flex', 
-                        justifyContent: 'center', 
-                        alignItems: 'center', 
-                        fontSize: '0.9rem', 
-                        fontWeight: 'bold', 
-                        gap: '8px'
-                      }}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-                      {order.lastSentVersion === 0 
-                        ? "Send Initial Bill (v1)" 
-                        : (order.lastSentVersion < order.editVersion 
-                            ? `Send Updated Bill (v${order.editVersion})` 
-                            : `Sent v${order.editVersion} (Resend?)`)}
-                    </button>
-                  )}
-                  {/* WhatsApp Manual Fallback */}
-                  {order.customerPhone && (
-                    <a 
-                      href={`https://wa.me/91${order.customerPhone.replace(/[^0-9]/g, '').slice(-10)}?text=Hello! Your Hero Crackers order %23${formatOrderNumber(order.orderNumber, order.createdAt)} is currently ${order.status}.${order.trackingNumber ? ` It was dispatched via ${order.transportName}. Tracking LR: ${order.trackingNumber}` : ''}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="action-btn"
-                      title="Open WhatsApp Web to chat manually."
-                      style={{ width: '100%', padding: '8px', backgroundColor: 'transparent', color: '#25D366', border: '1px solid #25D36640', borderRadius: '8px', cursor: 'pointer', textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}
-                    >
-                      Manual Chat
-                    </a>
-                  )}
+
                 </div>
               </div>
 

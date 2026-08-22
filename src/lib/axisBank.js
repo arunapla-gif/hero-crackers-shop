@@ -2,7 +2,7 @@
  * Axis Bank Corporate API Integration Stub
  * 
  * In our legally compliant Fireworks Estimate model, this utility is used to:
- * 1. Generate secure UPI/Bank Transfer payment links to send to customers via WhatsApp.
+ * 1. Generate secure UPI/Bank Transfer payment links to send to customers.
  * 2. Provide functions to verify reconciliation when an admin clicks "Mark Paid".
  */
 

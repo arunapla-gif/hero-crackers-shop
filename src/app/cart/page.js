@@ -84,7 +84,7 @@ export default function CartPage() {
               <label style={labelStyle}>Full Name</label>
               <input type="text" required value={customerInfo.name} onChange={e => setCustomerInfo({...customerInfo, name: e.target.value})} style={inputStyle} placeholder="John Doe" />
               
-              <label style={labelStyle}>Phone Number (WhatsApp)</label>
+              <label style={labelStyle}>Phone Number</label>
               <input type="tel" required value={customerInfo.phone} onChange={e => setCustomerInfo({...customerInfo, phone: e.target.value})} style={inputStyle} placeholder="10-digit mobile number" />
               
               <label style={labelStyle}>Delivery Address</label>

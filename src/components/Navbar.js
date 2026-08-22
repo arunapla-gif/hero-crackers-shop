@@ -36,11 +36,9 @@ export default function Navbar() {
         alignItems: 'center',
         padding: '15px 40px',
         transition: 'all 0.3s ease',
-        background: scrolled ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.4)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: scrolled ? '1px solid rgba(0, 0, 0, 0.05)' : '1px solid transparent',
-        boxShadow: scrolled ? '0 10px 30px rgba(0,0,0,0.05)' : 'none',
+        background: '#ffffff',
+        borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+        boxShadow: scrolled ? '0 4px 20px rgba(0,0,0,0.08)' : 'none',
       }}
     >
       <Link href="/" style={{ textDecoration: 'none' }}>
@@ -57,76 +55,90 @@ export default function Navbar() {
         </h2>
       </Link>
 
+      <style>{`
+        .nav-link {
+          position: relative;
+          color: var(--color-text-dark);
+          text-decoration: none;
+          font-weight: 600;
+          font-size: 1.1rem;
+          transition: color 0.3s;
+          padding: 5px 0;
+        }
+        .nav-link::after {
+          content: '';
+          position: absolute;
+          width: 0;
+          height: 3px;
+          bottom: 0;
+          left: 0;
+          background-color: var(--color-primary);
+          transition: width 0.3s ease-out;
+          border-radius: 2px;
+        }
+        .nav-link:hover {
+          color: var(--color-primary);
+        }
+        .nav-link:hover::after, .nav-link.active::after {
+          width: 100%;
+        }
+        .nav-link.active {
+          color: var(--color-primary);
+        }
+
+        @keyframes bounceEffect {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+
+        .cart-btn {
+          background: var(--color-primary);
+          border: none;
+          color: #fff;
+          padding: 8px 20px;
+          border-radius: 30px;
+          cursor: pointer;
+          font-weight: bold;
+          font-size: 1.1rem;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(229, 57, 53, 0.3);
+        }
+        .cart-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(229, 57, 53, 0.5);
+        }
+        .cart-btn:hover .cart-counter {
+          animation: bounceEffect 0.5s ease-in-out infinite;
+        }
+      `}</style>
       <nav style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
         <Link 
           href="/" 
-          style={{ 
-            color: pathname === '/' ? 'var(--color-primary)' : 'var(--color-text-dark)', 
-            textDecoration: 'none', 
-            fontWeight: '600',
-            fontSize: '1.1rem',
-            transition: 'color 0.2s',
-          }}
+          className={`nav-link ${pathname === '/' ? 'active' : ''}`}
         >
           Home
         </Link>
         <Link 
           href="/shop" 
-          style={{ 
-            color: pathname === '/shop' ? 'var(--color-primary)' : 'var(--color-text-dark)', 
-            textDecoration: 'none', 
-            fontWeight: '600',
-            fontSize: '1.1rem',
-            transition: 'color 0.2s',
-          }}
+          className={`nav-link ${pathname === '/shop' ? 'active' : ''}`}
         >
           Shop
         </Link>
         <Link 
           href="/admin" 
-          style={{ 
-            color: 'var(--color-text-dark)', 
-            textDecoration: 'none', 
-            fontWeight: '600',
-            fontSize: '1.1rem',
-            transition: 'color 0.2s',
-            background: 'rgba(0,0,0,0.05)',
-            padding: '5px 15px',
-            borderRadius: '20px'
-          }}
-          onMouseOver={e => e.currentTarget.style.color = 'var(--color-primary)'}
-          onMouseOut={e => e.currentTarget.style.color = 'var(--color-text-dark)'}
+          className="nav-link"
         >
           Admin
         </Link>
         
         <button 
+          className="cart-btn"
           onClick={() => setIsCartOpen(true)}
-          style={{
-            background: 'var(--color-primary)',
-            border: 'none',
-            color: '#fff',
-            padding: '8px 20px',
-            borderRadius: '30px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            fontSize: '1.1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 4px 15px rgba(229, 57, 53, 0.3)',
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.transform = 'scale(1.05)';
-            e.currentTarget.style.boxShadow = '0 6px 20px rgba(229, 57, 53, 0.4)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = '0 4px 15px rgba(229, 57, 53, 0.3)';
-          }}
         >
-          🛒 <span style={{ 
+          🛒 <span className="cart-counter" style={{ 
             background: 'var(--color-accent-gold)', 
             color: '#1a1a1a', 
             borderRadius: '50%', 

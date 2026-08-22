@@ -73,17 +73,6 @@ export async function POST(request) {
       }
     }
     
-    // --- WHATSAPP INTEGRATION ---
-    // Automatically send WhatsApp estimate for new E-Commerce orders.
-    // For now, using 'hello_world' test template.
-    if (order.customerPhone) {
-      try {
-        const { sendWhatsAppTemplate } = await import('@/lib/whatsapp.js');
-        await sendWhatsAppTemplate(order.customerPhone, 'hello_world', []);
-      } catch (err) {
-        console.error(err);
-      }
-    }
 
     return NextResponse.json(order);
   } catch (error) {
