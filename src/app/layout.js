@@ -22,7 +22,12 @@ export default function RootLayout({ children }) {
             {children}
           </main>
           <footer style={{ backgroundColor: '#fff', borderTop: '2px solid rgba(229, 57, 53, 0.1)', color: '#333', padding: '40px 50px', textAlign: 'center', marginTop: 'auto' }}>
-            <p>© 2024 Hero Crackers Fireworks. All rights reserved.</p>
+            <div style={{ marginBottom: '20px', fontSize: '0.9rem', color: '#555', lineHeight: '1.6' }}>
+              <strong>Arunachalam Agency</strong><br/>
+              📍 123 Firework Ave, Sivakasi, TN<br/>
+              📞 +91 98765 43210 | ✉️ sales@herocrackers.com
+            </div>
+            <p>© {new Date().getFullYear()} Hero Crackers Fireworks. All rights reserved.</p>
             <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '10px' }}>
               Hero Crackers is a part of <strong>Arunachalam Agency</strong> which is the verified Meta Business Portfolio.
             </p>
