@@ -159,13 +159,7 @@ export default function DynamicLandingPage() {
         overflow: 'hidden',
         background: 'linear-gradient(135deg, #FF4500 0%, #7A28CB 50%, #4A00E0 100%)',
       }}>
-        {/* Faint Grid Background Overlay */}
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundSize: '40px 40px',
-          backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px)',
-          zIndex: 1
-        }}></div>
+
 
         {/* Animated Background Particles */}
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2, overflow: 'hidden' }}>
@@ -339,8 +333,8 @@ export default function DynamicLandingPage() {
             
             <div className="fun-container">
               <Image 
-                src="/explosive_fun.png" 
-                alt="Explosive Fun Fireworks Box" 
+                src="/product_rockets.png" 
+                alt="Premium Rockets" 
                 fill
                 style={{ objectFit: 'contain' }}
                 priority
