@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 import { getTheme, getStyles, statusBadge, paymentBadge } from './theme';
 import { formatOrderNumber } from '@/lib/utils';
 
@@ -57,6 +58,27 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
   const orders = data?.orders || [];
   const totalCount = data?.totalCount || 0;
   const totalPages = Math.ceil(totalCount / limit);
+
+  // Realtime Subscription
+  useEffect(() => {
+    if (!supabase) return;
+
+    const channel = supabase
+      .channel('orders-realtime-admin')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'shop', table: 'Order' },
+        (payload) => {
+          // Play a subtle sound or just invalidate the query cache to fetch updates
+          queryClient.invalidateQueries({ queryKey: ['orders'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   // Dynamic Analytics based on current page/filters (or ideally from a separate analytics query)
   const periodRevenue = useMemo(() => {
