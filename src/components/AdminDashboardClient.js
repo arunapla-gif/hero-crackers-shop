@@ -104,6 +104,22 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
            transform: scale(0.97) translateY(0) !important;
            filter: brightness(0.9) !important;
         }
+
+        /* Utility Icons Animation */
+        .icon-btn-alive {
+          transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        }
+        .icon-btn-alive:hover {
+          transform: translateY(-3px) scale(1.15) rotate(5deg) !important;
+          background-color: ${theme.accent} !important;
+          color: white !important;
+          box-shadow: 0 5px 15px ${theme.accent}40 !important;
+          border-color: ${theme.accent} !important;
+        }
+        .icon-btn-alive:active {
+          transform: translateY(0) scale(0.95) rotate(-5deg) !important;
+        }
+
         button:disabled { opacity: 0.5 !important; cursor: not-allowed !important; filter: grayscale(1) !important; }
         
         .qty-btn:hover { background-color: ${theme.accent} !important; color: white !important; border-color: ${theme.accent} !important; transform: scale(1.1); }
