@@ -25,7 +25,11 @@ export async function sendWhatsAppOrderConfirmation(customerPhone, customerName,
 
   // Build the public URL for the estimate PDF
   // Assuming the production domain is herocrackers.com
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://herocrackers.com';
+  let baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.herocrackers.com';
+  // Force www to prevent 308 redirects which Meta bots will not follow for documents
+  if (baseUrl === 'https://herocrackers.com') {
+    baseUrl = 'https://www.herocrackers.com';
+  }
   const estimateUrl = `${baseUrl}/api/orders/${orderId}/estimate`;
 
   // The components mapping assumes your MSG91 template 'order_confirmation' 
