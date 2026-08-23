@@ -3,6 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTheme, getStyles, statusBadge, paymentBadge } from './theme';
 import { formatOrderNumber } from '@/lib/utils';
 
+const Spinner = () => (
+  <svg style={{ animation: 'spin 1s linear infinite', width: '16px', height: '16px', marginRight: '8px' }} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" strokeOpacity="0.3" />
+    <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+  </svg>
+);
+
 export default function OrderManager({ isDarkMode, products, transports, onEditOrder, onDuplicateOrder, onRepeatOrder }) {
   const theme = getTheme(isDarkMode);
   const styles = getStyles(theme, isDarkMode);
@@ -76,6 +83,8 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
     }
   });
 
+  const [loadingAction, setLoadingAction] = useState({ id: null, action: null });
+
   const handleStatusChange = async (orderId, newStatus) => {
     if (newStatus === 'SHIPPED') {
       setDispatchOrderId(orderId);
@@ -85,7 +94,14 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
     if (newStatus === 'CANCELLED' && !confirm('Are you sure you want to cancel this order?')) {
       return;
     }
-    updateOrderMutation.mutate({ orderId, data: { status: newStatus } });
+    setLoadingAction({ id: orderId, action: newStatus });
+    try {
+      await updateOrderMutation.mutateAsync({ orderId, data: { status: newStatus } });
+    } catch (e) {
+      console.error('Failed to update status', e);
+    } finally {
+      setLoadingAction({ id: null, action: null });
+    }
   };
 
   const openPaymentModal = (orderId) => {
@@ -99,35 +115,55 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
     e.preventDefault();
     if (!paymentOrderId) return;
     
-    updateOrderMutation.mutate({ 
-      orderId: paymentOrderId, 
-      data: { paymentStatus: 'PAID', paymentMethod, paymentDetails } 
-    });
-    
-    setPaymentModalOpen(false);
-    setPaymentMethod('CASH');
-    setPaymentDetails('');
+    setLoadingAction({ id: paymentOrderId, action: 'payment' });
+    try {
+      await updateOrderMutation.mutateAsync({ 
+        orderId: paymentOrderId, 
+        data: { paymentStatus: 'PAID', paymentMethod, paymentDetails } 
+      });
+      setPaymentModalOpen(false);
+      setPaymentMethod('CASH');
+      setPaymentDetails('');
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingAction({ id: null, action: null });
+    }
   };
 
-  const handleSetCredit = (orderId) => {
-    updateOrderMutation.mutate({ orderId, data: { paymentStatus: 'CREDIT' } });
+  const handleSetCredit = async (orderId) => {
+    setLoadingAction({ id: orderId, action: 'credit' });
+    try {
+      await updateOrderMutation.mutateAsync({ orderId, data: { paymentStatus: 'CREDIT' } });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingAction({ id: null, action: null });
+    }
   };
 
   const handleDispatchSubmit = async (e) => {
     e.preventDefault();
     if (!dispatchOrderId) return;
     
-    updateOrderMutation.mutate({ 
-      orderId: dispatchOrderId, 
-      data: { status: 'SHIPPED', transportName, trackingNumber } 
-    });
-    
-    setDispatchModalOpen(false);
-    setTransportName('');
-    setTrackingNumber('');
+    setLoadingAction({ id: dispatchOrderId, action: 'dispatch' });
+    try {
+      await updateOrderMutation.mutateAsync({ 
+        orderId: dispatchOrderId, 
+        data: { status: 'SHIPPED', transportName, trackingNumber } 
+      });
+      setDispatchModalOpen(false);
+      setTransportName('');
+      setTrackingNumber('');
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingAction({ id: null, action: null });
+    }
   };
 
   const handleWhatsAppSend = async (orderId) => {
+    setLoadingAction({ id: orderId, action: 'whatsapp' });
     try {
       const res = await fetch(`/api/orders/${orderId}/whatsapp`, { method: 'POST' });
       if (!res.ok) {
@@ -139,9 +175,10 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
         throw new Error(errMsg);
       }
       queryClient.invalidateQueries(['orders']);
-      alert('WhatsApp message triggered successfully!');
     } catch (err) {
       alert(`Error: ${err.message}`);
+    } finally {
+      setLoadingAction({ id: null, action: null });
     }
   };
 
@@ -270,6 +307,7 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
 
   return (
     <div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       {/* Modal Overlay for Dispatch */}
       {dispatchModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -503,10 +541,28 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
                   {/* Status Actions (Primary focus) */}
                   {order.status !== 'CANCELLED' && (
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%' }}>
-                      {order.status === 'PENDING' && <button className="action-btn" onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ ...styles.btnPrimary, padding: '10px', fontSize: '0.9rem', backgroundColor: theme.info, boxShadow: 'none', gridColumn: 'span 2' }}>Process Order</button>}
-                      {(order.status === 'PENDING' || order.status === 'PROCESSING') && <button className="action-btn" onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ ...styles.btnPrimary, padding: '10px', fontSize: '0.9rem', backgroundColor: theme.shipped, boxShadow: 'none', gridColumn: order.status === 'PROCESSING' ? 'span 2' : 'span 1' }}>Dispatch</button>}
-                      {order.status === 'SHIPPED' && <button className="action-btn" onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ ...styles.btnPrimary, padding: '10px', fontSize: '0.9rem', backgroundColor: theme.success, boxShadow: 'none', gridColumn: 'span 2' }}>Deliver Order</button>}
-                      <button className="action-btn" onClick={() => handleStatusChange(order.id, 'CANCELLED')} style={{ ...styles.btnPrimary, padding: '10px', fontSize: '0.9rem', backgroundColor: 'transparent', color: theme.cancelled, border: `1px solid ${theme.cancelled}`, boxShadow: 'none', gridColumn: 'span 2' }}>✕ Cancel</button>
+                      {order.status === 'PENDING' && (
+                        <button className="action-btn" disabled={loadingAction.id === order.id && loadingAction.action === 'PROCESSING'} onClick={() => handleStatusChange(order.id, 'PROCESSING')} style={{ ...styles.btnPrimary, padding: '10px', fontSize: '0.9rem', backgroundColor: theme.info, boxShadow: 'none', gridColumn: 'span 2', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                          {loadingAction.id === order.id && loadingAction.action === 'PROCESSING' ? <Spinner /> : null}
+                          {loadingAction.id === order.id && loadingAction.action === 'PROCESSING' ? 'Processing...' : 'Process Order'}
+                        </button>
+                      )}
+                      {(order.status === 'PENDING' || order.status === 'PROCESSING') && (
+                        <button className="action-btn" disabled={loadingAction.id === order.id && loadingAction.action === 'SHIPPED'} onClick={() => handleStatusChange(order.id, 'SHIPPED')} style={{ ...styles.btnPrimary, padding: '10px', fontSize: '0.9rem', backgroundColor: theme.shipped, boxShadow: 'none', gridColumn: order.status === 'PROCESSING' ? 'span 2' : 'span 1', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                          {loadingAction.id === order.id && loadingAction.action === 'SHIPPED' ? <Spinner /> : null}
+                          {loadingAction.id === order.id && loadingAction.action === 'SHIPPED' ? 'Dispatching...' : 'Dispatch'}
+                        </button>
+                      )}
+                      {order.status === 'SHIPPED' && (
+                        <button className="action-btn" disabled={loadingAction.id === order.id && loadingAction.action === 'DELIVERED'} onClick={() => handleStatusChange(order.id, 'DELIVERED')} style={{ ...styles.btnPrimary, padding: '10px', fontSize: '0.9rem', backgroundColor: theme.success, boxShadow: 'none', gridColumn: 'span 2', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                          {loadingAction.id === order.id && loadingAction.action === 'DELIVERED' ? <Spinner /> : null}
+                          {loadingAction.id === order.id && loadingAction.action === 'DELIVERED' ? 'Delivering...' : 'Deliver Order'}
+                        </button>
+                      )}
+                      <button className="action-btn" disabled={loadingAction.id === order.id && loadingAction.action === 'CANCELLED'} onClick={() => handleStatusChange(order.id, 'CANCELLED')} style={{ ...styles.btnPrimary, padding: '10px', fontSize: '0.9rem', backgroundColor: 'transparent', color: theme.cancelled, border: `1px solid ${theme.cancelled}`, boxShadow: 'none', gridColumn: 'span 2', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        {loadingAction.id === order.id && loadingAction.action === 'CANCELLED' ? <Spinner /> : null}
+                        {loadingAction.id === order.id && loadingAction.action === 'CANCELLED' ? 'Cancelling...' : '✕ Cancel'}
+                      </button>
                     </div>
                   )}
 
@@ -527,6 +583,8 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
                   {/* WhatsApp Smart Button */}
                   {order.customerPhone && (
                     <button 
+                      className="action-btn"
+                      disabled={loadingAction.id === order.id && loadingAction.action === 'whatsapp'}
                       onClick={() => handleWhatsAppSend(order.id)}
                       title="Send automated PDF via WhatsApp API"
                       style={{ 
@@ -545,12 +603,20 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
                         gap: '8px'
                       }}
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-                      {order.lastSentVersion === 0 
-                        ? "Send Initial Bill (v1)" 
-                        : (order.lastSentVersion < order.editVersion 
-                            ? `Send Updated Bill (v${order.editVersion})` 
-                            : `Sent v${order.editVersion} (Resend?)`)}
+                      {loadingAction.id === order.id && loadingAction.action === 'whatsapp' ? (
+                        <>
+                          <Spinner /> Sending...
+                        </>
+                      ) : (
+                        <>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                          {order.lastSentVersion === 0 
+                            ? "Send Initial Bill (v1)" 
+                            : (order.lastSentVersion < order.editVersion 
+                                ? `Send Updated Bill (v${order.editVersion})` 
+                                : `Sent v${order.editVersion} (Resend?)`)}
+                        </>
+                      )}
                     </button>
                   )}
 
