@@ -6,7 +6,7 @@ import { formatOrderNumber } from '@/lib/utils';
 
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const order = await prisma.order.findUnique({
       where: { id },

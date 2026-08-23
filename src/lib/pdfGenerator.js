@@ -1,4 +1,3 @@
-import PdfPrinter from 'pdfmake';
 import { formatOrderNumber } from './utils';
 
 export async function generateInvoicePDFBuffer(order, products) {
@@ -12,7 +11,8 @@ export async function generateInvoicePDFBuffer(order, products) {
       }
     };
     
-    const printer = new PdfPrinter(fonts);
+    const pdfMake = require('pdfmake');
+    pdfMake.fonts = fonts;
     
     let totalMRP = 0;
     let totalSavings = 0;
@@ -95,14 +95,13 @@ export async function generateInvoicePDFBuffer(order, products) {
       }
     };
 
-    const pdfDoc = printer.createPdfKitDocument(docDefinition);
-    
     return new Promise((resolve, reject) => {
-      const chunks = [];
-      pdfDoc.on('data', chunk => chunks.push(chunk));
-      pdfDoc.on('end', () => resolve(Buffer.concat(chunks)));
-      pdfDoc.on('error', reject);
-      pdfDoc.end();
+      try {
+        const pdfDoc = pdfMake.createPdf(docDefinition);
+        pdfDoc.getBuffer().then(resolve).catch(reject);
+      } catch (err) {
+        reject(err);
+      }
     });
   } catch (err) {
     console.error('PDF Generation Error:', err);
