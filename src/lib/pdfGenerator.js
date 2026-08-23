@@ -1,10 +1,9 @@
-import pdfMake from 'pdfmake';
+import PdfPrinter from 'pdfmake';
 import { formatOrderNumber } from './utils';
 
 export async function generateInvoicePDFBuffer(order, products) {
   try {
-    // Using standard fonts built into pdfmake (no TTF files needed)
-    pdfMake.fonts = {
+    const fonts = {
       Helvetica: {
         normal: 'Helvetica',
         bold: 'Helvetica-Bold',
@@ -12,6 +11,8 @@ export async function generateInvoicePDFBuffer(order, products) {
         bolditalics: 'Helvetica-BoldOblique'
       }
     };
+    
+    const printer = new PdfPrinter(fonts);
     
     let totalMRP = 0;
     let totalSavings = 0;
@@ -94,9 +95,15 @@ export async function generateInvoicePDFBuffer(order, products) {
       }
     };
 
-    const doc = pdfMake.createPdf(docDefinition);
-    const buffer = await doc.getBuffer();
-    return buffer;
+    const pdfDoc = printer.createPdfKitDocument(docDefinition);
+    
+    return new Promise((resolve, reject) => {
+      const chunks = [];
+      pdfDoc.on('data', chunk => chunks.push(chunk));
+      pdfDoc.on('end', () => resolve(Buffer.concat(chunks)));
+      pdfDoc.on('error', reject);
+      pdfDoc.end();
+    });
   } catch (err) {
     console.error('PDF Generation Error:', err);
     throw err;
