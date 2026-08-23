@@ -32,7 +32,7 @@ export async function sendWhatsAppOrderConfirmation(customerPhone, customerName,
   // uses {{1}} for Name, {{2}} for Order ID, and {{3}} for Amount,
   // AND has a Document header.
   const payload = {
-    "integrated-number": INTEGRATED_NUMBER,
+    "integrated_number": INTEGRATED_NUMBER,
     "content_type": "template",
     "payload": {
       "messaging_product": "whatsapp",
