@@ -3,7 +3,7 @@
  */
 
 const MSG91_AUTH_KEY = process.env.MSG91_AUTH_KEY;
-const INTEGRATED_NUMBER = "919047488862"; // Number where the template was approved
+const INTEGRATED_NUMBER = "916385830419"; // Hero Crackers Number
 
 /**
  * Sends an automated order confirmation message via MSG91 WhatsApp API.
