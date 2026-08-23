@@ -21,15 +21,15 @@ export async function POST(request, { params }) {
     }
 
     // 2. Trigger MSG91 API
-    const success = await sendWhatsAppOrderConfirmation(
+    const result = await sendWhatsAppOrderConfirmation(
       order.customerPhone,
       order.user?.name || 'Customer',
       order.id,
       order.totalAmount
     );
 
-    if (!success) {
-      return NextResponse.json({ error: 'Failed to trigger MSG91 WhatsApp notification.' }, { status: 500 });
+    if (!result.success) {
+      return NextResponse.json({ error: 'Failed to trigger MSG91 WhatsApp notification.', details: result.error }, { status: 500 });
     }
 
     // 3. Update lastSentVersion to match editVersion

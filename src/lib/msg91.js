@@ -16,7 +16,7 @@ const INTEGRATED_NUMBER = "916385830419"; // Hero Crackers Number
 export async function sendWhatsAppOrderConfirmation(customerPhone, customerName, orderId, totalAmount) {
   if (!MSG91_AUTH_KEY) {
     console.warn('MSG91_AUTH_KEY is not defined in environment variables. Skipping WhatsApp notification.');
-    return false;
+    return { success: false, error: 'MSG91_AUTH_KEY missing' };
   }
 
   // Clean the phone number (ensure it has 91 country code, assuming India for now)
@@ -86,13 +86,13 @@ export async function sendWhatsAppOrderConfirmation(customerPhone, customerName,
     
     if (response.ok && !result.hasError) {
       console.log(`✅ WhatsApp order confirmation sent to ${toPhone} for Order ${orderId}`);
-      return true;
+      return { success: true };
     } else {
       console.error(`❌ MSG91 WhatsApp Error:`, result);
-      return false;
+      return { success: false, error: result };
     }
   } catch (error) {
     console.error(`❌ Failed to send MSG91 WhatsApp request:`, error);
-    return false;
+    return { success: false, error: error.message };
   }
 }
