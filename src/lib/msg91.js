@@ -23,10 +23,10 @@ export async function sendWhatsAppOrderConfirmation(customerPhone, customerName,
   const cleanPhone = customerPhone.replace(/[^0-9]/g, '');
   const toPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
 
-  // Build the public URL for the invoice PDF
+  // Build the public URL for the estimate PDF
   // Assuming the production domain is herocrackers.com
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://herocrackers.com';
-  const invoiceUrl = `${baseUrl}/api/orders/${orderId}/invoice`;
+  const estimateUrl = `${baseUrl}/api/orders/${orderId}/estimate`;
 
   // The components mapping assumes your MSG91 template 'order_confirmation' 
   // uses {{1}} for Name, {{2}} for Order ID, and {{3}} for Amount,
@@ -49,8 +49,8 @@ export async function sendWhatsAppOrderConfirmation(customerPhone, customerName,
             "components": {
               "header_1": {
                 "type": "document",
-                "value": invoiceUrl,
-                "filename": `Invoice_${orderId.substring(0, 8)}.pdf`
+                "value": estimateUrl,
+                "filename": `Estimate_${orderId.substring(0, 8)}.pdf`
               },
               "body_1": {
                 "type": "text",
