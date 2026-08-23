@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { sendWhatsAppOrderConfirmation } from '@/lib/msg91';
 
 export async function POST(request) {
   try {
@@ -73,6 +74,17 @@ export async function POST(request) {
       }
     }
     
+
+    // 4. Send WhatsApp Notification via MSG91
+    if (order.customerPhone) {
+      // Fire and forget (don't await) so it doesn't block the API response
+      sendWhatsAppOrderConfirmation(
+        order.customerPhone,
+        body.customerName || 'Customer',
+        order.id,
+        order.totalAmount
+      ).catch(err => console.error('Error triggering WhatsApp notification:', err));
+    }
 
     return NextResponse.json(order);
   } catch (error) {
