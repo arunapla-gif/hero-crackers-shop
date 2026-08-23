@@ -76,7 +76,7 @@ export default function ExpenseTracker({ isDarkMode, expenses, setExpenses }) {
 
         <div style={{ flex: '2 1 500px' }}>
           <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '20px' }}>Recent Expenses</h3>
-          <div style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
+          <div className="table-responsive" style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead style={{ backgroundColor: theme.cardBg }}>
                 <tr>

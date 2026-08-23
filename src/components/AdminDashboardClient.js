@@ -110,14 +110,29 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
         .qty-btn:active { transform: scale(0.95) !important; }
         
         .filter-btn:hover { background-color: ${theme.cardBg} !important; opacity: 0.8 !important; transform: translateY(-1px); }
+        
+        /* Mobile Responsive Utilities */
+        @media (max-width: 768px) {
+          .admin-container { padding: 20px 10px !important; }
+          .header-flex { flex-direction: column !important; align-items: flex-start !important; gap: 20px !important; }
+          .header-title { font-size: 2.2rem !important; }
+          .tab-btn { padding: 10px 15px !important; font-size: 1rem !important; flex: 1 1 auto; text-align: center; }
+          .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+          .table-responsive table { min-width: 800px; } /* Ensures table doesn't squish too much */
+          .mobile-stack { flex-direction: column !important; }
+          .mobile-stack > * { width: 100% !important; margin-left: 0 !important; margin-right: 0 !important; }
+          .mobile-hide { display: none !important; }
+          .filter-bar { flex-direction: column !important; align-items: stretch !important; }
+          .filter-bar > * { width: 100% !important; }
+        }
       `}} />
 
-      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+      <div className="admin-container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 20px' }}>
         
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        <div className="header-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
           <div>
-            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '3rem', color: theme.textPrimary, margin: '0 0 10px 0', transition: 'color 0.3s' }}>
+            <h1 className="header-title" style={{ fontFamily: 'var(--font-serif)', fontSize: '3rem', color: theme.textPrimary, margin: '0 0 10px 0', transition: 'color 0.3s' }}>
               Command Center
             </h1>
             <p style={{ color: theme.textSecondary, margin: 0, fontSize: '1.1rem' }}>Manage orders, inventory, and masters seamlessly.</p>

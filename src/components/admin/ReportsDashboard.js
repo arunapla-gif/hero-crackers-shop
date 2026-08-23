@@ -239,7 +239,7 @@ export default function ReportsDashboard({ isDarkMode, products }) {
                   <h3 style={{ color: theme.textPrimary, margin: 0 }}>Product Sales Leaderboard</h3>
                   <button onClick={handleExport} className="action-btn" style={{ ...styles.btnPrimary, backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>⬇️ Export CSV</button>
                 </div>
-                <div style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
+                <div className="table-responsive" style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead style={{ backgroundColor: theme.cardBg }}>
                       <tr>
@@ -271,7 +271,7 @@ export default function ReportsDashboard({ isDarkMode, products }) {
                   <h3 style={{ color: theme.textPrimary, margin: 0 }}>Agent / Reference Performance</h3>
                   <button onClick={handleExport} className="action-btn" style={{ ...styles.btnPrimary, backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>⬇️ Export CSV</button>
                 </div>
-                <div style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
+                <div className="table-responsive" style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead style={{ backgroundColor: theme.cardBg }}>
                       <tr>
@@ -303,7 +303,7 @@ export default function ReportsDashboard({ isDarkMode, products }) {
                   <h3 style={{ color: theme.textPrimary, margin: 0 }}>Transport & Logistics</h3>
                   <button onClick={handleExport} className="action-btn" style={{ ...styles.btnPrimary, backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, boxShadow: 'none' }}>⬇️ Export CSV</button>
                 </div>
-                <div style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
+                <div className="table-responsive" style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead style={{ backgroundColor: theme.cardBg }}>
                       <tr>

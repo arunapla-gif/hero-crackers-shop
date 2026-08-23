@@ -340,8 +340,8 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
       </div>
 
       {/* Advanced Filters & Search Bar */}
-      <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'center', flex: 1 }}>
+      <div className="filter-bar" style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+        <div className="mobile-stack" style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'center', flex: 1 }}>
           <input 
             type="text" 
             className="search-input"
@@ -569,7 +569,7 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
 
               {/* Expandable Items Table */}
               {expandedOrderIds.includes(order.id) && (
-                <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: `1px dashed ${theme.border}`, width: '100%', overflowX: 'auto' }}>
+                <div className="table-responsive" style={{ marginTop: '20px', paddingTop: '20px', borderTop: `1px dashed ${theme.border}` }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', minWidth: '600px' }}>
                     <thead>
                       <tr style={{ color: theme.textSecondary, textAlign: 'left', borderBottom: `1px solid ${theme.border}` }}>

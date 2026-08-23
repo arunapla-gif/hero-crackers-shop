@@ -355,8 +355,8 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
               </select>
 
               {paymentState.status === 'PAID' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                  <div>
+                <div className="mobile-stack" style={{ display: 'flex', gap: '15px' }}>
+                  <div style={{ flex: 1 }}>
                     <label style={styles.labelStyle}>Payment Method</label>
                     <select 
                       value={paymentState.method} 

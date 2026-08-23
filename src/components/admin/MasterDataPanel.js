@@ -332,7 +332,7 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
               
-              <div style={{ display: 'flex', gap: '20px' }}>
+              <div className="mobile-stack" style={{ display: 'flex', gap: '20px' }}>
                 <div style={{ flex: 1 }}>
                   <label style={styles.labelStyle}>MRP (Base)</label>
                   <input type="number" step="0.01" value={newProduct.basePrice} onChange={e => setNewProduct({...newProduct, basePrice: e.target.value})} required style={styles.inputStyle} />
@@ -363,7 +363,7 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
               <p style={{ color: theme.textSecondary, fontSize: '0.9rem', marginBottom: '15px', lineHeight: '1.4' }}>
                 Set a global discount percentage. The system will keep your Selling Price fixed, but will artificially inflate the MRP (Base Price) across all products so you can advertise this massive discount.
               </p>
-              <form onSubmit={handleApplyGlobalDiscount} style={{ display: 'flex', gap: '15px', alignItems: 'flex-end' }}>
+              <form className="mobile-stack" onSubmit={handleApplyGlobalDiscount} style={{ display: 'flex', gap: '15px', alignItems: 'flex-end' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ ...styles.labelStyle, color: theme.accent }}>Discount Percentage (%)</label>
                   <input 
@@ -392,7 +392,7 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
                 {isDragLocked ? '🔒 Unlock Reordering' : '🔓 Lock Reordering'}
               </button>
             </div>
-            <div style={{ overflowY: 'auto', maxHeight: '550px', border: `1px solid ${theme.border}`, borderRadius: '12px' }}>
+            <div className="table-responsive" style={{ overflowY: 'auto', maxHeight: '550px', border: `1px solid ${theme.border}`, borderRadius: '12px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead style={{ position: 'sticky', top: 0, backgroundColor: theme.bg, zIndex: 1, boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
                   <tr>
@@ -540,7 +540,7 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
             <p style={{ color: theme.textSecondary, marginBottom: '25px' }}>Click any cell to instantly update the inventory level.</p>
             
             {godowns.length === 0 ? <p style={{ color: theme.accent }}>Please register a Godown first.</p> : (
-              <div style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
+              <div className="table-responsive" style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                   <thead style={{ backgroundColor: theme.cardBg }}>
                     <tr>
@@ -603,7 +603,7 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
           </form>
           
           <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Existing Agents</h3>
-          <div style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
+          <div className="table-responsive" style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead style={{ backgroundColor: theme.cardBg }}>
                 <tr>
@@ -670,7 +670,7 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
           </form>
           
           <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '25px' }}>Existing Agencies</h3>
-          <div style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
+          <div className="table-responsive" style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead style={{ backgroundColor: theme.cardBg }}>
                 <tr>
