@@ -9,47 +9,52 @@ export const metadata = {
 }
 
 export default async function AdminDashboard() {
-  const orders = await prisma.order.findMany({
-    include: { items: true, user: true },
-    orderBy: { createdAt: 'desc' },
-    take: 50 // Only fetch the first 50 initially for performance
-  });
-
-  const products = await prisma.product.findMany({
-    orderBy: [
-      { sequence: 'asc' },
-      { name: 'asc' }
-    ]
-  });
-
-  const categories = await prisma.category.findMany({
-    orderBy: { sequence: 'asc' }
-  });
-
-  const godowns = await prisma.godown.findMany({
-    include: { stocks: true },
-    orderBy: { name: 'asc' }
-  });
-
-  const references = await prisma.referenceMaster.findMany({
-    orderBy: { name: 'asc' }
-  });
-
-  const transports = await prisma.transportMaster.findMany({
-    orderBy: { name: 'asc' }
-  });
-
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
-  const expenses = await prisma.expense.findMany({
-    where: { date: { gte: today } },
-    orderBy: { date: 'desc' }
-  });
 
-  const customers = await prisma.customerMaster.findMany({
-    orderBy: { createdAt: 'desc' }
-  });
+  // Execute all database queries in parallel to significantly reduce page load time
+  const [
+    orders,
+    products,
+    categories,
+    godowns,
+    references,
+    transports,
+    expenses,
+    customers
+  ] = await Promise.all([
+    prisma.order.findMany({
+      include: { items: true, user: true },
+      orderBy: { createdAt: 'desc' },
+      take: 50
+    }),
+    prisma.product.findMany({
+      orderBy: [
+        { sequence: 'asc' },
+        { name: 'asc' }
+      ]
+    }),
+    prisma.category.findMany({
+      orderBy: { sequence: 'asc' }
+    }),
+    prisma.godown.findMany({
+      include: { stocks: true },
+      orderBy: { name: 'asc' }
+    }),
+    prisma.referenceMaster.findMany({
+      orderBy: { name: 'asc' }
+    }),
+    prisma.transportMaster.findMany({
+      orderBy: { name: 'asc' }
+    }),
+    prisma.expense.findMany({
+      where: { date: { gte: today } },
+      orderBy: { date: 'desc' }
+    }),
+    prisma.customerMaster.findMany({
+      orderBy: { createdAt: 'desc' }
+    })
+  ]);
 
   return (
     <ReactQueryProvider>
