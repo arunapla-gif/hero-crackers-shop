@@ -39,7 +39,8 @@ export async function setSessionCookie(user) {
   const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
   const session = await encrypt({ user, expires });
 
-  cookies().set(COOKIE_NAME, session, {
+  const cookieStore = await cookies();
+  cookieStore.set(COOKIE_NAME, session, {
     expires,
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -49,11 +50,13 @@ export async function setSessionCookie(user) {
 }
 
 export async function clearSessionCookie() {
-  cookies().delete(COOKIE_NAME);
+  const cookieStore = await cookies();
+  cookieStore.delete(COOKIE_NAME);
 }
 
 export async function getSession() {
-  const session = cookies().get(COOKIE_NAME)?.value;
+  const cookieStore = await cookies();
+  const session = cookieStore.get(COOKIE_NAME)?.value;
   if (!session) return null;
   return await decrypt(session);
 }
