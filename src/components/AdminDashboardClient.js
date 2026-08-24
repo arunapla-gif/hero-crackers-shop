@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import OrderManager from './admin/OrderManager';
 import QuickBillPOS from './admin/QuickBillPOS';
 import MasterDataPanel from './admin/MasterDataPanel';
@@ -23,6 +24,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [initialPosState, setInitialPosState] = useState(null); // { type: 'edit'|'duplicate', order: {} }
+  const router = useRouter();
 
   const theme = getTheme(isDarkMode);
 
@@ -58,6 +60,17 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
       }
     } finally {
       setIsRefreshing(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const res = await fetch('/api/auth/logout', { method: 'POST' });
+      if (res.ok) {
+        router.push('/admin/login');
+      }
+    } catch (err) {
+      console.error('Failed to logout', err);
     }
   };
 
@@ -176,6 +189,17 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
               }}
             >
               {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+            </button>
+            <button 
+              className="action-btn"
+              onClick={handleLogout}
+              style={{ 
+                padding: '10px 20px', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold',
+                backgroundColor: '#ef4444', color: 'white', border: 'none',
+                display: 'flex', alignItems: 'center', gap: '8px'
+              }}
+            >
+              🚪 Logout
             </button>
           </div>
         </div>

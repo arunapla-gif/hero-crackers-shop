@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  schemas  = ["shop"]
+  provider  = "postgresql"
+  schemas   = ["shop"]
 }
 
 model User {
@@ -40,6 +40,9 @@ model Product {
   category    Category      @relation(fields: [categoryId], references: [id])
   orderItems  OrderItem[]
   godownStock GodownStock[]
+  
+  @@index([categoryId])
+  @@index([sequence])
   @@schema("shop")
 }
 
@@ -49,6 +52,8 @@ model Category {
   slug     String    @unique
   sequence Int       @default(0)
   products Product[]
+  
+  @@index([sequence])
   @@schema("shop")
 }
 
@@ -71,6 +76,10 @@ model Order {
   lastSentVersion Int         @default(0)
   user            User        @relation(fields: [userId], references: [id])
   items           OrderItem[]
+  
+  @@index([status, createdAt])
+  @@index([createdAt])
+  @@index([userId])
   @@schema("shop")
 }
 
@@ -146,6 +155,8 @@ model Expense {
   amount      Float
   category    String   @default("General") // e.g. Wages, Tea, Transport
   createdAt   DateTime @default(now())
+  
+  @@index([date])
   @@schema("shop")
 }
 
@@ -160,5 +171,6 @@ model CustomerMaster {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
+  @@index([createdAt])
   @@schema("shop")
 }
