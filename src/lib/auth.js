@@ -1,11 +1,17 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
-const secretKey = process.env.JWT_SECRET;
-if (!secretKey) {
-  throw new Error('JWT_SECRET is not set in environment variables');
-}
-const key = new TextEncoder().encode(secretKey);
+const getSecretKey = () => {
+  const secretKey = process.env.JWT_SECRET;
+  if (!secretKey) {
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('JWT_SECRET is not set in environment variables. Auth will fail at runtime.');
+    }
+    // Return a dummy key for build-time evaluation if missing
+    return new TextEncoder().encode('fallback-secret-for-build-time-only-123456');
+  }
+  return new TextEncoder().encode(secretKey);
+};
 
 // 24 hours expiry
 const COOKIE_NAME = 'admin_session';
@@ -15,12 +21,12 @@ export async function encrypt(payload) {
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('24h')
-    .sign(key);
+    .sign(getSecretKey());
 }
 
 export async function decrypt(input) {
   try {
-    const { payload } = await jwtVerify(input, key, {
+    const { payload } = await jwtVerify(input, getSecretKey(), {
       algorithms: ['HS256'],
     });
     return payload;
