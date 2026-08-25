@@ -6,9 +6,16 @@ import styles from './ShopInterface.module.css';
 import { useCart } from '@/context/CartContext';
 
 export default function ShopInterface({ categories }) {
-  const [viewMode, setViewMode] = useState('quick'); // default to quick buy on mobile
   const [selectedImage, setSelectedImage] = useState(null); // for thumbnail modal
   const [searchQuery, setSearchQuery] = useState('');
+  const [collapsedCategories, setCollapsedCategories] = useState({});
+  
+  const toggleCategory = (categoryId) => {
+    setCollapsedCategories(prev => ({
+      ...prev,
+      [categoryId]: !prev[categoryId]
+    }));
+  };
   
   const { cart, updateQuantity, setIsCartOpen, cartItemsCount, cartTotal } = useCart();
 
@@ -59,43 +66,6 @@ export default function ShopInterface({ categories }) {
             e.target.style.boxShadow = 'none';
           }}
         />
-
-        <div style={{ display: 'flex', gap: '10px', background: 'rgba(255,255,255,0.5)', padding: '5px', borderRadius: '30px', border: '1px solid rgba(0,0,0,0.05)', width: '100%', maxWidth: '400px', margin: '0 auto', justifyContent: 'center' }}>
-          <button 
-            onClick={() => setViewMode('quick')}
-            style={{ 
-              flex: 1,
-              padding: '12px 20px', 
-              border: 'none', 
-              borderRadius: '25px', 
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              background: viewMode === 'quick' ? 'var(--color-primary)' : 'transparent',
-              color: viewMode === 'quick' ? '#fff' : 'var(--color-text-dark)',
-              transition: 'all 0.2s',
-              boxShadow: viewMode === 'quick' ? '0 5px 15px rgba(229, 57, 53, 0.3)' : 'none'
-            }}
-          >
-            Quick Buy
-          </button>
-          <button 
-            onClick={() => setViewMode('grid')}
-            style={{ 
-              flex: 1,
-              padding: '12px 20px', 
-              border: 'none', 
-              borderRadius: '25px', 
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              background: viewMode === 'grid' ? 'var(--color-primary)' : 'transparent',
-              color: viewMode === 'grid' ? '#fff' : 'var(--color-text-dark)',
-              transition: 'all 0.2s',
-              boxShadow: viewMode === 'grid' ? '0 5px 15px rgba(229, 57, 53, 0.3)' : 'none'
-            }}
-          >
-            Grid View
-          </button>
-        </div>
       </div>
 
       {/* Product Display */}
@@ -106,77 +76,44 @@ export default function ShopInterface({ categories }) {
         </div>
       ) : filteredCategories.map((category) => (
         <div key={category.id} style={{ marginBottom: '60px' }}>
-          <h2 className={styles.categoryTitle} style={{ color: 'var(--color-primary)', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+          <h2 
+            className={styles.categoryTitle} 
+            onClick={() => toggleCategory(category.id)}
+            style={{ 
+              color: 'var(--color-primary)', 
+              borderBottom: '1px solid rgba(0,0,0,0.05)',
+              cursor: 'pointer',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              userSelect: 'none'
+            }}
+          >
             {category.name}
+            <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#888', transition: 'transform 0.3s' }}>
+              {collapsedCategories[category.id] ? '+' : '-'}
+            </span>
           </h2>
           
-          {category.products.length === 0 ? (
-            <p style={{ color: '#888', fontStyle: 'italic' }}>More products coming soon.</p>
-          ) : viewMode === 'grid' ? (
-            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
-              {category.products.map(product => (
-                <ProductCard 
-                  key={product.id} 
-                  product={product} 
-                  onAddToCart={handleAddToCartFromGrid} 
-                />
-              ))}
-            </div>
-          ) : (
-            <div className={styles.quickBuyContainer}>
-              {category.products.map((product) => {
-                const isPremium = product.price > 300;
-                return (
-                  <div key={product.id} className={styles.productRow}>
-                    <div className={styles.productInfo}>
-                      <div 
-                        className={styles.thumbnailWrapper} 
-                        onClick={() => setSelectedImage(product)}
-                        style={{ background: isPremium ? 'rgba(255, 193, 7, 0.1)' : 'rgba(229, 57, 53, 0.05)' }}
-                      >
-                        {isPremium ? '🌋' : '✨'}
-                      </div>
-                      <div className={styles.productName} style={{ color: 'var(--color-text-dark)' }}>
-                        {product.name}
-                      </div>
-                    </div>
-                    <div className={styles.productAction}>
-                      <div className={styles.priceBlock}>
-                        <span className={styles.price} style={{ color: isPremium ? '#F57F17' : 'var(--color-primary)' }}>₹{product.price}</span>
-                      </div>
-                      
-                      {cart[product.id] ? (
-                        <div className={styles.qtyControl} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(0,0,0,0.05)', padding: '5px 10px', borderRadius: '20px' }}>
-                          <button onClick={() => updateQuantity(product, -1)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-dark)', fontSize: '1.2rem', cursor: 'pointer' }}>-</button>
-                          <span style={{ color: 'var(--color-text-dark)', fontWeight: 'bold' }}>{cart[product.id].quantity}</span>
-                          <button onClick={() => updateQuantity(product, 1)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-dark)', fontSize: '1.2rem', cursor: 'pointer' }}>+</button>
-                        </div>
-                      ) : (
-                        <button 
-                          className={styles.addToCartBtn} 
-                          onClick={() => {
-                            updateQuantity(product, 1);
-                            setIsCartOpen(true);
-                          }}
-                          style={{
-                            background: isPremium ? 'var(--color-accent-gold)' : 'var(--color-primary)',
-                            border: 'none',
-                            color: isPremium ? '#000' : '#fff',
-                            padding: '8px 20px',
-                            borderRadius: '30px',
-                            cursor: 'pointer',
-                            fontWeight: 'bold',
-                            boxShadow: `0 4px 10px ${isPremium ? 'rgba(255, 193, 7, 0.3)' : 'rgba(229, 57, 53, 0.3)'}`
-                          }}
-                        >
-                          Add
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+          {!collapsedCategories[category.id] && (
+            category.products.length === 0 ? (
+              <p style={{ color: '#888', fontStyle: 'italic' }}>More products coming soon.</p>
+            ) : (
+              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {category.products.map(product => (
+                  <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                    cartQuantity={cart[product.id]?.quantity || 0}
+                    onAddToCart={() => {
+                      updateQuantity(product, 1);
+                      setIsCartOpen(true);
+                    }}
+                    onUpdateQuantity={(delta) => updateQuantity(product, delta)}
+                  />
+                ))}
+              </div>
+            )
           )}
         </div>
       ))}

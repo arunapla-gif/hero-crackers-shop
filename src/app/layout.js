@@ -21,15 +21,15 @@ export default function RootLayout({ children }) {
           <main style={{ flex: 1, marginTop: '80px' }}>
             {children}
           </main>
-          <footer style={{ backgroundColor: '#fff', borderTop: '2px solid rgba(229, 57, 53, 0.1)', color: '#333', padding: '40px 50px', textAlign: 'center', marginTop: 'auto' }}>
-            <div style={{ marginBottom: '20px', fontSize: '0.9rem', color: '#555', lineHeight: '1.6' }}>
-              <strong>Arunachalam Agency</strong><br/>
-              📍 17, Thattu Mettu Street, Sattur Road, Sivakasi, Virudhunagar, Tamil Nadu - 626123<br/>
-              📞 +91 90474 88862 | ✉️ admin@arunag.com / admin@herocrackers.com
+          <footer style={{ backgroundColor: '#3E0000', borderTop: '6px solid #D4AF37', color: '#FFF8E7', padding: '60px 5% 40px', textAlign: 'center', marginTop: 'auto' }}>
+            <div style={{ marginBottom: '25px', fontSize: '1.05rem', color: '#FFDBAA', lineHeight: '1.8' }}>
+              <strong style={{ color: '#FFD700', fontSize: '1.2rem', letterSpacing: '1px', textTransform: 'uppercase' }}>Arunachalam Agency</strong><br/>
+              <span style={{ fontSize: '1.2rem', color: '#FFD700' }}>📍</span> 17, Thattu Mettu Street, Sattur Road, Sivakasi, Virudhunagar, Tamil Nadu - 626123<br/>
+              <span style={{ fontSize: '1.2rem', color: '#FFD700' }}>📞</span> +91 90474 88862 &nbsp;|&nbsp; <span style={{ fontSize: '1.2rem', color: '#FFD700' }}>✉️</span> admin@arunag.com
             </div>
-            <p>© {new Date().getFullYear()} Hero Crackers Fireworks. All rights reserved.</p>
-            <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '10px' }}>
-              Hero Crackers is a part of <strong>Arunachalam Agency</strong> which is the verified Meta Business Portfolio.
+            <p style={{ color: '#D4AF37', fontSize: '0.95rem' }}>© {new Date().getFullYear()} Hero Crackers. All rights reserved.</p>
+            <p style={{ fontSize: '0.9rem', color: '#FFDBAA', marginTop: '15px' }}>
+              Hero Crackers is a part of <strong style={{ color: '#FF9933' }}>Arunachalam Agency</strong> | Verified Meta Business
             </p>
           </footer>
         </CartProvider>
