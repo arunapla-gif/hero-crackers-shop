@@ -1,12 +1,16 @@
 'use client';
 
-export default function ProductCard({ product, onAddToCart, cartQuantity = 0, onUpdateQuantity }) {
+export default function ProductCard({ product, onAddToCart, cartQuantity = 0, onUpdateQuantity, index = 0 }) {
   const isPremium = product.price > 300;
+  
+  // Continuous hue shift cascade
+  const cardHue = (350 + (index * 25)) % 360; 
+  const darkHue = (cardHue - 20 + 360) % 360;
   
   return (
     <div 
       style={{ 
-        background: 'linear-gradient(145deg, rgba(45, 15, 20, 0.7) 0%, rgba(15, 5, 10, 0.9) 100%)',
+        background: `linear-gradient(145deg, hsla(${cardHue}, 85%, 45%, 0.9) 0%, hsla(${darkHue}, 90%, 30%, 1) 100%)`,
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
         padding: '15px', 
@@ -29,12 +33,12 @@ export default function ProductCard({ product, onAddToCart, cartQuantity = 0, on
       }} 
       onMouseOver={(e) => {
         e.currentTarget.style.transform = 'translateY(-10px)';
-        e.currentTarget.style.background = 'linear-gradient(145deg, rgba(65, 20, 25, 0.85) 0%, rgba(25, 10, 15, 0.95) 100%)';
+        e.currentTarget.style.background = `linear-gradient(145deg, hsla(${cardHue}, 90%, 50%, 1) 0%, hsla(${darkHue}, 95%, 35%, 1) 100%)`;
         e.currentTarget.style.boxShadow = `0 15px 40px ${isPremium ? 'rgba(255, 193, 7, 0.2)' : 'rgba(255, 87, 34, 0.2)'}`;
       }} 
       onMouseOut={(e) => {
         e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.background = 'linear-gradient(145deg, rgba(45, 15, 20, 0.7) 0%, rgba(15, 5, 10, 0.9) 100%)';
+        e.currentTarget.style.background = `linear-gradient(145deg, hsla(${cardHue}, 85%, 45%, 0.9) 0%, hsla(${darkHue}, 90%, 30%, 1) 100%)`;
         e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.5)';
       }}
     >
@@ -53,13 +57,24 @@ export default function ProductCard({ product, onAddToCart, cartQuantity = 0, on
       
       <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '5px 0', minWidth: 0 }}>
         <div>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '5px', color: '#FFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.name}</h3>
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '5px', color: '#FFF', lineHeight: '1.2' }}>{product.name}</h3>
         </div>
       
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <p style={{ color: isPremium ? '#FFC107' : '#FF5722', fontWeight: 'bold', fontSize: '1.2rem' }}>
-          ₹{product.price}
-        </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={{ 
+            color: 'rgba(255,255,255,0.4)', 
+            textDecoration: 'line-through', 
+            fontSize: '0.85rem', 
+            marginBottom: '4px',
+            fontWeight: 'normal'
+          }}>
+            MRP: ₹{(product.basePrice > product.price ? product.basePrice : Math.round(product.price * 3.33)).toLocaleString('en-IN')}
+          </span>
+          <p style={{ color: isPremium ? '#FFC107' : '#FF5722', fontWeight: 'bold', fontSize: '1.4rem', margin: 0, lineHeight: 1 }}>
+            ₹{product.price.toLocaleString('en-IN')}
+          </p>
+        </div>
         
         <div style={{ minWidth: '120px', height: '36px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
             <div style={{ 

@@ -7,7 +7,7 @@ const prismaClientSingleton = () => {
   const pool = new Pool({ 
     connectionString: dbUrl,
     max: 1,
-    connectionTimeoutMillis: 5000,
+    connectionTimeoutMillis: 15000,
     idleTimeoutMillis: 15000,
     allowExitOnIdle: true
   })

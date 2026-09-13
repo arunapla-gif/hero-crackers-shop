@@ -100,10 +100,11 @@ export default function ShopInterface({ categories }) {
               <p style={{ color: '#888', fontStyle: 'italic' }}>More products coming soon.</p>
             ) : (
               <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {category.products.map(product => (
+                {category.products.map((product, index) => (
                   <ProductCard 
                     key={product.id} 
                     product={product} 
+                    index={index}
                     cartQuantity={cart[product.id]?.quantity || 0}
                     onAddToCart={() => {
                       updateQuantity(product, 1);
