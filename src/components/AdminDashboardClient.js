@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import OrderManager from './admin/OrderManager';
 import QuickBillPOS from './admin/QuickBillPOS';
@@ -67,7 +66,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
     try {
       const res = await fetch('/api/auth/logout', { method: 'POST' });
       if (res.ok) {
-        router.push('/admin/login');
+        window.location.href = '/admin/login';
       }
     } catch (err) {
       console.error('Failed to logout', err);
@@ -167,18 +166,6 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
             <p style={{ color: theme.textSecondary, margin: 0, fontSize: '1.1rem' }}>Manage orders, inventory, and masters seamlessly.</p>
           </div>
           <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            <Link href="/" passHref>
-              <button 
-                className="action-btn"
-                style={{ 
-                  padding: '10px 20px', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold',
-                  backgroundColor: theme.accent, color: 'white', border: 'none',
-                  display: 'flex', alignItems: 'center', gap: '8px'
-                }}
-              >
-                🏠 Storefront
-              </button>
-            </Link>
             <button 
               className="action-btn"
               onClick={() => setIsDarkMode(!isDarkMode)}

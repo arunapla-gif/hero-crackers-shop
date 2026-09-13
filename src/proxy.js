@@ -10,13 +10,19 @@ export default async function proxy(request) {
   // Check if it's a protected route
   const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route)) && !publicRoutes.includes(path);
 
-  if (isProtectedRoute) {
-    const cookie = request.cookies.get('admin_session')?.value;
-    const session = await decrypt(cookie);
+  const cookie = request.cookies.get('admin_session')?.value;
+  const session = cookie ? await decrypt(cookie) : null;
+  const isAuthenticatedAdmin = session && session.user && session.user.role === 'ADMIN';
 
-    if (!session || session.user.role !== 'ADMIN') {
+  if (isProtectedRoute) {
+    if (!isAuthenticatedAdmin) {
       return NextResponse.redirect(new URL('/admin/login', request.url));
     }
+  }
+
+  // If already logged in as admin, redirect from login page to dashboard
+  if (path === '/admin/login' && isAuthenticatedAdmin) {
+    return NextResponse.redirect(new URL('/admin', request.url));
   }
 
   return NextResponse.next();

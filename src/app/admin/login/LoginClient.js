@@ -42,8 +42,7 @@ export default function LoginClient({ admins }) {
         setError(data.error || 'Invalid credentials. Please try again.');
         setPassword('');
       } else {
-        router.push('/admin');
-        router.refresh();
+        window.location.href = '/admin';
       }
     } catch (err) {
       setError('A connection error occurred.');
