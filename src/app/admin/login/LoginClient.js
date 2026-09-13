@@ -1,16 +1,33 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef } from 'react';
+import styles from './Login.module.css';
 
-export default function LoginClient({ admins }) {
-  const [selectedAdmin, setSelectedAdmin] = useState(
-    admins && admins.length === 1 ? admins[0] : (admins?.[0] || null)
-  );
+export default function LoginClient({ admins = [] }) {
+  const [selectedAdmin, setSelectedAdmin] = useState(null);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [authStatus, setAuthStatus] = useState('idle'); // 'idle' | 'authenticating' | 'verified'
-  const router = useRouter();
+  const pinInputRef = useRef(null);
+
+  const handleSelectProfile = (admin) => {
+    setSelectedAdmin(admin);
+    setPassword('');
+    setError('');
+    // Use double requestAnimationFrame to ensure the browser paints the profile change
+    // BEFORE focusing the input, eliminating any main-thread hitch or keyboard freeze.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        pinInputRef.current?.focus({ preventScroll: true });
+      });
+    });
+  };
+
+  const handleBackToProfiles = () => {
+    setSelectedAdmin(null);
+    setPassword('');
+    setError('');
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -34,6 +51,9 @@ export default function LoginClient({ admins }) {
         setPassword('');
         setLoading(false);
         setAuthStatus('idle');
+        requestAnimationFrame(() => {
+          pinInputRef.current?.focus({ preventScroll: true });
+        });
       } else {
         setAuthStatus('verified');
         window.location.href = '/admin';
@@ -46,388 +66,121 @@ export default function LoginClient({ admins }) {
   };
 
   return (
-    <>
-      <style>{`
-        .login-wrapper {
-          min-height: calc(100vh - 80px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: 
-            radial-gradient(circle at 15% 20%, rgba(245, 158, 11, 0.12) 0%, transparent 45%),
-            radial-gradient(circle at 85% 75%, rgba(220, 38, 38, 0.12) 0%, transparent 45%),
-            radial-gradient(ellipse at top, #2b1400 0%, #0c0a09 60%, #000 100%);
-          font-family: 'Inter', sans-serif;
-          position: relative;
-          overflow: hidden;
-          padding: 20px;
-          color: white;
-        }
+    <div className={styles.loginWrapper}>
+      <div className={styles.loginContainer}>
+        <div className={styles.loginCard}>
+          <div className={styles.cardHighlight}></div>
 
-        .login-container {
-          position: relative;
-          z-index: 10;
-          width: 100%;
-          max-width: 440px;
-          animation: fastFadeIn 0.2s ease-out;
-        }
-
-        @keyframes fastFadeIn {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .login-card {
-          background: rgba(22, 22, 24, 0.9);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          padding: 36px 32px;
-          border-radius: 20px;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-          position: relative;
-          overflow: hidden;
-        }
-
-        .card-highlight {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 4px;
-          background: linear-gradient(90deg, #fbbf24, #f97316, #ef4444);
-        }
-
-        .login-header {
-          text-align: center;
-          margin-bottom: 40px;
-        }
-
-        .login-title {
-          font-size: 2rem;
-          font-weight: 700;
-          letter-spacing: -0.025em;
-          margin-bottom: 8px;
-        }
-
-        .login-subtitle {
-          font-size: 0.85rem;
-          color: #9ca3af;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          font-weight: 600;
-        }
-
-        .profiles-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 20px;
-        }
-
-        .profile-btn {
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          border-radius: 16px;
-          padding: 24px 16px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          color: white;
-          outline: none;
-        }
-
-        .profile-btn:hover, .profile-btn:focus {
-          background: rgba(255, 255, 255, 0.08);
-          border-color: rgba(245, 158, 11, 0.5);
-          box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
-        }
-
-        .profile-avatar {
-          width: 70px;
-          height: 70px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #fbbf24, #ea580c);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 2rem;
-          font-weight: bold;
-          margin-bottom: 16px;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-          border: 3px solid rgba(0,0,0,0.3);
-          transition: transform 0.3s ease;
-        }
-
-        .profile-btn:hover .profile-avatar {
-          transform: scale(1.1);
-        }
-
-        .profile-name {
-          font-size: 0.9rem;
-          font-weight: 600;
-          letter-spacing: 0.05em;
-        }
-
-        .login-form-container {
-          animation: fadeInRight 0.5s ease;
-        }
-
-        @keyframes fadeInRight {
-          from { opacity: 0; transform: translateX(20px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-
-        .selected-profile {
-          text-align: center;
-          margin-bottom: 30px;
-          position: relative;
-        }
-
-        .back-btn {
-          position: absolute;
-          left: 0;
-          top: 0;
-          background: transparent;
-          border: none;
-          color: #9ca3af;
-          cursor: pointer;
-          padding: 8px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s;
-        }
-
-        .back-btn:hover {
-          color: white;
-          background: rgba(255,255,255,0.1);
-        }
-
-        .selected-avatar {
-          width: 90px;
-          height: 90px;
-          margin: 0 auto 16px auto;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #fbbf24, #ea580c);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 2.5rem;
-          font-weight: bold;
-          box-shadow: 0 0 30px rgba(245, 158, 11, 0.4);
-          border: 4px solid rgba(0,0,0,0.5);
-        }
-
-        .selected-name {
-          font-size: 1.5rem;
-          font-weight: 700;
-        }
-
-        .selected-role {
-          font-size: 0.75rem;
-          color: #f59e0b;
-          text-transform: uppercase;
-          letter-spacing: 0.15em;
-          font-weight: 600;
-          margin-top: 4px;
-        }
-
-        .error-message {
-          background: rgba(127, 29, 29, 0.5);
-          border: 1px solid rgba(239, 68, 68, 0.5);
-          color: #fca5a5;
-          padding: 12px 16px;
-          border-radius: 12px;
-          font-size: 0.85rem;
-          display: flex;
-          align-items: center;
-          margin-bottom: 24px;
-          animation: slideDown 0.3s ease;
-        }
-
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .pin-input {
-          width: 100%;
-          padding: 20px;
-          background: rgba(0, 0, 0, 0.4);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 16px;
-          color: white;
-          font-size: 2rem;
-          font-weight: bold;
-          letter-spacing: 0.5em;
-          text-align: center;
-          outline: none;
-          transition: all 0.3s ease;
-          box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
-          margin-bottom: 24px;
-        }
-
-        .pin-input:focus {
-          border-color: rgba(245, 158, 11, 0.8);
-          box-shadow: inset 0 2px 10px rgba(0,0,0,0.5), 0 0 0 2px rgba(245, 158, 11, 0.3);
-        }
-        
-        .pin-input::placeholder {
-          color: #4b5563;
-        }
-
-        .submit-btn {
-          width: 100%;
-          padding: 16px;
-          background: linear-gradient(90deg, #fbbf24, #f97316);
-          border: none;
-          border-radius: 12px;
-          color: black;
-          font-weight: 800;
-          font-size: 0.9rem;
-          letter-spacing: 0.05em;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        .submit-btn:hover:not(:disabled) {
-          box-shadow: 0 0 30px rgba(245, 158, 11, 0.6);
-          transform: translateY(-2px);
-        }
-
-        .submit-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-          box-shadow: none;
-        }
-
-        .spinner {
-          border: 3px solid rgba(0,0,0,0.2);
-          border-top-color: black;
-          border-radius: 50%;
-          width: 20px;
-          height: 20px;
-          animation: spin 1s linear infinite;
-          margin-right: 12px;
-        }
-
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        
-        .footer-text {
-          text-align: center;
-          margin-top: 32px;
-          font-size: 0.75rem;
-          color: #6b7280;
-          letter-spacing: 0.1em;
-          font-weight: 500;
-        }
-      `}</style>
-
-      <div className="login-wrapper">
-        <div className="login-container">
-          <div className="login-card">
-            <div className="card-highlight"></div>
-
-            {!selectedAdmin ? (
-              <div>
-                <div className="login-header">
-                  <h2 className="login-title">Command Center</h2>
-                  <p className="login-subtitle">Select Identity</p>
-                </div>
-                
-                <div className="profiles-grid">
-                  {admins.map((admin) => (
-                    <button
-                      key={admin.id}
-                      onClick={() => setSelectedAdmin(admin)}
-                      className="profile-btn"
-                    >
-                      <div className="profile-avatar">
-                        {admin.name.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="profile-name">{admin.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="login-form-container">
-                <div className="selected-profile">
-                  <button 
-                    type="button" 
-                    onClick={() => { setSelectedAdmin(null); setPassword(''); setError(''); }}
-                    className="back-btn"
-                    title="Switch Profile"
-                  >
-                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                  </button>
-                  
-                  <div className="selected-avatar">
-                    {selectedAdmin.name.charAt(0).toUpperCase()}
+          {/* Identity Selection View */}
+          <div 
+            className={`${styles.viewSection} ${!selectedAdmin ? styles.viewActive : styles.viewHidden}`}
+            aria-hidden={!!selectedAdmin}
+          >
+            <div className={styles.loginHeader}>
+              <h2 className={styles.loginTitle}>Command Center</h2>
+              <p className={styles.loginSubtitle}>Select Identity</p>
+            </div>
+            
+            <div className={styles.profilesGrid}>
+              {admins.map((admin) => (
+                <button
+                  key={admin.id}
+                  type="button"
+                  onClick={() => handleSelectProfile(admin)}
+                  className={styles.profileBtn}
+                >
+                  <div className={styles.profileAvatar}>
+                    {admin.name.charAt(0).toUpperCase()}
                   </div>
-                  <h2 className="selected-name">{selectedAdmin.name}</h2>
-                  <p className="selected-role">Authorized Personnel</p>
-                </div>
-                
-                <form onSubmit={handleLogin}>
-                  {error && (
-                    <div className="error-message">
-                      <svg style={{marginRight: '8px', width: '20px', height: '20px'}} viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      {error}
-                    </div>
-                  )}
-                  
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    autoFocus
-                    required
-                    className="pin-input"
-                    placeholder="••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
+                  <span className={styles.profileName}>{admin.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
-                  <button
-                    type="submit"
-                    disabled={loading || password.length < 4}
-                    className="submit-btn"
-                    style={authStatus === 'verified' ? {
-                      background: 'linear-gradient(90deg, #10b981, #059669)',
-                      color: '#fff',
-                      boxShadow: '0 0 25px rgba(16, 185, 129, 0.5)'
-                    } : {}}
-                  >
-                    {authStatus === 'authenticating' && <div className="spinner"></div>}
-                    {authStatus === 'verified' && <span style={{ marginRight: '8px', fontSize: '1.2rem' }}>✓</span>}
-                    {authStatus === 'authenticating' && 'VERIFYING PIN...'}
-                    {authStatus === 'verified' && 'ACCESS GRANTED • OPENING...'}
-                    {authStatus === 'idle' && 'ACCESS SYSTEM'}
-                  </button>
-                </form>
+          {/* PIN Typing View */}
+          <div 
+            className={`${styles.viewSection} ${selectedAdmin ? styles.viewActive : styles.viewHidden}`}
+            aria-hidden={!selectedAdmin}
+          >
+            {selectedAdmin && (
+              <div className={styles.selectedProfile}>
+                <button 
+                  type="button" 
+                  onClick={handleBackToProfiles}
+                  className={styles.backBtn}
+                  title="Switch Profile"
+                >
+                  <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                  </svg>
+                </button>
+                
+                <div className={styles.selectedAvatar}>
+                  {selectedAdmin.name.charAt(0).toUpperCase()}
+                </div>
+                <h2 className={styles.selectedName}>{selectedAdmin.name}</h2>
+                <p className={styles.selectedRole}>Authorized Personnel</p>
               </div>
             )}
+            
+            <form onSubmit={handleLogin}>
+              {error && (
+                <div className={styles.errorMessage}>
+                  <svg style={{ marginRight: '8px', width: '20px', height: '20px', flexShrink: 0 }} viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  {error}
+                </div>
+              )}
+              
+              <div className={styles.pinInputContainer}>
+                <input
+                  ref={pinInputRef}
+                  id="pin-password"
+                  name="password"
+                  type="password"
+                  inputMode="text"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  required
+                  className={styles.pinInput}
+                  placeholder="••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || password.length < 4}
+                className={styles.submitBtn}
+                style={authStatus === 'verified' ? {
+                  background: 'linear-gradient(90deg, #10b981, #059669)',
+                  color: '#fff',
+                  boxShadow: '0 0 25px rgba(16, 185, 129, 0.5)'
+                } : {}}
+              >
+                {authStatus === 'authenticating' && <div className={styles.spinner}></div>}
+                {authStatus === 'verified' && <span style={{ marginRight: '8px', fontSize: '1.2rem' }}>✓</span>}
+                {authStatus === 'authenticating' && 'VERIFYING PIN...'}
+                {authStatus === 'verified' && 'ACCESS GRANTED • OPENING...'}
+                {authStatus === 'idle' && 'ACCESS SYSTEM'}
+              </button>
+            </form>
           </div>
-          
-          <div className="footer-text">
-            SECURE ACCESS PORTAL &copy; {new Date().getFullYear()}
-          </div>
+
+        </div>
+        
+        <div className={styles.footerText}>
+          SECURE ACCESS PORTAL &copy; {new Date().getFullYear()}
         </div>
       </div>
-    </>
+    </div>
   );
 }
