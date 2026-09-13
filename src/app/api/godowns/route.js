@@ -1,7 +1,12 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { requireAdminApi } from '@/lib/apiAuth';
+import { sanitizeString } from '@/lib/validation';
 
 export async function GET() {
+  const auth = await requireAdminApi();
+  if (!auth.authorized) return auth.response;
+
   try {
     const godowns = await prisma.godown.findMany({
       include: {
@@ -18,6 +23,9 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  const auth = await requireAdminApi();
+  if (!auth.authorized) return auth.response;
+
   try {
     const body = await request.json();
     if (!body.name) {
@@ -26,8 +34,8 @@ export async function POST(request) {
 
     const godown = await prisma.godown.create({
       data: {
-        name: body.name,
-        location: body.location
+        name: sanitizeString(body.name, 100),
+        location: sanitizeString(body.location || '', 200)
       }
     });
     return NextResponse.json(godown);

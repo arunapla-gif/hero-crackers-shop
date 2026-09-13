@@ -1,12 +1,16 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { requireAdminApi } from '@/lib/apiAuth';
+import { sanitizeString, cleanPhone, isValidPhone } from '@/lib/validation';
 
 export async function GET(request) {
+  const auth = await requireAdminApi();
+  if (!auth.authorized) return auth.response;
+
   try {
     const { searchParams } = new URL(request.url);
-    const phone = searchParams.get('phone');
+    const phone = cleanPhone(searchParams.get('phone') || '');
     
-    // We want to fetch all active customers or search by phone
     const where = { isActive: true };
     if (phone) {
       where.primaryPhone = { contains: phone };
@@ -25,17 +29,22 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+  const auth = await requireAdminApi();
+  if (!auth.authorized) return auth.response;
+
   try {
     const data = await request.json();
     
-    // Basic validation
     if (!data.primaryPhone || !data.name) {
       return NextResponse.json({ error: 'Phone and Name are required' }, { status: 400 });
     }
 
-    const phone = data.primaryPhone.replace(/[^0-9]/g, '').slice(-10);
+    if (!isValidPhone(data.primaryPhone)) {
+      return NextResponse.json({ error: 'Valid 10-digit primary phone is required' }, { status: 400 });
+    }
 
-    // Check existing
+    const phone = cleanPhone(data.primaryPhone);
+
     const existing = await prisma.customerMaster.findUnique({
       where: { primaryPhone: phone }
     });
@@ -47,10 +56,10 @@ export async function POST(request) {
     const customer = await prisma.customerMaster.create({
       data: {
         primaryPhone: phone,
-        alternatePhone: data.alternatePhone,
-        name: data.name,
-        fullAddress: data.fullAddress,
-        city: data.city,
+        alternatePhone: data.alternatePhone ? sanitizeString(data.alternatePhone, 20) : null,
+        name: sanitizeString(data.name, 100),
+        fullAddress: sanitizeString(data.fullAddress || '', 500),
+        city: sanitizeString(data.city || '', 100),
       }
     });
 

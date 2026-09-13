@@ -133,8 +133,25 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
         setIsUploading(false);
         return;
       }
-      const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+
+      // Restrict file uploads: MIME type check
+      const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!ALLOWED_TYPES.includes(imageFile.type)) {
+        alert('Invalid file format. Only JPG, PNG, and WebP images are allowed.');
+        setIsUploading(false);
+        return;
+      }
+
+      // Restrict file uploads: 5MB size limit
+      const MAX_SIZE = 5 * 1024 * 1024;
+      if (imageFile.size > MAX_SIZE) {
+        alert('File size exceeds the 5 MB limit.');
+        setIsUploading(false);
+        return;
+      }
+
+      const fileExt = imageFile.type === 'image/jpeg' ? 'jpg' : imageFile.type === 'image/png' ? 'png' : 'webp';
+      const fileName = `${typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2)}.${fileExt}`;
       const { error } = await supabase.storage.from('product-images').upload(fileName, imageFile);
       
       if (error) {

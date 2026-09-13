@@ -5,10 +5,10 @@ const getSecretKey = () => {
   const secretKey = process.env.JWT_SECRET;
   if (!secretKey) {
     if (process.env.NODE_ENV === 'production') {
-      console.warn('JWT_SECRET is not set in environment variables. Auth will fail at runtime.');
+      throw new Error('FATAL SECURITY ERROR: JWT_SECRET environment variable is missing in production.');
     }
-    // Return a dummy key for build-time evaluation if missing
-    return new TextEncoder().encode('fallback-secret-for-build-time-only-123456');
+    // Return a local dev key if missing during development
+    return new TextEncoder().encode('local-development-only-secret-key-32-chars-min');
   }
   return new TextEncoder().encode(secretKey);
 };
@@ -46,6 +46,7 @@ export async function setSessionCookie(user) {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
+    priority: 'high',
   });
 }
 

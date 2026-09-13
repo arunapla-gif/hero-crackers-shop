@@ -3,14 +3,18 @@ import { generateInvoicePDFBuffer } from '@/lib/pdfGenerator';
 import { NextResponse } from 'next/server';
 import { formatOrderNumber } from '@/lib/utils';
 
-
 export async function GET(request, { params }) {
   try {
     const { id } = await params;
 
     const order = await prisma.order.findUnique({
       where: { id },
-      include: { items: true, user: true }
+      include: { 
+        items: true, 
+        user: {
+          select: { id: true, name: true, email: true, role: true }
+        }
+      }
     });
 
     if (!order) {

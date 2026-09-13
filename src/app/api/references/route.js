@@ -1,7 +1,12 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { requireAdminApi } from '@/lib/apiAuth';
+import { sanitizeString } from '@/lib/validation';
 
 export async function GET() {
+  const auth = await requireAdminApi();
+  if (!auth.authorized) return auth.response;
+
   try {
     const references = await prisma.referenceMaster.findMany({
       orderBy: { name: 'asc' }
@@ -14,6 +19,9 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  const auth = await requireAdminApi();
+  if (!auth.authorized) return auth.response;
+
   try {
     const body = await request.json();
     if (!body.name) {
@@ -22,8 +30,8 @@ export async function POST(request) {
 
     const newRef = await prisma.referenceMaster.create({
       data: {
-        name: body.name,
-        phone: body.phone || null,
+        name: sanitizeString(body.name, 100),
+        phone: body.phone ? sanitizeString(body.phone, 20) : null,
         isActive: true
       }
     });

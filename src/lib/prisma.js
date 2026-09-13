@@ -3,7 +3,10 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import { Pool } from 'pg'
 
 const prismaClientSingleton = () => {
-  let dbUrl = process.env.DATABASE_URL || "postgresql://postgres.gqfpfnqepdkletbbhwcx:IevuJqEtZ8V1eKhz@aws-1-ap-south-1.pooler.supabase.com:6543/postgres?schema=shop&pgbouncer=true&connection_limit=5"
+  let dbUrl = process.env.DATABASE_URL
+  if (!dbUrl) {
+    throw new Error('DATABASE_URL environment variable is not defined.')
+  }
   if (dbUrl.includes('connection_limit=10')) {
     dbUrl = dbUrl.replace('connection_limit=10', 'connection_limit=5')
   } else if (dbUrl.includes('connection_limit=1')) {

@@ -1,7 +1,11 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { requireAdminApi } from '@/lib/apiAuth';
 
 export async function GET(request) {
+  const auth = await requireAdminApi();
+  if (!auth.authorized) return auth.response;
+
   try {
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('startDate');

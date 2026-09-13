@@ -1,5 +1,7 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { requireAdminApi } from '@/lib/apiAuth';
+import { sanitizeString } from '@/lib/validation';
 
 export async function GET() {
   try {
@@ -13,18 +15,22 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  const auth = await requireAdminApi();
+  if (!auth.authorized) return auth.response;
+
   try {
     const body = await request.json();
     if (!body.name) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    const slug = body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const name = sanitizeString(body.name, 100);
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
     const category = await prisma.category.create({
       data: {
-        name: body.name,
-        slug: slug
+        name,
+        slug
       }
     });
     return NextResponse.json(category);

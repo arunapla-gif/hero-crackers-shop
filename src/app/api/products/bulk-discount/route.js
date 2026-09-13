@@ -1,7 +1,11 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { requireAdminApi } from '@/lib/apiAuth';
 
 export async function POST(req) {
+  const auth = await requireAdminApi();
+  if (!auth.authorized) return auth.response;
+
   try {
     const { discount } = await req.json();
     
@@ -9,18 +13,11 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Invalid discount percentage (must be between 0 and 99)' }, { status: 400 });
     }
 
-    // Fetch all products
     const products = await prisma.product.findMany();
     
-    // We will do a batch update via individual calls in a transaction since Prisma doesn't natively support 
-    // row-level dynamic math like `basePrice = price / factor` in updateMany.
     const transactionOps = products.map(product => {
-      // Reverse MRP calculation
-      // For 50% discount: factor = 1 - (50/100) = 0.5
-      // MRP (basePrice) = Math.round(price / 0.5)
-      
       const factor = 1 - (discount / 100);
-      let newBasePrice = product.price; // if discount is 0, basePrice equals selling price
+      let newBasePrice = product.price;
       
       if (factor > 0 && discount > 0) {
          newBasePrice = Math.round(product.price / factor);
@@ -34,12 +31,16 @@ export async function POST(req) {
         }
       });
     });
-    
+
     await prisma.$transaction(transactionOps);
-    
-    return NextResponse.json({ message: 'Global discount applied successfully', discountApplied: discount });
+
+    return NextResponse.json({ 
+      success: true, 
+      message: `Successfully applied ${discount}% discount to ${products.length} products.` 
+    });
+
   } catch (error) {
-    console.error('Failed to apply global discount:', error);
-    return NextResponse.json({ error: 'Failed to apply global discount' }, { status: 500 });
+    console.error('Bulk discount error:', error);
+    return NextResponse.json({ error: 'Failed to update bulk discount' }, { status: 500 });
   }
 }

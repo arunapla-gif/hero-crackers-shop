@@ -1,15 +1,23 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { sendWhatsAppOrderConfirmation } from '@/lib/msg91';
+import { requireAdminApi } from '@/lib/apiAuth';
 
 export async function POST(request, { params }) {
+  const auth = await requireAdminApi();
+  if (!auth.authorized) return auth.response;
+
   try {
     const { id } = await params;
     
-    // 1. Fetch the order details
+    // 1. Fetch the order details (trimming user password)
     const order = await prisma.order.findUnique({
       where: { id },
-      include: { user: true }
+      include: { 
+        user: {
+          select: { id: true, name: true, email: true, role: true }
+        }
+      }
     });
 
     if (!order) {
@@ -43,7 +51,7 @@ export async function POST(request, { params }) {
     return NextResponse.json({ success: true, message: 'WhatsApp message triggered successfully.' });
 
   } catch (error) {
-    console.error('Failed to trigger WhatsApp manually:', error);
+    console.error('Error in WhatsApp trigger API:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

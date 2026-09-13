@@ -24,7 +24,10 @@ export default async function AdminDashboard() {
     customers
   ] = await Promise.all([
     prisma.order.findMany({
-      include: { items: true, user: true },
+      include: { 
+        items: true, 
+        user: { select: { id: true, name: true, email: true, role: true } } 
+      },
       orderBy: { createdAt: 'desc' },
       take: 50
     }),

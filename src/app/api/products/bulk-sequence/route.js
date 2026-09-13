@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { requireAdminApi } from '@/lib/apiAuth';
 
 export async function POST(req) {
+  const auth = await requireAdminApi();
+  if (!auth.authorized) return auth.response;
+
   try {
     const updates = await req.json();
 
@@ -9,11 +13,10 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Expected an array of updates' }, { status: 400 });
     }
 
-    // Run all updates in a single transaction
     const updatePromises = updates.map((update) =>
       prisma.product.update({
         where: { id: update.id },
-        data: { sequence: update.sequence },
+        data: { sequence: parseInt(update.sequence) || 0 },
       })
     );
 

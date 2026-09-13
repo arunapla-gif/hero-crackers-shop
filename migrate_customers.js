@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
 const { PrismaPg } = require('@prisma/adapter-pg');
 const { Pool } = require('pg');
@@ -5,7 +6,10 @@ const { Pool } = require('pg');
 async function main() {
   console.log('Starting CustomerMaster migration...');
 
-  const dbUrl = "postgresql://postgres.gqfpfnqepdkletbbhwcx:IevuJqEtZ8V1eKhz@aws-1-ap-south-1.pooler.supabase.com:5432/postgres?schema=shop"
+  const dbUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
+  if (!dbUrl) {
+    throw new Error('DIRECT_URL or DATABASE_URL is not set.');
+  }
   const pool = new Pool({ 
     connectionString: dbUrl,
     max: 1,
