@@ -4,9 +4,12 @@ import { Pool } from 'pg'
 
 const prismaClientSingleton = () => {
   let dbUrl = process.env.DATABASE_URL || "postgresql://postgres.gqfpfnqepdkletbbhwcx:IevuJqEtZ8V1eKhz@aws-1-ap-south-1.pooler.supabase.com:6543/postgres?schema=shop&pgbouncer=true&connection_limit=1"
+  if (dbUrl.includes('connection_limit=1')) {
+    dbUrl = dbUrl.replace('connection_limit=1', 'connection_limit=10')
+  }
   const pool = new Pool({ 
     connectionString: dbUrl,
-    max: 1,
+    max: 10,
     connectionTimeoutMillis: 15000,
     idleTimeoutMillis: 15000,
     allowExitOnIdle: true

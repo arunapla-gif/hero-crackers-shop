@@ -9,6 +9,7 @@ export default function LoginClient({ admins }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [authStatus, setAuthStatus] = useState('idle'); // 'idle' | 'authenticating' | 'verified'
   const router = useRouter();
 
   const handleLogin = async (e) => {
@@ -17,6 +18,7 @@ export default function LoginClient({ admins }) {
     
     setError('');
     setLoading(true);
+    setAuthStatus('authenticating');
 
     try {
       const res = await fetch('/api/auth/login', {
@@ -30,13 +32,16 @@ export default function LoginClient({ admins }) {
       if (!res.ok) {
         setError(data.error || 'Invalid credentials. Please try again.');
         setPassword('');
+        setLoading(false);
+        setAuthStatus('idle');
       } else {
+        setAuthStatus('verified');
         window.location.href = '/admin';
       }
     } catch (err) {
       setError('A connection error occurred.');
-    } finally {
       setLoading(false);
+      setAuthStatus('idle');
     }
   };
 
@@ -401,9 +406,17 @@ export default function LoginClient({ admins }) {
                     type="submit"
                     disabled={loading || password.length < 4}
                     className="submit-btn"
+                    style={authStatus === 'verified' ? {
+                      background: 'linear-gradient(90deg, #10b981, #059669)',
+                      color: '#fff',
+                      boxShadow: '0 0 25px rgba(16, 185, 129, 0.5)'
+                    } : {}}
                   >
-                    {loading && <div className="spinner"></div>}
-                    {loading ? 'AUTHENTICATING...' : 'ACCESS SYSTEM'}
+                    {authStatus === 'authenticating' && <div className="spinner"></div>}
+                    {authStatus === 'verified' && <span style={{ marginRight: '8px', fontSize: '1.2rem' }}>✓</span>}
+                    {authStatus === 'authenticating' && 'VERIFYING PIN...'}
+                    {authStatus === 'verified' && 'ACCESS GRANTED • OPENING...'}
+                    {authStatus === 'idle' && 'ACCESS SYSTEM'}
                   </button>
                 </form>
               </div>
