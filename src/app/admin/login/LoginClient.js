@@ -3,24 +3,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginClient({ admins }) {
-  const [selectedAdmin, setSelectedAdmin] = useState(null);
+  const [selectedAdmin, setSelectedAdmin] = useState(
+    admins && admins.length === 1 ? admins[0] : (admins?.[0] || null)
+  );
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const router = useRouter();
-
-  // Handle mounting animation
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // If there's only one admin, auto-select them
-  useEffect(() => {
-    if (admins && admins.length === 1 && !selectedAdmin) {
-      setSelectedAdmin(admins[0]);
-    }
-  }, [admins, selectedAdmin]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -55,71 +44,42 @@ export default function LoginClient({ admins }) {
     <>
       <style>{`
         .login-wrapper {
-          min-height: 100vh;
+          min-height: calc(100vh - 80px);
           display: flex;
           align-items: center;
           justify-content: center;
-          background: radial-gradient(ellipse at top, #3e1f00, #0a0a0a, #000);
+          background: 
+            radial-gradient(circle at 15% 20%, rgba(245, 158, 11, 0.12) 0%, transparent 45%),
+            radial-gradient(circle at 85% 75%, rgba(220, 38, 38, 0.12) 0%, transparent 45%),
+            radial-gradient(ellipse at top, #2b1400 0%, #0c0a09 60%, #000 100%);
           font-family: 'Inter', sans-serif;
           position: relative;
           overflow: hidden;
-          margin: 0;
+          padding: 20px;
           color: white;
-        }
-
-        .login-bg-orb {
-          position: absolute;
-          width: 400px;
-          height: 400px;
-          border-radius: 50%;
-          filter: blur(100px);
-          mix-blend-mode: screen;
-          animation: pulseOrb 4s infinite alternate;
-          z-index: 0;
-        }
-        
-        .orb-1 {
-          top: 20%;
-          left: 20%;
-          background: rgba(245, 158, 11, 0.15);
-        }
-        
-        .orb-2 {
-          bottom: 20%;
-          right: 20%;
-          background: rgba(220, 38, 38, 0.15);
-          animation-delay: 2s;
-        }
-
-        @keyframes pulseOrb {
-          0% { transform: scale(1); opacity: 0.5; }
-          100% { transform: scale(1.2); opacity: 1; }
         }
 
         .login-container {
           position: relative;
           z-index: 10;
           width: 100%;
-          max-width: 450px;
-          transition: all 1s ease;
-          transform: translateY(40px);
-          opacity: 0;
-          padding: 20px;
+          max-width: 440px;
+          animation: fastFadeIn 0.2s ease-out;
         }
-        
-        .login-container.mounted {
-          transform: translateY(0);
-          opacity: 1;
+
+        @keyframes fastFadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .login-card {
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
+          background: rgba(22, 22, 24, 0.9);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
           border: 1px solid rgba(255, 255, 255, 0.1);
-          padding: 40px;
-          border-radius: 24px;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+          padding: 36px 32px;
+          border-radius: 20px;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
           position: relative;
           overflow: hidden;
         }
@@ -369,10 +329,7 @@ export default function LoginClient({ admins }) {
       `}</style>
 
       <div className="login-wrapper">
-        <div className="login-bg-orb orb-1"></div>
-        <div className="login-bg-orb orb-2"></div>
-
-        <div className={`login-container ${mounted ? 'mounted' : ''}`}>
+        <div className="login-container">
           <div className="login-card">
             <div className="card-highlight"></div>
 
