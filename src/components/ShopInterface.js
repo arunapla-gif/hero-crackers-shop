@@ -17,7 +17,7 @@ export default function ShopInterface({ categories }) {
     }));
   };
   
-  const { cart, updateQuantity, setIsCartOpen, cartItemsCount, cartTotal } = useCart();
+  const { cart, updateQuantity, isCartOpen, setIsCartOpen, cartItemsCount, cartTotal } = useCart();
 
   // Filter categories based on search
   const filteredCategories = useMemo(() => {
@@ -120,7 +120,7 @@ export default function ShopInterface({ categories }) {
       ))}
 
       {/* Sticky Cart Summary */}
-      {cartItemsCount > 0 && (
+      {cartItemsCount > 0 && !isCartOpen && (
         <div className={styles.stickyFooter} style={{
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',

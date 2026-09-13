@@ -36,7 +36,7 @@ export default function SlidingCart() {
           bottom: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.6)',
           backdropFilter: 'blur(5px)',
-          zIndex: 100,
+          zIndex: 2000,
           animation: 'fadeIn 0.3s ease forwards'
         }}
       />
@@ -48,12 +48,13 @@ export default function SlidingCart() {
           top: 0,
           right: 0,
           bottom: 0,
+          height: '100dvh',
           width: '100%',
           maxWidth: '450px',
           backgroundColor: '#0a0a0a',
           borderLeft: '1px solid rgba(255, 255, 255, 0.1)',
           boxShadow: '-10px 0 30px rgba(0,0,0,0.8)',
-          zIndex: 101,
+          zIndex: 2001,
           display: 'flex',
           flexDirection: 'column',
           animation: 'slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards'
@@ -74,7 +75,7 @@ export default function SlidingCart() {
             style={{ 
               background: 'transparent', 
               border: 'none', 
-              color: '#333', 
+              color: '#fff', 
               fontSize: '1.5rem', 
               cursor: 'pointer'
             }}
@@ -160,13 +161,15 @@ export default function SlidingCart() {
 
         {cartItems.length > 0 && (
           <div style={{ 
-            padding: '25px', 
-            borderTop: '1px solid rgba(0,0,0,0.05)',
-            background: 'rgba(255, 255, 255, 0.8)'
+            padding: '20px 25px max(25px, env(safe-area-inset-bottom))', 
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'rgba(20, 20, 20, 0.95)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', color: '#333', fontSize: '1.2rem' }}>
-              <span>Subtotal</span>
-              <span style={{ fontWeight: 'bold', color: '#ff1361' }}>₹{cartTotal.toLocaleString()}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', color: '#fff', fontSize: '1.2rem' }}>
+              <span style={{ color: '#ccc' }}>Subtotal</span>
+              <span style={{ fontWeight: 'bold', color: '#FF9933' }}>₹{cartTotal.toLocaleString()}</span>
             </div>
             
             <Link href="/cart" onClick={() => setIsCartOpen(false)} style={{ textDecoration: 'none' }}>
