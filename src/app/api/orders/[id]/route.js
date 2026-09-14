@@ -23,6 +23,17 @@ export async function PATCH(request, { params }) {
     if (body.paymentMethod !== undefined) dataToUpdate.paymentMethod = sanitizeString(body.paymentMethod, 50);
     if (body.paymentDetails !== undefined) dataToUpdate.paymentDetails = sanitizeString(body.paymentDetails, 255);
 
+    if (body.customerName !== undefined) {
+      const sanitizedName = sanitizeString(body.customerName, 100);
+      const existing = await prisma.order.findUnique({ where: { id }, select: { userId: true } });
+      if (existing?.userId) {
+        await prisma.user.update({
+          where: { id: existing.userId },
+          data: { name: sanitizedName }
+        });
+      }
+    }
+
     if (body.items && Array.isArray(body.items)) {
       dataToUpdate.items = {
         deleteMany: {}, // Delete existing items

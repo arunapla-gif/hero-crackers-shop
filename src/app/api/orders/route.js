@@ -86,23 +86,19 @@ export async function POST(request) {
     });
 
     // 4. Guest Checkout User Creation with Hashed Password
-    const dummyEmail = `${phone}@guest.local`;
-    let user = await prisma.user.findUnique({
-      where: { email: dummyEmail }
+    // Each order is an independent transaction: create a dedicated guest user identity
+    // so every order permanently preserves its exact customerName and phone without overwriting past orders.
+    const guestId = crypto.randomUUID();
+    const uniqueEmail = `guest_${phone}_${guestId.substring(0, 8)}@guest.local`;
+    const hashedPassword = await bcrypt.hash(crypto.randomUUID(), 10);
+    const user = await prisma.user.create({
+      data: {
+        name: customerName,
+        email: uniqueEmail,
+        password: hashedPassword,
+        role: 'USER'
+      }
     });
-
-    if (!user) {
-      // Cryptographically hash a randomized dummy password
-      const hashedPassword = await bcrypt.hash(crypto.randomUUID(), 10);
-      user = await prisma.user.create({
-        data: {
-          name: customerName,
-          email: dummyEmail,
-          password: hashedPassword,
-          role: 'USER'
-        }
-      });
-    }
 
     // 5. Create Order with Server-Calculated Total
     const order = await prisma.order.create({
@@ -128,21 +124,26 @@ export async function POST(request) {
       }
     });
 
-    // 6. Sync with CustomerMaster
+    // 6. Sync with CustomerMaster (Without erasing original registered name)
     const existingCustomer = await prisma.customerMaster.findUnique({
       where: { primaryPhone: phone }
     });
     if (existingCustomer) {
+      // Keep existing customer primary name, update address if provided
       await prisma.customerMaster.update({
         where: { primaryPhone: phone },
-        data: { fullAddress: shippingAddress, name: customerName || existingCustomer.name }
+        data: { 
+          fullAddress: shippingAddress || existingCustomer.fullAddress,
+          city: existingCustomer.city || (shippingAddress.includes(',') ? shippingAddress.split(',').pop().trim() : undefined)
+        }
       });
     } else {
       await prisma.customerMaster.create({
         data: {
           primaryPhone: phone,
           name: customerName || 'Walk-in Customer',
-          fullAddress: shippingAddress
+          fullAddress: shippingAddress,
+          city: shippingAddress.includes(',') ? shippingAddress.split(',').pop().trim() : null
         }
       });
     }
@@ -207,7 +208,8 @@ export async function GET(request) {
         { id: { contains: search, mode: 'insensitive' } },
         { shippingAddress: { contains: search, mode: 'insensitive' } },
         { customerPhone: { contains: search, mode: 'insensitive' } },
-        { referredBy: { contains: search, mode: 'insensitive' } }
+        { referredBy: { contains: search, mode: 'insensitive' } },
+        { user: { name: { contains: search, mode: 'insensitive' } } }
       ];
     }
 
