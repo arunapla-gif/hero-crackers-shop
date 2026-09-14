@@ -2,7 +2,7 @@ import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { sendWhatsAppOrderConfirmation } from '@/lib/msg91';
+import { sendWhatsAppOrderConfirmation, sendAdminOrderAlert } from '@/lib/msg91';
 import { requireAdminApi } from '@/lib/apiAuth';
 import limiter from '@/lib/rateLimit';
 import { isValidPhone, cleanPhone, sanitizeString, isValidQuantity } from '@/lib/validation';
@@ -155,6 +155,13 @@ export async function POST(request) {
         order.id,
         order.totalAmount
       ).catch(err => console.error('Error triggering WhatsApp notification:', err));
+
+      sendAdminOrderAlert(
+        customerName || 'Customer',
+        order.customerPhone,
+        order.id,
+        order.totalAmount
+      ).catch(err => console.error('Error triggering admin WhatsApp alert:', err));
     }
 
     return NextResponse.json(order);

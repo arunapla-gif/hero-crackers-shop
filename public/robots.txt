@@ -1,0 +1,16 @@
+# Robots.txt for Hero Crackers (herocrackers.com)
+User-agent: *
+Allow: /
+Allow: /shop
+Allow: /legal/
+Allow: /legal/*
+
+# Prevent crawling of administrative endpoints and private APIs
+Disallow: /admin
+Disallow: /admin/
+Disallow: /admin/*
+Disallow: /api/
+Disallow: /api/*
+
+# Sitemap index
+Sitemap: https://www.herocrackers.com/sitemap.xml

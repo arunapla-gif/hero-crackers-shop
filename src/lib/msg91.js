@@ -100,3 +100,17 @@ export async function sendWhatsAppOrderConfirmation(customerPhone, customerName,
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * Sends an automated copy of new estimate bookings to the business admin phone.
+ */
+export async function sendAdminOrderAlert(customerName, customerPhone, orderId, totalAmount) {
+  const adminPhone = process.env.ADMIN_ALERT_PHONE || '919047488862';
+  return sendWhatsAppOrderConfirmation(
+    adminPhone,
+    `New Order: ${customerName} (${customerPhone})`,
+    orderId,
+    totalAmount
+  );
+}
+
