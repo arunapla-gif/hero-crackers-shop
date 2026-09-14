@@ -1,5 +1,6 @@
 'use client';
 import { useState, useRef } from 'react';
+import Link from 'next/link';
 import styles from './Login.module.css';
 
 export default function LoginClient({ admins = [] }) {
@@ -68,6 +69,17 @@ export default function LoginClient({ admins = [] }) {
   return (
     <div className={styles.loginWrapper}>
       <div className={styles.loginContainer}>
+        {/* Top Navigation: Return to Home */}
+        <div className={styles.topNavRow}>
+          <Link href="/" className={styles.homeButton} title="Return to Storefront Homepage">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            <span>Home</span>
+          </Link>
+        </div>
+
         <div className={styles.loginCard}>
           <div className={styles.cardHighlight}></div>
 
@@ -178,7 +190,10 @@ export default function LoginClient({ admins = [] }) {
         </div>
         
         <div className={styles.footerText}>
-          SECURE ACCESS PORTAL &copy; {new Date().getFullYear()}
+          SECURE ACCESS PORTAL &copy; {new Date().getFullYear()} &bull;
+          <Link href="/" className={styles.footerHomeLink}>
+            Return to Store
+          </Link>
         </div>
       </div>
     </div>
