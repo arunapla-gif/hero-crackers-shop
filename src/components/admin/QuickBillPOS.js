@@ -14,6 +14,75 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
   const [paymentState, setPaymentState] = useState({ status: 'UNPAID', method: 'CASH', details: '' });
   const [isMobileCartView, setIsMobileCartView] = useState(false);
   const [isFetchingCustomer, setIsFetchingCustomer] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('ALL'); // 'ALL' or categoryId
+  const [searchQuery, setSearchQuery] = useState('');
+  const [collapsedCategories, setCollapsedCategories] = useState({});
+
+  const toggleCategory = (catId) => {
+    setCollapsedCategories(prev => ({
+      ...prev,
+      [catId]: !prev[catId]
+    }));
+  };
+
+  // Group and filter products by category
+  const categorizedProducts = useMemo(() => {
+    if (!products || !Array.isArray(products)) return [];
+
+    const query = searchQuery.trim().toLowerCase();
+    const sortedCategories = [...(categories || [])].sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
+
+    const groups = sortedCategories.map(cat => {
+      let catProducts = products.filter(p => p.categoryId === cat.id);
+      catProducts.sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
+
+      if (query) {
+        catProducts = catProducts.filter(p =>
+          p.name.toLowerCase().includes(query) ||
+          cat.name.toLowerCase().includes(query)
+        );
+      }
+
+      return {
+        category: cat,
+        products: catProducts
+      };
+    });
+
+    // Handle uncategorized products
+    let uncategorized = products.filter(p => !p.categoryId || !categories?.some(c => c.id === p.categoryId));
+    if (query) {
+      uncategorized = uncategorized.filter(p => p.name.toLowerCase().includes(query));
+    }
+    if (uncategorized.length > 0) {
+      uncategorized.sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
+      groups.push({
+        category: { id: 'uncategorized', name: 'Other Fireworks', sequence: 9999 },
+        products: uncategorized
+      });
+    }
+
+    // Filter by selected category pill
+    if (selectedCategory !== 'ALL') {
+      return groups.filter(g => g.category.id === selectedCategory);
+    }
+
+    // When viewing all, only return groups that have matching products
+    return groups.filter(g => g.products.length > 0);
+  }, [products, categories, searchQuery, selectedCategory]);
+
+  // Compute total cart quantity per category for badges
+  const categoryCartCounts = useMemo(() => {
+    const counts = {};
+    Object.entries(quickBillCart).forEach(([prodId, qty]) => {
+      if (qty > 0) {
+        const prod = products.find(p => p.id === prodId);
+        const catId = prod?.categoryId || 'uncategorized';
+        counts[catId] = (counts[catId] || 0) + qty;
+      }
+    });
+    return counts;
+  }, [quickBillCart, products]);
   
   // Populate cart if initialPosState is provided (Edit or Duplicate)
   useEffect(() => {
@@ -25,6 +94,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
           initialCart[item.productId] = item.quantity;
         });
       }
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setQuickBillCart(initialCart);
       
       // If editing or repeating, try to populate customer details
@@ -227,48 +297,252 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
       <div className="pos-container" style={{ display: 'flex', gap: '30px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
         
         {/* Left Panel: Scrollable Product Matrix */}
-        <div className="products-panel" style={{ flex: '1 1 600px', backgroundColor: theme.cardBg, borderRadius: '16px', border: `1px solid ${theme.border}`, boxShadow: `0 10px 25px rgba(0,0,0,${isDarkMode ? '0.2' : '0.05'})`, padding: '20px', maxHeight: '800px', overflowY: 'auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${theme.border}`, paddingBottom: '15px', marginBottom: '20px' }}>
-          <h2 style={{ color: theme.textPrimary, margin: 0, fontSize: '1.8rem' }}>Product Matrix</h2>
-          <button 
-            type="button"
-            onClick={handleRefreshData} 
-            disabled={isRefreshing}
-            style={{ ...styles.btnPrimary, padding: '8px 16px', fontSize: '0.9rem', backgroundColor: theme.info, opacity: isRefreshing ? 0.7 : 1, boxShadow: 'none' }}>
-            {isRefreshing ? '🔄 Refreshing...' : '🔄 Refresh Data'}
-          </button>
-        </div>
-        
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {products.map((product, index) => {
-            const globalIndex = index + 1;
-            const qty = quickBillCart[product.id] || 0;
-            const cat = categories.find(c => c.id === product.categoryId);
-            
-            return (
-              <div key={product.id} className="product-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: theme.bg, borderRadius: '10px', border: `1px solid ${theme.border}` }}>
-                <div className="product-info" style={{ flex: 1 }}>
-                  <div style={{ color: theme.textPrimary, fontWeight: '600', fontSize: '1.05rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                    <span style={{ color: theme.accent, minWidth: '25px' }}>{product.sequence || globalIndex}.</span>
-                    <span>{product.name}</span>
-                    {cat && (
-                      <span style={{ fontSize: '0.75rem', padding: '2px 6px', backgroundColor: theme.inputBg, color: theme.textSecondary, borderRadius: '4px', textTransform: 'uppercase' }}>
-                        {cat.name}
-                      </span>
+        <div className="products-panel" style={{ flex: '1 1 600px', backgroundColor: theme.cardBg, borderRadius: '16px', border: `1px solid ${theme.border}`, boxShadow: `0 10px 25px rgba(0,0,0,${isDarkMode ? '0.2' : '0.05'})`, padding: '20px', maxHeight: '850px', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${theme.border}`, paddingBottom: '15px', marginBottom: '15px' }}>
+            <h2 style={{ color: theme.textPrimary, margin: 0, fontSize: '1.6rem' }}>Product Matrix</h2>
+            <button 
+              type="button"
+              onClick={handleRefreshData} 
+              disabled={isRefreshing}
+              style={{ ...styles.btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.info, opacity: isRefreshing ? 0.7 : 1, boxShadow: 'none' }}>
+              {isRefreshing ? '🔄 Refreshing...' : '🔄 Refresh Data'}
+            </button>
+          </div>
+
+          {/* Quick Search Bar */}
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <span style={{ position: 'absolute', left: '12px', color: theme.textSecondary, fontSize: '1rem', pointerEvents: 'none' }}>🔍</span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search crackers by name or category..."
+                style={{
+                  ...styles.input,
+                  paddingLeft: '38px',
+                  paddingRight: searchQuery ? '36px' : '12px',
+                  width: '100%',
+                  borderRadius: '10px',
+                  fontSize: '0.95rem'
+                }}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    background: 'transparent',
+                    border: 'none',
+                    color: theme.textSecondary,
+                    cursor: 'pointer',
+                    fontSize: '1rem'
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Category Filter Pills (Horizontal Scrollable Bar) */}
+          <div style={{ 
+            display: 'flex', 
+            gap: '8px', 
+            overflowX: 'auto', 
+            paddingBottom: '10px', 
+            marginBottom: '18px',
+            scrollbarWidth: 'thin'
+          }}>
+            <button
+              type="button"
+              onClick={() => setSelectedCategory('ALL')}
+              style={{
+                padding: '6px 14px',
+                borderRadius: '20px',
+                fontSize: '0.82rem',
+                fontWeight: '600',
+                border: selectedCategory === 'ALL' ? `1px solid ${theme.accent}` : `1px solid ${theme.border}`,
+                backgroundColor: selectedCategory === 'ALL' ? theme.accent : theme.bg,
+                color: selectedCategory === 'ALL' ? '#000' : theme.textPrimary,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              All Categories ({products.length})
+            </button>
+            {categories.map((cat) => {
+              const catProdCount = products.filter(p => p.categoryId === cat.id).length;
+              if (catProdCount === 0) return null;
+              const cartCount = categoryCartCounts[cat.id] || 0;
+              const isSelected = selectedCategory === cat.id;
+
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(isSelected ? 'ALL' : cat.id)}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '20px',
+                    fontSize: '0.82rem',
+                    fontWeight: '600',
+                    border: isSelected ? `1px solid ${theme.accent}` : `1px solid ${theme.border}`,
+                    backgroundColor: isSelected ? theme.accent : theme.bg,
+                    color: isSelected ? '#000' : theme.textPrimary,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <span>{cat.name} ({catProdCount})</span>
+                  {cartCount > 0 && (
+                    <span style={{
+                      backgroundColor: isSelected ? '#000' : theme.accent,
+                      color: isSelected ? '#fff' : '#000',
+                      fontSize: '0.72rem',
+                      padding: '1px 6px',
+                      borderRadius: '10px',
+                      fontWeight: 'bold'
+                    }}>
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          
+          {/* Categorized Products List */}
+          {categorizedProducts.length === 0 ? (
+            <div style={{ padding: '40px 20px', textAlign: 'center', color: theme.textSecondary }}>
+              <div style={{ fontSize: '2rem', marginBottom: '10px' }}>🔍</div>
+              <p>No products found matching &quot;{searchQuery}&quot;</p>
+              <button 
+                type="button" 
+                onClick={() => { setSearchQuery(''); setSelectedCategory('ALL'); }}
+                style={{ ...styles.btnPrimary, marginTop: '10px', padding: '6px 14px', fontSize: '0.85rem' }}
+              >
+                Clear Search & Filters
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {categorizedProducts.map((group) => {
+                const cat = group.category;
+                const isCollapsed = !!collapsedCategories[cat.id];
+                const cartCount = categoryCartCounts[cat.id] || 0;
+
+                return (
+                  <div 
+                    key={cat.id} 
+                    style={{ 
+                      borderRadius: '12px', 
+                      border: `1px solid ${theme.border}`,
+                      overflow: 'hidden',
+                      backgroundColor: theme.bg
+                    }}
+                  >
+                    {/* Category Header Bar */}
+                    <div
+                      onClick={() => toggleCategory(cat.id)}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '10px 16px',
+                        backgroundColor: isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        borderBottom: isCollapsed ? 'none' : `1px solid ${theme.border}`,
+                        transition: 'background-color 0.15s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ color: theme.accent, fontSize: '0.85rem', transition: 'transform 0.2s ease', display: 'inline-block', transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>
+                          ▼
+                        </span>
+                        <strong style={{ color: theme.textPrimary, fontSize: '1.05rem', letterSpacing: '0.3px' }}>
+                          {cat.name}
+                        </strong>
+                        <span style={{ fontSize: '0.78rem', color: theme.textSecondary, backgroundColor: theme.cardBg, padding: '2px 8px', borderRadius: '12px', border: `1px solid ${theme.border}` }}>
+                          {group.products.length} {group.products.length === 1 ? 'item' : 'items'}
+                        </span>
+                      </div>
+
+                      {cartCount > 0 && (
+                        <span style={{ 
+                          backgroundColor: `${theme.accent}25`, 
+                          color: theme.accent, 
+                          fontSize: '0.78rem', 
+                          fontWeight: 'bold', 
+                          padding: '3px 10px', 
+                          borderRadius: '12px',
+                          border: `1px solid ${theme.accent}40`
+                        }}>
+                          {cartCount} in cart
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Category Products Items */}
+                    {!isCollapsed && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px' }}>
+                        {group.products.map((product, pIndex) => {
+                          const qty = quickBillCart[product.id] || 0;
+                          const displayNumber = product.sequence || (pIndex + 1);
+
+                          return (
+                            <div 
+                              key={product.id} 
+                              className="product-row" 
+                              style={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                alignItems: 'center', 
+                                padding: '10px 14px', 
+                                backgroundColor: qty > 0 ? (isDarkMode ? 'rgba(212,175,55,0.12)' : 'rgba(212,175,55,0.15)') : theme.cardBg, 
+                                borderRadius: '8px', 
+                                border: qty > 0 ? `1px solid ${theme.accent}` : `1px solid ${theme.border}`,
+                                transition: 'all 0.15s ease'
+                              }}
+                            >
+                              <div className="product-info" style={{ flex: 1 }}>
+                                <div style={{ color: theme.textPrimary, fontWeight: '600', fontSize: '1rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                                  <span style={{ color: theme.accent, minWidth: '24px', fontWeight: 'bold' }}>{displayNumber}.</span>
+                                  <span>{product.name}</span>
+                                </div>
+                                <div style={{ color: theme.textSecondary, fontSize: '0.9rem', marginTop: '3px', paddingLeft: '24px' }}>
+                                  <strong style={{ color: theme.accent }}>₹{product.price}</strong>
+                                  {product.basePrice && product.basePrice > product.price && (
+                                    <span style={{ textDecoration: 'line-through', marginLeft: '8px', opacity: 0.6, fontSize: '0.8rem' }}>
+                                      ₹{product.basePrice}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="qty-controls" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <button type="button" className="qty-btn action-btn" onClick={() => updateQuickBillQty(product.id, -1)} style={styles.qtyBtnStyle}>-</button>
+                                <span style={{ fontSize: '1.15rem', fontWeight: 'bold', color: qty > 0 ? theme.accent : theme.textPrimary, width: '28px', textAlign: 'center' }}>{qty}</span>
+                                <button type="button" className="qty-btn action-btn" onClick={() => updateQuickBillQty(product.id, 1)} style={styles.qtyBtnStyle}>+</button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     )}
                   </div>
-                  <div style={{ color: theme.textSecondary, fontSize: '0.9rem', marginTop: '4px', paddingLeft: '33px' }}>₹{product.price}</div>
-                </div>
-                <div className="qty-controls" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                  <button type="button" className="qty-btn action-btn" onClick={() => updateQuickBillQty(product.id, -1)} style={styles.qtyBtnStyle}>-</button>
-                  <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: theme.textPrimary, width: '30px', textAlign: 'center' }}>{qty}</span>
-                  <button type="button" className="qty-btn action-btn" onClick={() => updateQuickBillQty(product.id, 1)} style={styles.qtyBtnStyle}>+</button>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          )}
         </div>
-      </div>
 
       {/* Right Panel: Sticky Cart Summary */}
       <div className="cart-panel" style={{ flex: '1 1 350px', position: 'sticky', top: '20px' }}>
