@@ -51,9 +51,11 @@ export default function SlidingCart() {
           height: '100dvh',
           width: '100%',
           maxWidth: '450px',
-          backgroundColor: '#0a0a0a',
+          backgroundColor: 'rgba(15, 15, 15, 0.85)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
           borderLeft: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: '-10px 0 30px rgba(0,0,0,0.8)',
+          boxShadow: '-10px 0 50px rgba(0,0,0,0.8)',
           zIndex: 2001,
           display: 'flex',
           flexDirection: 'column',
@@ -61,14 +63,14 @@ export default function SlidingCart() {
         }}
       >
         <div style={{ 
-          padding: '20px 30px', 
-          borderBottom: '1px solid rgba(0, 0, 0, 0.05)', 
+          padding: '25px 30px', 
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)', 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center' 
         }}>
-          <h2 style={{ margin: 0, color: '#ff1361', fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            Shopping Cart <span style={{ fontSize: '1rem', background: '#ff1361', color: '#fff', padding: '2px 10px', borderRadius: '15px' }}>{cartItemsCount}</span>
+          <h2 style={{ margin: 0, color: '#FFF', fontSize: '1.4rem', letterSpacing: '1px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ color: '#E6C27A' }}>✨</span> Your Cart <span style={{ fontSize: '0.9rem', background: 'rgba(230, 194, 122, 0.2)', color: '#E6C27A', padding: '2px 10px', borderRadius: '15px' }}>{cartItemsCount}</span>
           </h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
             {cartItemsCount > 0 && (
@@ -135,44 +137,52 @@ export default function SlidingCart() {
                   alignItems: 'center',
                   gap: '15px', 
                   padding: '15px', 
-                  backgroundColor: 'rgba(255,255,255,0.5)', 
-                  borderRadius: '12px',
-                  border: '1px solid rgba(0,0,0,0.05)'
+                  backgroundColor: 'rgba(255,255,255,0.03)', 
+                  borderRadius: '16px',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                  transition: 'background 0.2s, transform 0.2s'
                 }}>
                   <div style={{ 
-                    width: '60px', 
-                    height: '60px', 
-                    backgroundColor: 'rgba(255, 19, 97, 0.1)', 
-                    borderRadius: '8px',
+                    width: '70px', 
+                    height: '70px', 
+                    backgroundColor: 'rgba(0,0,0,0.4)', 
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255,255,255,0.05)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '1.5rem'
+                    fontSize: '1.8rem',
+                    boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)'
                   }}>
-                    {item.price > 300 ? '🌋' : '✨'}
+                    <span style={{ filter: 'drop-shadow(0 0 10px rgba(230,194,122,0.3))' }}>{item.price > 300 ? '🌋' : '✨'}</span>
                   </div>
                   
                   <div style={{ flex: 1 }}>
-                    <div style={{ color: '#000', fontWeight: 'bold', marginBottom: '5px' }}>{item.name}</div>
-                    <div style={{ color: '#ff1361', fontWeight: '600' }}>₹{item.price}</div>
+                    <div style={{ color: '#FFF', fontWeight: '500', fontSize: '1.1rem', marginBottom: '5px' }}>{item.name}</div>
+                    <div style={{ color: '#E6C27A', fontWeight: 'bold', fontSize: '1.1rem' }}>₹{item.price}</div>
                     
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '15px' }}>
                       <div style={{ 
                         display: 'flex', 
                         alignItems: 'center', 
-                        background: 'rgba(0,0,0,0.05)', 
+                        background: 'rgba(230,194,122,0.1)', 
+                        border: '1px solid rgba(230,194,122,0.2)',
                         borderRadius: '20px',
                         overflow: 'hidden'
                       }}>
-                        <button onClick={() => updateQuantity(item, -1)} style={{ background: 'transparent', border: 'none', color: '#333', padding: '5px 12px', cursor: 'pointer' }}>-</button>
-                        <span style={{ color: '#333', fontSize: '0.9rem', width: '20px', textAlign: 'center' }}>{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item, 1)} style={{ background: 'transparent', border: 'none', color: '#333', padding: '5px 12px', cursor: 'pointer' }}>+</button>
+                        <button onClick={() => updateQuantity(item, -1)} style={{ background: 'transparent', border: 'none', color: '#E6C27A', padding: '5px 12px', cursor: 'pointer', fontSize: '1.1rem' }}>−</button>
+                        <span style={{ color: '#FFF', fontSize: '0.9rem', width: '25px', textAlign: 'center', fontWeight: 'bold' }}>{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item, 1)} style={{ background: 'transparent', border: 'none', color: '#E6C27A', padding: '5px 12px', cursor: 'pointer', fontSize: '1.1rem' }}>+</button>
                       </div>
                       <button 
                         onClick={() => removeFromCart(item.id)}
-                        style={{ background: 'transparent', border: 'none', color: '#ff5722', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
+                        style={{ background: 'transparent', border: 'none', color: '#888', fontSize: '1.2rem', cursor: 'pointer', transition: 'color 0.2s' }}
+                        onMouseOver={e => e.target.style.color = '#ff4444'}
+                        onMouseOut={e => e.target.style.color = '#888'}
+                        title="Remove Item"
                       >
-                        Remove
+                        🗑️
                       </button>
                     </div>
                   </div>
@@ -190,23 +200,31 @@ export default function SlidingCart() {
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', color: '#fff', fontSize: '1.2rem' }}>
-              <span style={{ color: '#ccc' }}>Subtotal</span>
-              <span style={{ fontWeight: 'bold', color: '#FF9933' }}>₹{cartTotal.toLocaleString()}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: '#fff', fontSize: '1rem' }}>
+              <span style={{ color: '#aaa' }}>Subtotal</span>
+              <span style={{ color: '#fff' }}>₹{cartTotal.toLocaleString()}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', color: '#fff', fontSize: '1rem' }}>
+              <span style={{ color: '#aaa' }}>Shipping</span>
+              <span style={{ color: '#4caf50' }}>Calculated Later</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', color: '#fff', fontSize: '1.3rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '15px' }}>
+              <span style={{ color: '#fff', fontWeight: 'bold' }}>Total</span>
+              <span style={{ fontWeight: 'bold', color: '#E6C27A' }}>₹{cartTotal.toLocaleString()}</span>
             </div>
             
             <Link href="/cart" onClick={() => setIsCartOpen(false)} style={{ textDecoration: 'none' }}>
               <button style={{
                 width: '100%',
-                background: 'linear-gradient(135deg, #FF1361, #FF5722)',
-                color: '#fff',
+                background: 'linear-gradient(135deg, #FFB75E, #ED8F03)',
+                color: '#000',
                 border: 'none',
                 padding: '16px',
-                borderRadius: '30px',
+                borderRadius: '12px',
                 fontWeight: 'bold',
-                fontSize: '1.2rem',
+                fontSize: '1.1rem',
                 cursor: 'pointer',
-                boxShadow: '0 5px 15px rgba(255, 19, 97, 0.3)',
+                boxShadow: '0 5px 20px rgba(237, 143, 3, 0.4)',
                 transition: 'transform 0.2s',
                 textTransform: 'uppercase',
                 letterSpacing: '1px'
