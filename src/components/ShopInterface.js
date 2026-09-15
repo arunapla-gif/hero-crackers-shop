@@ -111,6 +111,7 @@ export default function ShopInterface({ categories }) {
                       setIsCartOpen(true);
                     }}
                     onUpdateQuantity={(delta) => updateQuantity(product, delta)}
+                    onProductClick={() => setSelectedImage(product)}
                   />
                 ))}
               </div>
@@ -147,20 +148,210 @@ export default function ShopInterface({ categories }) {
         </div>
       )}
 
-      {/* Image Modal */}
+      {/* Image Modal / Enhanced PDP */}
       {selectedImage && (
-        <div className={styles.modalOverlay} style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(5px)' }} onClick={() => setSelectedImage(null)}>
-          <div className={styles.modalContent} style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.1)', boxShadow: '0 20px 50px rgba(0,0,0,0.1)' }} onClick={e => e.stopPropagation()}>
-            <button className={styles.closeModalBtn} style={{ color: '#333', background: '#f5f5f5' }} onClick={() => setSelectedImage(null)}>×</button>
-            <div style={{ height: '200px', backgroundColor: '#fff5e6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
-              <span style={{ fontSize: '6rem' }}>{selectedImage.price > 300 ? '🌋' : '✨'}</span>
+        <div 
+          className={styles.modalOverlay} 
+          style={{ 
+            background: 'rgba(0,0,0,0.8)', 
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            zIndex: 3000,
+            padding: '20px'
+          }} 
+          onClick={() => setSelectedImage(null)}
+        >
+          <div 
+            className={`enhanced-modal-content ${styles.modalContent}`} 
+            style={{ 
+              background: '#1A1A1A', 
+              border: '1px solid rgba(255,193,7,0.3)', 
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)', 
+              borderRadius: '24px',
+              maxWidth: '900px',
+              width: '100%',
+              display: 'flex',
+              overflow: 'hidden',
+              position: 'relative',
+              animation: 'fadeInUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+              maxHeight: '90vh'
+            }} 
+            onClick={e => e.stopPropagation()}
+          >
+            <button 
+              className={styles.closeModalBtn} 
+              style={{ 
+                position: 'absolute', top: '15px', right: '15px', 
+                background: 'rgba(255,255,255,0.1)', color: '#fff', 
+                border: 'none', borderRadius: '50%', width: '40px', height: '40px', 
+                fontSize: '1.5rem', cursor: 'pointer', zIndex: 10
+              }} 
+              onClick={() => setSelectedImage(null)}
+            >
+              ×
+            </button>
+            
+            {/* Left Side: Media */}
+            <div className="modal-media" style={{ flex: '1 1 50%', backgroundColor: '#0f0f0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+               {/* Placeholder for real video/image */}
+               <div style={{ textAlign: 'center', color: '#fff' }}>
+                 <span className="modal-emoji" style={{ filter: 'drop-shadow(0 0 30px rgba(255,193,7,0.4))' }}>{selectedImage.price > 300 ? '🌋' : '✨'}</span>
+                 <p className="modal-placeholder-text" style={{ marginTop: '20px', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>Media Placeholder</p>
+               </div>
             </div>
-            <h3 style={{ fontSize: '1.5rem', color: 'var(--color-primary)', marginBottom: '10px' }}>{selectedImage.name}</h3>
-            <p style={{ color: '#666', marginBottom: '20px' }}>{selectedImage.description}</p>
-            <p style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>₹{selectedImage.price}</p>
+
+            {/* Right Side: Details */}
+            <div className="modal-details" style={{ flex: '1 1 50%', color: '#fff', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <span style={{ fontSize: '0.8rem', color: '#FFC107', textTransform: 'uppercase', letterSpacing: '1px' }}>Hero Crackers</span>
+                <h3 className="modal-title" style={{ color: '#FFF', margin: '5px 0', lineHeight: 1.1 }}>{selectedImage.name}</h3>
+                <p className="modal-price" style={{ fontWeight: 'bold', color: '#FFC107', margin: '10px 0' }}>₹{selectedImage.price} <span style={{fontSize:'1rem', color:'#888', fontWeight:'normal'}}>Inc. GST</span></p>
+              </div>
+
+              {/* Safety Warning */}
+              <div style={{ marginBottom: '25px', borderTop: '1px solid rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '15px 0' }}>
+                <h4 style={{ fontSize: '0.85rem', color: '#888', marginBottom: '10px', textTransform: 'uppercase' }}>Safety Warning</h4>
+                <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', color: '#ccc', flex: 1, minWidth: '70px' }}>
+                    <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+                    <span style={{ fontSize: '0.75rem', textAlign: 'center' }}>Caution</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', color: '#ccc', flex: 1, minWidth: '70px' }}>
+                    <span style={{ fontSize: '1.5rem' }}>📏</span>
+                    <span style={{ fontSize: '0.75rem', textAlign: 'center' }}>Keep 5M Away</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', color: '#ccc', flex: 1, minWidth: '70px' }}>
+                    <span style={{ fontSize: '1.5rem' }}>👨‍👦</span>
+                    <span style={{ fontSize: '0.75rem', textAlign: 'center' }}>Adult Supervision</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Effects */}
+              <div style={{ marginBottom: '30px' }}>
+                <h4 style={{ fontSize: '0.85rem', color: '#888', marginBottom: '10px', textTransform: 'uppercase' }}>Effects</h4>
+                <ul style={{ color: '#ccc', margin: 0, paddingLeft: '20px', lineHeight: 1.6, fontSize: '0.9rem' }}>
+                  <li>{selectedImage.description || 'Vibrant display with spectacular colors.'}</li>
+                  <li>Produces bright sparks and a thunderous finale.</li>
+                  <li>Approx. Duration: 15-20 Seconds</li>
+                </ul>
+              </div>
+
+              {/* Add to Cart */}
+              <div style={{ marginTop: 'auto' }}>
+                <button 
+                  onClick={() => {
+                    updateQuantity(selectedImage, 1);
+                    setSelectedImage(null);
+                    setIsCartOpen(true);
+                  }}
+                  style={{
+                    width: '100%',
+                    background: 'linear-gradient(135deg, #FFC107, #FF9800)',
+                    color: '#000',
+                    border: 'none',
+                    padding: '16px',
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    boxShadow: '0 5px 20px rgba(255, 193, 7, 0.4)',
+                    transition: 'transform 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px'
+                  }}
+                  onMouseOver={e => e.target.style.transform = 'translateY(-2px)'}
+                  onMouseOut={e => e.target.style.transform = 'translateY(0)'}
+                >
+                  <span>🛒</span> ADD TO CART
+                </button>
+              </div>
+
+            </div>
           </div>
         </div>
       )}
+
+      <style jsx global>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        /* Desktop Default */
+        .enhanced-modal-content {
+          flex-direction: row;
+        }
+        .modal-media {
+          min-height: 400px;
+        }
+        .modal-details {
+          padding: 40px 30px;
+        }
+        .modal-emoji {
+          font-size: 8rem;
+        }
+        .modal-title {
+          font-size: 2.5rem;
+        }
+        .modal-price {
+          font-size: 2rem;
+        }
+
+        /* Tablet (max-width: 900px) */
+        @media (max-width: 900px) {
+          .enhanced-modal-content {
+            flex-direction: column;
+            overflow-y: auto;
+          }
+          .modal-media {
+            min-height: 300px;
+            flex: 0 0 auto !important;
+          }
+          .modal-details {
+            padding: 30px 25px;
+            flex: 1 1 auto !important;
+          }
+          .modal-emoji {
+            font-size: 6rem;
+          }
+          .modal-title {
+            font-size: 2rem;
+          }
+          .modal-price {
+            font-size: 1.8rem;
+          }
+        }
+
+        /* Mobile (max-width: 600px) */
+        @media (max-width: 600px) {
+          .modal-media {
+            min-height: 220px;
+          }
+          .modal-details {
+            padding: 20px 15px;
+          }
+          .modal-emoji {
+            font-size: 5rem;
+          }
+          .modal-title {
+            font-size: 1.6rem;
+          }
+          .modal-price {
+            font-size: 1.5rem;
+          }
+          .modal-placeholder-text {
+            font-size: 0.8rem;
+            margin-top: 10px !important;
+          }
+        }
+      `}</style>
 
     </div>
   );

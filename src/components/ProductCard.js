@@ -1,6 +1,6 @@
 'use client';
 
-export default function ProductCard({ product, onAddToCart, cartQuantity = 0, onUpdateQuantity, index = 0 }) {
+export default function ProductCard({ product, onAddToCart, cartQuantity = 0, onUpdateQuantity, index = 0, onProductClick }) {
   const isPremium = product.price > 300;
   
   // Continuous hue shift cascade
@@ -31,6 +31,7 @@ export default function ProductCard({ product, onAddToCart, cartQuantity = 0, on
         gap: '15px',
         alignItems: 'stretch'
       }} 
+      onClick={() => onProductClick && onProductClick()}
       onMouseOver={(e) => {
         e.currentTarget.style.transform = 'translateY(-10px)';
         e.currentTarget.style.background = `linear-gradient(145deg, hsla(${cardHue}, 90%, 50%, 1) 0%, hsla(${darkHue}, 95%, 35%, 1) 100%)`;

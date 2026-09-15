@@ -51,8 +51,8 @@ export default function CartPage() {
       if (res.ok) {
         const order = await res.json();
         clearCart();
-        alert(`Order submitted successfully! Your Order ID is ${formatOrderNumber(order.orderNumber, order.createdAt)}`);
-        router.push('/');
+        const finalOrderNumber = formatOrderNumber(order.orderNumber, order.createdAt);
+        router.push(`/order-success/${order.id}?orderNumber=${encodeURIComponent(finalOrderNumber)}&total=${cartTotal}`);
       } else {
         const error = await res.json();
         alert(`Failed to submit order: ${error.error}`);
@@ -85,7 +85,7 @@ export default function CartPage() {
               <input type="text" required value={customerInfo.name} onChange={e => setCustomerInfo({...customerInfo, name: e.target.value})} style={inputStyle} placeholder="John Doe" />
               
               <label style={labelStyle}>Phone Number</label>
-              <input type="tel" required value={customerInfo.phone} onChange={e => setCustomerInfo({...customerInfo, phone: e.target.value})} style={inputStyle} placeholder="10-digit mobile number" />
+              <input type="tel" required pattern="[0-9]{10}" title="Please enter a valid 10-digit mobile number" value={customerInfo.phone} onChange={e => setCustomerInfo({...customerInfo, phone: e.target.value})} style={inputStyle} placeholder="10-digit mobile number" />
               
               <label style={labelStyle}>Delivery Address</label>
               <textarea required value={customerInfo.address} onChange={e => setCustomerInfo({...customerInfo, address: e.target.value})} style={{...inputStyle, height: '100px', resize: 'vertical'}} placeholder="Full street address with pincode" />
@@ -114,7 +114,7 @@ export default function CartPage() {
                 style={{
                   width: '100%',
                   background: submitting ? '#ccc' : 'linear-gradient(135deg, var(--color-primary), var(--color-accent-orange))',
-                  color: '#fff',
+                  color: submitting ? '#666' : '#fff',
                   border: 'none',
                   padding: '15px',
                   fontSize: '1.2rem',
@@ -122,11 +122,31 @@ export default function CartPage() {
                   borderRadius: '8px',
                   cursor: submitting ? 'not-allowed' : 'pointer',
                   transition: 'background 0.3s ease',
-                  boxShadow: submitting ? 'none' : '0 5px 15px rgba(229, 57, 53, 0.3)'
+                  boxShadow: submitting ? 'none' : '0 5px 15px rgba(229, 57, 53, 0.3)',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '10px'
                 }}
               >
-                {submitting ? 'Submitting...' : 'Submit Estimate Request'}
+                {submitting ? (
+                  <>
+                    <svg style={{ animation: 'spin 1s linear infinite' }} viewBox="0 0 24 24" width="24" height="24">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" strokeDasharray="31.4 31.4" opacity="0.6"/>
+                    </svg>
+                    <span>Processing Estimate...</span>
+                  </>
+                ) : (
+                  'Submit Estimate Request'
+                )}
               </button>
+              
+              <style jsx>{`
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              `}</style>
               
               <p style={{ textAlign: 'center', marginTop: '15px', fontSize: '0.9rem', color: '#666' }}>
                 No payment required now. We will contact you to confirm shipping logistics and final amount.
