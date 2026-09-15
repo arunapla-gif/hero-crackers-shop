@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 
 export default function SlidingCart() {
-  const { cart, updateQuantity, removeFromCart, cartItemsCount, cartTotal, isCartOpen, setIsCartOpen } = useCart();
+  const { cart, updateQuantity, removeFromCart, clearCart, cartItemsCount, cartTotal, isCartOpen, setIsCartOpen } = useCart();
 
   // Prevent background scrolling when cart is open
   useEffect(() => {
@@ -70,18 +70,41 @@ export default function SlidingCart() {
           <h2 style={{ margin: 0, color: '#ff1361', fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
             Shopping Cart <span style={{ fontSize: '1rem', background: '#ff1361', color: '#fff', padding: '2px 10px', borderRadius: '15px' }}>{cartItemsCount}</span>
           </h2>
-          <button 
-            onClick={() => setIsCartOpen(false)}
-            style={{ 
-              background: 'transparent', 
-              border: 'none', 
-              color: '#fff', 
-              fontSize: '1.5rem', 
-              cursor: 'pointer'
-            }}
-          >
-            ✕
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            {cartItemsCount > 0 && (
+              <button 
+                onClick={() => {
+                  if(window.confirm('Are you sure you want to clear your cart?')) clearCart();
+                }}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: 'none',
+                  color: '#ccc',
+                  padding: '5px 10px',
+                  borderRadius: '20px',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s'
+                }}
+                onMouseOver={e => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
+                onMouseOut={e => e.target.style.background = 'rgba(255, 255, 255, 0.1)'}
+              >
+                Clear Cart
+              </button>
+            )}
+            <button 
+              onClick={() => setIsCartOpen(false)}
+              style={{ 
+                background: 'transparent', 
+                border: 'none', 
+                color: '#fff', 
+                fontSize: '1.5rem', 
+                cursor: 'pointer'
+              }}
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>

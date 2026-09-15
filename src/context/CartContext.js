@@ -9,9 +9,9 @@ export function CartProvider({ children }) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from local storage
+  // Load from session storage
   useEffect(() => {
-    const savedCart = localStorage.getItem('hero_cart');
+    const savedCart = sessionStorage.getItem('hero_cart');
     if (savedCart) {
       try {
         setCart(JSON.parse(savedCart));
@@ -22,10 +22,10 @@ export function CartProvider({ children }) {
     setIsLoaded(true);
   }, []);
 
-  // Save to local storage on change
+  // Save to session storage on change
   useEffect(() => {
     if (isLoaded) {
-      localStorage.setItem('hero_cart', JSON.stringify(cart));
+      sessionStorage.setItem('hero_cart', JSON.stringify(cart));
     }
   }, [cart, isLoaded]);
 

@@ -157,7 +157,32 @@ export default function CartPage() {
 
         {/* Left Column: Cart Items */}
         <div style={{ flex: '1 1 600px' }}>
-          <h3 style={{ fontSize: '1.5rem', marginBottom: '20px', color: '#333' }}>Order Items ({cartItems.length})</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '1.5rem', margin: 0, color: '#333' }}>Order Items ({cartItems.length})</h3>
+            {cartItems.length > 0 && (
+              <button 
+                type="button"
+                onClick={() => {
+                  if(window.confirm('Are you sure you want to clear your cart?')) clearCart();
+                }}
+                style={{
+                  background: 'rgba(229, 57, 53, 0.1)',
+                  color: 'var(--color-primary)',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: 'bold',
+                  transition: 'background 0.2s'
+                }}
+                onMouseOver={e => e.target.style.background = 'rgba(229, 57, 53, 0.2)'}
+                onMouseOut={e => e.target.style.background = 'rgba(229, 57, 53, 0.1)'}
+              >
+                Clear Cart
+              </button>
+            )}
+          </div>
           
           {cartItems.length === 0 ? (
             <div style={{ padding: '40px', backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(0,0,0,0.05)' }}>
