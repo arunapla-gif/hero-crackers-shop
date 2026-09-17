@@ -272,19 +272,118 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
   };
 
   const triggerPrint = (order) => {
-    // Import print-js dynamically or assume it's imported at the top. 
-    // Since this is a React component, we can import it at the top, or require it here.
-    const printJS = require('print-js');
+    const printWindow = window.open('', '_blank', 'width=800,height=900');
     
-    // Instead of building HTML, we just point printJS to our backend API 
-    // which generates the invoice PDF.
-    printJS({
-      printable: `/api/orders/${order.id}/invoice`,
-      type: 'pdf',
-      showModal: true,
-      modalMessage: 'Generating Document...',
-      onError: (err) => alert('Failed to print: ' + err)
-    });
+    const itemsHtml = order.items.map((item, idx) => {
+      const product = products.find(p => p.id === item.productId);
+      const productName = product ? product.name : 'Unknown Item';
+      return `
+        <tr>
+          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd;">${idx + 1}</td>
+          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd; font-weight: 500;">${productName}</td>
+          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd; text-align: center;">${item.quantity}</td>
+          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd; text-align: right;">₹${item.price}</td>
+          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd; text-align: right; font-weight: bold;">₹${item.price * item.quantity}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const invoiceHtml = `
+      <html>
+        <head>
+          <title>Invoice - ${formatOrderNumber(order.orderNumber, order.createdAt)}</title>
+          <style>
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; margin: 0; padding: 40px; }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+            .header h1 { margin: 0; color: #ff1361; font-size: 32px; letter-spacing: 1px; text-transform: uppercase; }
+            .header p { margin: 5px 0; color: #666; font-size: 14px; }
+            .details { display: flex; justify-content: space-between; margin-bottom: 40px; }
+            .details h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 5px; color: #555; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+            .address-box { flex: 1; min-width: 250px; padding-right: 20px; }
+            .meta-box { flex: 1; text-align: right; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+            th { background-color: #f8f8f8; padding: 12px 8px; text-align: left; border-bottom: 2px solid #ddd; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; color: #555; }
+            th.center { text-align: center; }
+            th.right { text-align: right; }
+            .totals { width: 50%; float: right; margin-top: 20px; }
+            .totals-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+            .totals-row.bold { font-weight: bold; font-size: 1.4em; border-bottom: none; border-top: 2px solid #333; padding-top: 15px; }
+            .footer { clear: both; margin-top: 60px; text-align: center; color: #888; font-size: 12px; border-top: 1px solid #eee; padding-top: 20px; }
+            @media print {
+              body { padding: 0; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="no-print" style="margin-bottom: 20px; text-align: right;">
+            <button onclick="window.print()" style="padding: 10px 20px; background: #ff1361; color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 4px;">Print Invoice</button>
+          </div>
+          
+          <div class="header">
+            <div>
+              <h1>HERO CRACKERS</h1>
+              <p>Premium Sivakasi Fireworks Wholesale & Retail</p>
+              <p>Sivakasi, Tamil Nadu, India</p>
+            </div>
+            <div style="text-align: right;">
+              <h2 style="margin:0 0 5px 0; color:#333; font-size: 28px;">INVOICE</h2>
+              <p style="font-weight: bold; color: #000; font-size: 16px;"># ${formatOrderNumber(order.orderNumber, order.createdAt)}</p>
+              <p>Date: ${new Date(order.createdAt).toLocaleDateString()}</p>
+            </div>
+          </div>
+          
+          <div class="details">
+            <div class="address-box">
+              <h3>Billed To:</h3>
+              <p style="font-size: 16px;"><strong>${order.user?.name || 'Walk-in Customer'}</strong></p>
+              <p>Phone: ${order.customerPhone || 'N/A'}</p>
+              <p style="margin-top: 10px;">${order.shippingAddress ? order.shippingAddress.replace(/\\n/g, '<br>') : 'N/A'}</p>
+            </div>
+            <div class="meta-box">
+              <h3>Shipping Details:</h3>
+              <p><strong>Transport:</strong> ${order.transportName || 'N/A'}</p>
+              <p><strong>Tracking/LR:</strong> ${order.trackingNumber || 'N/A'}</p>
+              <p><strong>Status:</strong> <span style="text-transform: uppercase;">${order.status}</span></p>
+            </div>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Product Description</th>
+                <th class="center">Qty</th>
+                <th class="right">Unit Price</th>
+                <th class="right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+          
+          <div class="totals">
+            <div class="totals-row bold">
+              <span>Grand Total:</span>
+              <span>₹${order.totalAmount?.toLocaleString()}</span>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p>Thank you for shopping with Hero Crackers!</p>
+            <p>This is a computer-generated invoice and does not require a physical signature.</p>
+          </div>
+          
+          <script>
+            window.onload = function() { window.print(); }
+          </script>
+        </body>
+      </html>
+    `;
+    
+    printWindow.document.write(invoiceHtml);
+    printWindow.document.close();
   };
 
   const triggerPrintLabel = (order) => {
