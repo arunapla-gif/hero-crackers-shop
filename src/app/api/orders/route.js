@@ -38,6 +38,7 @@ export async function POST(request) {
     const customerName = sanitizeString(body.customerName || 'Customer', 100);
     const shippingAddress = sanitizeString(body.shippingAddress || '', 500);
     const referredBy = sanitizeString(body.referredBy || '', 100);
+    const remarks = sanitizeString(body.remarks || '', 500);
 
     if (!Array.isArray(body.items) || body.items.length === 0) {
       return NextResponse.json({ error: 'Order must contain at least one product.' }, { status: 400 });
@@ -108,9 +109,10 @@ export async function POST(request) {
         shippingAddress: shippingAddress,
         customerPhone: phone,
         referredBy: referredBy || null,
-        paymentStatus: 'UNPAID',
-        paymentMethod: null,
-        paymentDetails: null,
+        remarks: remarks || null,
+        paymentStatus: body.paymentStatus || 'UNPAID',
+        paymentMethod: body.paymentMethod || null,
+        paymentDetails: body.paymentDetails || null,
         status: 'PENDING',
         items: {
           create: validatedItems

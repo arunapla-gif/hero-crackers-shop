@@ -249,14 +249,15 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
   };
 
   const exportToCSV = () => {
-    const headers = ['Order ID', 'Date', 'Customer Phone', 'Address', 'Status', 'Total Amount'];
+    const headers = ['Order ID', 'Date', 'Customer Phone', 'Address', 'Status', 'Total Amount', 'Remarks'];
     const rows = orders.map(o => [
       o.id, 
       new Date(o.createdAt).toLocaleDateString(),
       o.customerPhone || 'N/A',
       `"${o.shippingAddress.replace(/"/g, '""')}"`,
       o.status,
-      o.totalAmount
+      o.totalAmount,
+      `"${(o.remarks || '').replace(/"/g, '""')}"`
     ]);
     
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -347,6 +348,7 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
               <p><strong>Status:</strong> <span style="text-transform: uppercase;">${order.status}</span></p>
             </div>
           </div>
+          ${order.remarks ? `<div style="margin-bottom: 20px; padding: 10px; background-color: #f8f8f8; border-left: 4px solid #555;"><p style="margin:0;font-size:14px;"><strong>Remarks:</strong> ${order.remarks}</p></div>` : ''}
           
           <table>
             <thead>
@@ -411,6 +413,7 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
             <p><strong>Phone:</strong> ${order.customerPhone || 'N/A'}</p>
             <p style="margin-top:10px;">${order.shippingAddress}</p>
           </div>
+          ${order.remarks ? `<div style="margin-top:15px; padding: 10px; background-color: #f0f0f0;"><p style="margin:0;"><strong>Remarks:</strong> ${order.remarks}</p></div>` : ''}
           
           <div class="footer">
             <p><strong>From:</strong> Hero Crackers Shop, Sivakasi</p>
@@ -628,6 +631,11 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
                   <div style={{ fontSize: '0.9rem', color: theme.textSecondary, marginTop: '2px', lineHeight: '1.4' }}>
                     📍 {order.shippingAddress}
                   </div>
+                  {order.remarks && (
+                    <div style={{ fontSize: '0.85rem', color: theme.info, marginTop: '4px', fontWeight: 'bold', padding: '6px', backgroundColor: `${theme.info}15`, borderRadius: '6px' }}>
+                      📝 Note: {order.remarks}
+                    </div>
+                  )}
                   {order.referredBy && (
                     <div style={{ fontSize: '0.85rem', color: theme.accent, marginTop: '4px', fontWeight: 'bold' }}>
                       🏷️ Referred By: {order.referredBy}

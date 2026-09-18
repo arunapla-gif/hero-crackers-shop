@@ -18,6 +18,7 @@ export async function PATCH(request, { params }) {
     if (body.shippingAddress !== undefined) dataToUpdate.shippingAddress = sanitizeString(body.shippingAddress, 500);
     if (body.customerPhone !== undefined) dataToUpdate.customerPhone = sanitizeString(body.customerPhone, 20);
     if (body.referredBy !== undefined) dataToUpdate.referredBy = sanitizeString(body.referredBy, 100);
+    if (body.remarks !== undefined) dataToUpdate.remarks = sanitizeString(body.remarks, 500);
     if (body.totalAmount !== undefined) dataToUpdate.totalAmount = parseFloat(body.totalAmount);
     if (body.paymentStatus !== undefined) dataToUpdate.paymentStatus = sanitizeString(body.paymentStatus, 50);
     if (body.paymentMethod !== undefined) dataToUpdate.paymentMethod = sanitizeString(body.paymentMethod, 50);

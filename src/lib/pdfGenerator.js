@@ -58,7 +58,14 @@ export async function generateInvoicePDFBuffer(order, products) {
           margin: [0, 0, 0, 15]
         },
         
-        { text: `Shipping Address: ${order.shippingAddress || 'Store Pickup'}`, margin: [0, 0, 0, 20] },
+        { text: `Shipping Address: ${order.shippingAddress || 'Store Pickup'}`, margin: [0, 0, 0, order.remarks ? 5 : 20] },
+        
+        ...(order.remarks ? [{
+          text: `Remarks: ${order.remarks}`,
+          italics: true,
+          color: '#555555',
+          margin: [0, 0, 0, 20]
+        }] : []),
         
         {
           table: {

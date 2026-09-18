@@ -10,7 +10,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
   const queryClient = useQueryClient();
 
   const [quickBillCart, setQuickBillCart] = useState({}); // { productId: quantity }
-  const [quickBillCustomer, setQuickBillCustomer] = useState({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '', referredBy: '' });
+  const [quickBillCustomer, setQuickBillCustomer] = useState({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '', referredBy: '', remarks: '' });
   const [paymentState, setPaymentState] = useState({ status: 'UNPAID', method: 'CASH', details: '' });
   const [isMobileCartView, setIsMobileCartView] = useState(false);
   const [isFetchingCustomer, setIsFetchingCustomer] = useState(false);
@@ -117,7 +117,8 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
           phone: order.customerPhone || '',
           address: extractedAddress,
           city: extractedCity,
-          referredBy: order.referredBy || ''
+          referredBy: order.referredBy || '',
+          remarks: order.remarks || ''
         });
         setPaymentState({
           status: order.paymentStatus || 'UNPAID',
@@ -196,7 +197,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
     onSuccess: (order) => {
       queryClient.invalidateQueries(['orders']);
       setQuickBillCart({});
-      setQuickBillCustomer({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '', referredBy: '' });
+      setQuickBillCustomer({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '', referredBy: '', remarks: '' });
       setPaymentState({ status: 'UNPAID', method: 'CASH', details: '' });
       setLocalCustomItems([]); // clear custom items mapping on success
       if (onClearPosState) onClearPosState();
@@ -249,6 +250,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
       customerPhone: quickBillCustomer.phone,
       shippingAddress: quickBillCustomer.address + `, ${quickBillCustomer.city}`,
       referredBy: quickBillCustomer.referredBy,
+      remarks: quickBillCustomer.remarks,
       totalAmount: quickBillTotal,
       paymentStatus: paymentState.status,
       paymentMethod: paymentState.status === 'PAID' ? paymentState.method : null,
@@ -693,6 +695,14 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
                 <option key={ref.id} value={ref.name}>{ref.name} {ref.phone ? `(${ref.phone})` : ''}</option>
               ))}
             </select>
+
+            <label style={styles.labelStyle}>Remarks / Internal Notes</label>
+            <textarea 
+              value={quickBillCustomer.remarks} 
+              onChange={e => setQuickBillCustomer({...quickBillCustomer, remarks: e.target.value})} 
+              style={{ ...styles.inputStyle, minHeight: '60px', resize: 'vertical' }}
+              placeholder="Any special instructions or internal notes" 
+            />
 
             <div style={{ backgroundColor: `${theme.info}15`, padding: '15px', borderRadius: '12px', border: `1px solid ${theme.info}40`, marginBottom: '20px' }}>
               <label style={styles.labelStyle}>Payment Status</label>
