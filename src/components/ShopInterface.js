@@ -9,6 +9,7 @@ export default function ShopInterface({ categories }) {
   const [selectedImage, setSelectedImage] = useState(null); // for thumbnail modal
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsedCategories, setCollapsedCategories] = useState({});
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
   
   const toggleCategory = (categoryId) => {
     setCollapsedCategories(prev => ({
@@ -66,6 +67,46 @@ export default function ShopInterface({ categories }) {
             e.target.style.boxShadow = 'none';
           }}
         />
+
+        {/* View Toggle */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+          <button 
+            onClick={() => setViewMode('grid')}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '20px',
+              border: '1px solid ' + (viewMode === 'grid' ? 'var(--color-primary)' : 'rgba(0,0,0,0.1)'),
+              background: viewMode === 'grid' ? 'rgba(229, 57, 53, 0.1)' : 'transparent',
+              color: viewMode === 'grid' ? 'var(--color-primary)' : '#666',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontWeight: 'bold',
+              transition: 'all 0.2s'
+            }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>🔲</span> Grid
+          </button>
+          <button 
+            onClick={() => setViewMode('list')}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '20px',
+              border: '1px solid ' + (viewMode === 'list' ? 'var(--color-primary)' : 'rgba(0,0,0,0.1)'),
+              background: viewMode === 'list' ? 'rgba(229, 57, 53, 0.1)' : 'transparent',
+              color: viewMode === 'list' ? 'var(--color-primary)' : '#666',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontWeight: 'bold',
+              transition: 'all 0.2s'
+            }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>📄</span> Quick Buy List
+          </button>
+        </div>
       </div>
 
       {/* Product Display */}
@@ -99,22 +140,55 @@ export default function ShopInterface({ categories }) {
             category.products.length === 0 ? (
               <p style={{ color: '#888', fontStyle: 'italic' }}>More products coming soon.</p>
             ) : (
-              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {category.products.map((product, index) => (
-                  <ProductCard 
-                    key={product.id} 
-                    product={product} 
-                    index={index}
-                    cartQuantity={cart[product.id]?.quantity || 0}
-                    onAddToCart={() => {
-                      updateQuantity(product, 1);
-                      setIsCartOpen(true);
-                    }}
-                    onUpdateQuantity={(delta) => updateQuantity(product, delta)}
-                    onProductClick={() => setSelectedImage(product)}
-                  />
-                ))}
-              </div>
+              viewMode === 'list' ? (
+                <div style={{ overflowX: 'auto', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(20,20,25,0.8)' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', textAlign: 'left' }}>
+                    <thead style={{ background: 'rgba(0,0,0,0.5)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                      <tr>
+                        <th style={{ padding: '12px 15px', fontWeight: 'normal', color: '#888' }}>Product</th>
+                        <th style={{ padding: '12px 15px', textAlign: 'right', fontWeight: 'normal', color: '#888', width: '80px' }}>MRP</th>
+                        <th style={{ padding: '12px 15px', textAlign: 'right', fontWeight: 'normal', color: '#888', width: '100px' }}>Price</th>
+                        <th style={{ padding: '12px 15px', textAlign: 'right', fontWeight: 'normal', color: '#888', width: '130px' }}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {category.products.map((product, index) => (
+                        <ProductCard 
+                          key={product.id} 
+                          product={product} 
+                          index={index}
+                          viewMode={viewMode}
+                          cartQuantity={cart[product.id]?.quantity || 0}
+                          onAddToCart={() => {
+                            updateQuantity(product, 1);
+                            setIsCartOpen(true);
+                          }}
+                          onUpdateQuantity={(delta) => updateQuantity(product, delta)}
+                          onProductClick={() => setSelectedImage(product)}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                  {category.products.map((product, index) => (
+                    <ProductCard 
+                      key={product.id} 
+                      product={product} 
+                      index={index}
+                      viewMode={viewMode}
+                      cartQuantity={cart[product.id]?.quantity || 0}
+                      onAddToCart={() => {
+                        updateQuantity(product, 1);
+                        setIsCartOpen(true);
+                      }}
+                      onUpdateQuantity={(delta) => updateQuantity(product, delta)}
+                      onProductClick={() => setSelectedImage(product)}
+                    />
+                  ))}
+                </div>
+              )
             )
           )}
         </div>
