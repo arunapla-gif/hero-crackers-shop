@@ -11,6 +11,9 @@ export const revalidate = 60; // Revalidate every 60 seconds
 export default async function ShopPage() {
   // Fetch all categories with their nested products
   const categories = await prisma.category.findMany({
+    where: {
+      slug: { not: 'custom-items' }
+    },
     orderBy: { sequence: 'asc' },
     include: {
       products: {

@@ -17,6 +17,9 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
   const [selectedCategory, setSelectedCategory] = useState('ALL'); // 'ALL' or categoryId
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsedCategories, setCollapsedCategories] = useState({});
+  const [localCustomItems, setLocalCustomItems] = useState([]); // Array to hold dynamically added custom products
+  const [isAddingCustom, setIsAddingCustom] = useState(false);
+  const [customItemForm, setCustomItemForm] = useState({ name: '', price: '' });
 
   const toggleCategory = (catId) => {
     setCollapsedCategories(prev => ({
@@ -25,12 +28,14 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
     }));
   };
 
-  // Group and filter products by category
+  const allProducts = useMemo(() => [...(products || []), ...localCustomItems], [products, localCustomItems]);
+
+  // Group and filter products by category, filtering out the hidden 'custom-items' category
   const categorizedProducts = useMemo(() => {
     if (!products || !Array.isArray(products)) return [];
 
     const query = searchQuery.trim().toLowerCase();
-    const sortedCategories = [...(categories || [])].sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
+    const sortedCategories = [...(categories || [])].sort((a, b) => (a.sequence || 0) - (b.sequence || 0)).filter(c => c.slug !== 'custom-items');
 
     const groups = sortedCategories.map(cat => {
       let catProducts = products.filter(p => p.categoryId === cat.id);
@@ -76,13 +81,13 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
     const counts = {};
     Object.entries(quickBillCart).forEach(([prodId, qty]) => {
       if (qty > 0) {
-        const prod = products.find(p => p.id === prodId);
+        const prod = allProducts.find(p => p.id === prodId);
         const catId = prod?.categoryId || 'uncategorized';
         counts[catId] = (counts[catId] || 0) + qty;
       }
     });
     return counts;
-  }, [quickBillCart, products]);
+  }, [quickBillCart, allProducts]);
   
   // Populate cart if initialPosState is provided (Edit or Duplicate)
   useEffect(() => {
@@ -169,10 +174,10 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
 
   const quickBillTotal = useMemo(() => {
     return Object.entries(quickBillCart).reduce((sum, [id, qty]) => {
-      const p = products.find(prod => prod.id === id);
+      const p = allProducts.find(prod => prod.id === id);
       return sum + ((p?.price || 0) * qty);
     }, 0);
-  }, [quickBillCart, products]);
+  }, [quickBillCart, allProducts]);
 
   const generateBillMutation = useMutation({
     mutationFn: async (payload) => {
@@ -193,9 +198,38 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
       setQuickBillCart({});
       setQuickBillCustomer({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '', referredBy: '' });
       setPaymentState({ status: 'UNPAID', method: 'CASH', details: '' });
+      setLocalCustomItems([]); // clear custom items mapping on success
       if (onClearPosState) onClearPosState();
     }
   });
+
+  const addCustomItemMutation = useMutation({
+    mutationFn: async (payload) => {
+      const res = await fetch('/api/pos/custom-item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Failed to add custom item');
+      return res.json();
+    },
+    onSuccess: (newProduct) => {
+      setLocalCustomItems(prev => [...prev, newProduct]);
+      updateQuickBillQty(newProduct.id, 1);
+      setIsAddingCustom(false);
+      setCustomItemForm({ name: '', price: '' });
+      queryClient.invalidateQueries(['products']); // Refresh global product list eventually
+    },
+    onError: (err) => {
+      alert('Error creating custom item: ' + err.message);
+    }
+  });
+
+  const handleAddCustomItem = (e) => {
+    e.preventDefault();
+    if (!customItemForm.name.trim() || !customItemForm.price) return;
+    addCustomItemMutation.mutate(customItemForm);
+  };
 
   const handleGenerateQuickBill = (e) => {
     e.preventDefault();
@@ -206,7 +240,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
     if (!quickBillCustomer.city.trim()) return alert('City is mandatory.');
     
     const items = Object.entries(quickBillCart).map(([id, qty]) => {
-      const p = products.find(prod => prod.id === id);
+      const p = allProducts.find(prod => prod.id === id);
       return { productId: id, quantity: qty, price: p.price };
     });
     
@@ -572,7 +606,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
               <div style={{ color: theme.textSecondary, textAlign: 'center', padding: '20px 0' }}>Cart is empty</div>
             ) : (
               Object.entries(quickBillCart).map(([id, qty], index) => {
-                const p = products.find(prod => prod.id === id);
+                const p = allProducts.find(prod => prod.id === id);
                 return (
                   <div key={id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: theme.textSecondary, fontSize: '0.95rem' }}>
                     <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
@@ -583,6 +617,50 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
                   </div>
                 )
               })
+            )}
+          </div>
+
+          {/* Add Custom Item */}
+          <div style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: `1px solid ${theme.border}` }}>
+            {!isAddingCustom ? (
+              <button 
+                type="button" 
+                onClick={() => setIsAddingCustom(true)}
+                style={{ background: 'transparent', border: `1px dashed ${theme.accent}`, color: theme.accent, padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', width: '100%', fontSize: '0.9rem', display: 'flex', justifyContent: 'center', gap: '8px', alignItems: 'center' }}
+              >
+                <span>➕</span> Add Custom Item
+              </button>
+            ) : (
+              <div style={{ backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', padding: '15px', borderRadius: '10px', border: `1px solid ${theme.border}` }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '0.9rem', color: theme.textSecondary, fontWeight: 'bold' }}>Custom Item</span>
+                  <button type="button" onClick={() => setIsAddingCustom(false)} style={{ background: 'none', border: 'none', color: theme.textSecondary, cursor: 'pointer' }}>✕</button>
+                </div>
+                <input 
+                  type="text" 
+                  placeholder="Item Name (e.g. Extra Sparklers)" 
+                  value={customItemForm.name}
+                  onChange={e => setCustomItemForm(prev => ({ ...prev, name: e.target.value }))}
+                  style={{ ...styles.inputStyle, marginBottom: '8px', padding: '8px 12px' }} 
+                />
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input 
+                    type="number" 
+                    placeholder="Price (₹)" 
+                    value={customItemForm.price}
+                    onChange={e => setCustomItemForm(prev => ({ ...prev, price: e.target.value }))}
+                    style={{ ...styles.inputStyle, marginBottom: '0', padding: '8px 12px', flex: 1 }} 
+                  />
+                  <button 
+                    type="button" 
+                    onClick={handleAddCustomItem}
+                    disabled={addCustomItemMutation.isPending || !customItemForm.name || !customItemForm.price}
+                    style={{ ...styles.btnPrimary, padding: '8px 16px', flex: 1, opacity: (!customItemForm.name || !customItemForm.price || addCustomItemMutation.isPending) ? 0.5 : 1 }}
+                  >
+                    {addCustomItemMutation.isPending ? 'Saving...' : 'Add to Bill'}
+                  </button>
+                </div>
+              </div>
             )}
           </div>
 
