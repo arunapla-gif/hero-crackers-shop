@@ -38,6 +38,24 @@ export default function ShopInterface({ categories }) {
   return (
     <div className={styles.container}>
       
+      {/* 80% FLAT OFF Banner */}
+      <div style={{
+        background: 'linear-gradient(90deg, #FF1361, #FFF800)',
+        borderRadius: '16px',
+        padding: '15px 20px',
+        marginBottom: '30px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '0 4px 15px rgba(255, 19, 97, 0.4)',
+        textAlign: 'center',
+        animation: 'pulse 2s infinite'
+      }}>
+        <h2 style={{ margin: 0, color: '#000', fontSize: '1.6rem', fontWeight: '900', letterSpacing: '1px', textTransform: 'uppercase' }}>
+          🎆 2026 Festival Collection <span style={{ background: '#000', color: '#FFF800', padding: '4px 12px', borderRadius: '8px', marginLeft: '10px' }}>80% FLAT OFF</span> 🎆
+        </h2>
+      </div>
+
       {/* Search and Controls */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '30px' }}>
         

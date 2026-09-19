@@ -29,6 +29,7 @@ export async function generateInvoicePDFBuffer(order, products) {
       return [
         { text: (idx + 1).toString(), alignment: 'center', margin: [0, 5] },
         { text: product ? product.name : 'Item', margin: [0, 5] },
+        { text: product?.packageString || '-', alignment: 'center', margin: [0, 5] },
         { text: `Rs ${mrp.toFixed(2)}`, alignment: 'right', decoration: 'lineThrough', color: '#666666', margin: [0, 5] },
         { text: `Rs ${rate.toFixed(2)}`, alignment: 'right', bold: true, margin: [0, 5] },
         { text: qty.toString(), alignment: 'center', margin: [0, 5] },
@@ -70,11 +71,12 @@ export async function generateInvoicePDFBuffer(order, products) {
         {
           table: {
             headerRows: 1,
-            widths: ['5%', '40%', '15%', '15%', '10%', '15%'],
+            widths: ['5%', '30%', '10%', '15%', '15%', '10%', '15%'],
             body: [
               [
                 { text: 'S.No', bold: true, alignment: 'center', fillColor: '#f5f5f5', margin: [0, 5] },
                 { text: 'Particulars', bold: true, fillColor: '#f5f5f5', margin: [0, 5] },
+                { text: 'PKG', bold: true, alignment: 'center', fillColor: '#f5f5f5', margin: [0, 5] },
                 { text: 'MRP', bold: true, alignment: 'right', fillColor: '#f5f5f5', margin: [0, 5] },
                 { text: 'Rate', bold: true, alignment: 'right', fillColor: '#f5f5f5', margin: [0, 5] },
                 { text: 'Qty', bold: true, alignment: 'center', fillColor: '#f5f5f5', margin: [0, 5] },
@@ -82,15 +84,15 @@ export async function generateInvoicePDFBuffer(order, products) {
               ],
               ...bodyItems,
               [
-                { text: 'Total MRP Value:', colSpan: 5, alignment: 'right', color: '#555555', margin: [0, 8] }, {}, {}, {}, {},
+                { text: 'Total MRP Value:', colSpan: 6, alignment: 'right', color: '#555555', margin: [0, 8] }, {}, {}, {}, {}, {},
                 { text: `Rs ${totalMRP.toFixed(2)}`, alignment: 'right', color: '#555555', margin: [0, 8] }
               ],
               [
-                { text: 'Total Discount Savings:', colSpan: 5, alignment: 'right', color: '#2e7d32', margin: [0, 8] }, {}, {}, {}, {},
+                { text: 'Total Discount Savings:', colSpan: 6, alignment: 'right', color: '#2e7d32', margin: [0, 8] }, {}, {}, {}, {}, {},
                 { text: `- Rs ${totalSavings.toFixed(2)}`, alignment: 'right', color: '#2e7d32', margin: [0, 8] }
               ],
               [
-                { text: 'Net Payable Amount:', colSpan: 5, alignment: 'right', fontSize: 12, bold: true, margin: [0, 10] }, {}, {}, {}, {},
+                { text: 'Net Payable Amount:', colSpan: 6, alignment: 'right', fontSize: 12, bold: true, margin: [0, 10] }, {}, {}, {}, {}, {},
                 { text: `Rs ${order.totalAmount.toFixed(2)}`, alignment: 'right', fontSize: 12, bold: true, margin: [0, 10] }
               ]
             ]

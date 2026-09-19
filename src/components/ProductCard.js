@@ -37,19 +37,26 @@ export default function ProductCard({ product, onAddToCart, cartQuantity = 0, on
               <span style={{ fontSize: '0.9rem' }}>{isPremium ? '🌋' : '✨'}</span>
             </div>
             {/* Name and Tag */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h3 style={{ fontSize: '0.95rem', color: '#FFF', margin: 0 }}>{product.name}</h3>
-              <span style={{
-                background: '#FF1361',
-                color: '#fff',
-                padding: '2px 6px',
-                borderRadius: '4px',
-                fontWeight: 'bold',
-                fontSize: '0.65rem',
-                whiteSpace: 'nowrap'
-              }}>
-                {discountPercent}% OFF
-              </span>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 style={{ fontSize: '0.95rem', color: '#FFF', margin: 0 }}>{product.name}</h3>
+                <span style={{
+                  background: '#FF1361',
+                  color: '#fff',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  fontWeight: 'bold',
+                  fontSize: '0.65rem',
+                  whiteSpace: 'nowrap'
+                }}>
+                  80% FLAT OFF
+                </span>
+              </div>
+              {product.packageString && (
+                <span style={{ color: '#888', fontSize: '0.75rem', marginTop: '2px' }}>
+                  PKG: {product.packageString}
+                </span>
+              )}
             </div>
           </div>
         </td>
@@ -154,7 +161,7 @@ export default function ProductCard({ product, onAddToCart, cartQuantity = 0, on
         zIndex: 2,
         letterSpacing: '1px'
       }}>
-        {discountPercent}% OFF
+        80% FLAT OFF
       </div>
       <div style={{ 
         width: '120px', 
@@ -171,7 +178,10 @@ export default function ProductCard({ product, onAddToCart, cartQuantity = 0, on
       
       <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '5px 0', minWidth: 0 }}>
         <div>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '5px', color: '#FFF', lineHeight: '1.2' }}>{product.name}</h3>
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '2px', color: '#FFF', lineHeight: '1.2' }}>{product.name}</h3>
+          {product.packageString && (
+            <span style={{ color: '#aaa', fontSize: '0.85rem' }}>PKG: {product.packageString}</span>
+          )}
         </div>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '10px' }}>
