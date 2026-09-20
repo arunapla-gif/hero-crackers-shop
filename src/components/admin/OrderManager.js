@@ -758,15 +758,24 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
                     </button>
                   )}
 
-                  {/* Utility Actions (5-Column Grid) */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', width: '100%' }}>
-                    <button className="action-btn icon-btn-alive" onClick={() => triggerPrint(order)} title="Print Invoice" style={{ padding: '8px 0', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>🖨️</button>
-                    <button className="action-btn icon-btn-alive" onClick={() => triggerPrintLabel(order)} title="Print Shipping Label (4x6 Sticker)" style={{ padding: '8px 0', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>🏷️</button>
-                    <button className="action-btn icon-btn-alive" onClick={() => onEditOrder(order)} title="Edit Order" style={{ padding: '8px 0', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>✏️</button>
-                    <button className="action-btn icon-btn-alive" onClick={() => onDuplicateOrder(order)} title="Duplicate (New Customer)" style={{ padding: '8px 0', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>📋</button>
-                    <button className="action-btn icon-btn-alive" onClick={() => onRepeatOrder(order)} title="Repeat Order (Same Customer)" style={{ padding: '8px 0', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>🔁</button>
+                  {/* Utility Actions (Icon + Text) */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%' }}>
+                    <button className="action-btn icon-btn-alive" onClick={() => triggerPrint(order)} title="Print Invoice" style={{ padding: '8px 12px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', gridColumn: 'span 2' }}>
+                      <span style={{ fontSize: '1.1rem' }}>🖨️</span> Print Invoice
+                    </button>
+                    <button className="action-btn icon-btn-alive" onClick={() => triggerPrintLabel(order)} title="Print Shipping Label (4x6 Sticker)" style={{ padding: '8px 12px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '1.1rem' }}>🏷️</span> Shipping Label
+                    </button>
+                    <button className="action-btn icon-btn-alive" onClick={() => onEditOrder(order)} title="Edit Order" style={{ padding: '8px 12px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '1.1rem' }}>✏️</span> Edit Order
+                    </button>
+                    <button className="action-btn icon-btn-alive" onClick={() => onDuplicateOrder(order)} title="Duplicate (New Customer)" style={{ padding: '8px 12px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '1.1rem' }}>📋</span> Duplicate (New)
+                    </button>
+                    <button className="action-btn icon-btn-alive" onClick={() => onRepeatOrder(order)} title="Repeat Order (Same Customer)" style={{ padding: '8px 12px', backgroundColor: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '1.1rem' }}>🔁</span> Repeat (Same)
+                    </button>
                   </div>
-                  
 
                 </div>
               </div>
