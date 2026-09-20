@@ -125,19 +125,24 @@ export default function ProductCard({ product, onAddToCart, cartQuantity = 0, on
     <div 
       className="grid-card-container"
       style={{
-        background: 'rgba(26, 26, 29, 0.8)',
+        background: 'linear-gradient(145deg, rgba(45, 20, 44, 0.85) 0%, rgba(26, 26, 29, 0.95) 100%)',
+        backdropFilter: 'blur(10px)',
         borderRadius: '16px',
         overflow: 'hidden',
         width: '100%',
         maxWidth: '400px',
         margin: '0 auto',
         position: 'relative',
-        boxShadow: isPremium ? '0 8px 32px rgba(255, 193, 7, 0.15)' : '0 4px 24px rgba(0,0,0,0.4)',
-        border: `1px solid ${isPremium ? 'rgba(255, 193, 7, 0.3)' : 'rgba(255, 255, 255, 0.05)'}`,
+        boxShadow: isPremium ? '0 8px 32px rgba(255, 193, 7, 0.15)' : '0 4px 16px rgba(0,0,0,0.4)',
+        border: `1px solid ${isPremium ? 'rgba(255, 193, 7, 0.3)' : 'rgba(255, 255, 255, 0.1)'}`,
         transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
         cursor: 'pointer',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'row',
+        padding: '12px',
+        alignItems: 'center',
+        gap: '15px',
+        height: '100%'
       }} 
       onClick={() => onProductClick && onProductClick()}
       onMouseOver={(e) => {
