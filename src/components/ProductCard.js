@@ -10,22 +10,11 @@ export default function ProductCard({ product, onAddToCart, cartQuantity = 0, on
 
   if (viewMode === 'list') {
     return (
-      <tr 
-        style={{ 
-          borderBottom: '1px solid rgba(255, 255, 255, 0.05)', 
-          background: 'rgba(26, 26, 29, 0.5)',
-          transition: 'background 0.2s',
-          cursor: 'pointer'
-        }} 
+      <div 
+        className="list-row"
         onClick={() => onProductClick && onProductClick()}
-        onMouseOver={(e) => {
-          e.currentTarget.style.background = 'rgba(60, 25, 45, 0.85)';
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.background = 'rgba(26, 26, 29, 0.5)';
-        }}
       >
-        <td style={{ padding: '12px 15px' }}>
+        <div className="col-product">
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {/* Tiny Icon */}
             <div style={{
@@ -37,10 +26,10 @@ export default function ProductCard({ product, onAddToCart, cartQuantity = 0, on
               <span style={{ fontSize: '0.9rem' }}>{isPremium ? '🌋' : '✨'}</span>
             </div>
             {/* Name and Tag */}
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h3 style={{ fontSize: '0.95rem', color: '#FFF', margin: 0 }}>{product.name}</h3>
-                <span style={{
+            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <h3 style={{ fontSize: '0.95rem', color: '#FFF', margin: 0, whiteSpace: 'normal', wordBreak: 'break-word' }}>{product.name}</h3>
+                <span className="list-badge desktop-badge" style={{
                   background: '#FF1361',
                   color: '#fff',
                   padding: '2px 6px',
@@ -57,23 +46,41 @@ export default function ProductCard({ product, onAddToCart, cartQuantity = 0, on
                   PKG: {product.packageString}
                 </span>
               )}
+              
+              <div className="mobile-price-stack">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span className="mobile-mrp">MRP: ₹{mrp.toLocaleString('en-IN')}</span>
+                  <span className="list-badge" style={{
+                    background: '#FF1361',
+                    color: '#fff',
+                    padding: '2px 4px',
+                    borderRadius: '4px',
+                    fontWeight: 'bold',
+                    fontSize: '0.55rem',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    80% OFF
+                  </span>
+                </div>
+                <span className="mobile-final">₹{product.price.toLocaleString('en-IN')}</span>
+              </div>
             </div>
           </div>
-        </td>
+        </div>
 
-        <td style={{ padding: '12px 15px', textAlign: 'right' }}>
+        <div className="col-mrp desktop-only">
           <span style={{ color: '#B0BEC5', textDecoration: 'line-through', textDecorationColor: '#FF3B30', fontSize: '0.8rem' }}>
             ₹{mrp.toLocaleString('en-IN')}
           </span>
-        </td>
+        </div>
         
-        <td style={{ padding: '12px 15px', textAlign: 'right' }}>
+        <div className="col-price desktop-only">
           <span style={{ color: '#FFD700', fontWeight: 'bold', fontSize: '1.1rem' }}>
             ₹{product.price.toLocaleString('en-IN')}
           </span>
-        </td>
+        </div>
 
-        <td style={{ padding: '12px 15px', textAlign: 'right' }}>
+        <div className="col-action">
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <div style={{ 
               display: 'flex', 
@@ -109,27 +116,28 @@ export default function ProductCard({ product, onAddToCart, cartQuantity = 0, on
               </button>
             </div>
           </div>
-        </td>
-      </tr>
+        </div>
+      </div>
     );
   }
   
   return (
     <div 
-      style={{ 
-        display: 'flex', 
-        flexDirection: 'row',
-        padding: '12px', 
-        border: '1px solid rgba(255, 255, 255, 0.1)', 
-        borderRadius: '16px', 
-        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
-        background: 'linear-gradient(145deg, rgba(45, 20, 44, 0.85) 0%, rgba(26, 26, 29, 0.95) 100%)', // Obsidian Crimson Gradient
-        backdropFilter: 'blur(10px)',
+      className="grid-card-container"
+      style={{
+        background: 'rgba(26, 26, 29, 0.8)',
+        borderRadius: '16px',
+        overflow: 'hidden',
+        width: '100%',
+        maxWidth: '400px',
+        margin: '0 auto',
         position: 'relative',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease',
-        height: '100%',
-        alignItems: 'center',
-        gap: '15px'
+        boxShadow: isPremium ? '0 8px 32px rgba(255, 193, 7, 0.15)' : '0 4px 24px rgba(0,0,0,0.4)',
+        border: `1px solid ${isPremium ? 'rgba(255, 193, 7, 0.3)' : 'rgba(255, 255, 255, 0.05)'}`,
+        transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
+        cursor: 'pointer',
+        display: 'flex',
+        flexDirection: 'column'
       }} 
       onClick={() => onProductClick && onProductClick()}
       onMouseOver={(e) => {

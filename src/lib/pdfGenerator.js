@@ -17,7 +17,18 @@ export async function generateInvoicePDFBuffer(order, products) {
     let totalMRP = 0;
     let totalSavings = 0;
     
-    const bodyItems = order.items.map((item, idx) => {
+    // Sort items by the product's sequence to match website order
+    const sortedItems = [...order.items].sort((a, b) => {
+      const productA = products.find(p => p.id === a.productId);
+      const productB = products.find(p => p.id === b.productId);
+      
+      const seqA = productA ? (productA.sequence || 0) : 999999;
+      const seqB = productB ? (productB.sequence || 0) : 999999;
+      
+      return seqA - seqB;
+    });
+    
+    const bodyItems = sortedItems.map((item, idx) => {
       const product = products.find(p => p.id === item.productId);
       const mrp = product?.basePrice || item.price;
       const rate = item.price;

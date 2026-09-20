@@ -35,6 +35,7 @@ model Product {
   stockGodown Int           @default(0)
   stock       Int           @default(0)
   sequence    Int           @default(0)
+  packageString String?
   categoryId  String
   imageUrls   String[]
   category    Category      @relation(fields: [categoryId], references: [id])

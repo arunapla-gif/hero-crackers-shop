@@ -13,7 +13,7 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
   const [godownName, setGodownName] = useState('');
   const [godownLocation, setGodownLocation] = useState('');
   const [newProduct, setNewProduct] = useState({
-    name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', categoryId: categories.length > 0 ? categories[0].id : '', imageUrl: '', sequence: ''
+    name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', categoryId: categories.length > 0 ? categories[0].id : '', imageUrl: '', sequence: '', packageString: ''
   });
   const [referenceName, setReferenceName] = useState('');
   const [referencePhone, setReferencePhone] = useState('');
@@ -180,7 +180,7 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
       } else {
         setProducts([...products, savedProduct].sort((a, b) => a.sequence - b.sequence || a.name.localeCompare(b.name)));
       }
-      setNewProduct({ name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', categoryId: categories.length > 0 ? categories[0].id : '', imageUrl: '', sequence: '' });
+      setNewProduct({ name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', categoryId: categories.length > 0 ? categories[0].id : '', imageUrl: '', sequence: '', packageString: '' });
       setImageFile(null);
     }
     setIsUploading(false);
@@ -197,7 +197,8 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
       stockShop: product.stockShop || '',
       categoryId: product.categoryId,
       imageUrl: product.imageUrls?.[0] || '',
-      sequence: product.sequence || ''
+      sequence: product.sequence || '',
+      packageString: product.packageString || ''
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -336,7 +337,7 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
               {editingProductId && (
                 <button onClick={() => {
                   setEditingProductId(null);
-                  setNewProduct({ name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', categoryId: categories.length > 0 ? categories[0].id : '', imageUrl: '', sequence: '' });
+                  setNewProduct({ name: '', description: '', basePrice: '', price: '', discount: '', stockShop: '', categoryId: categories.length > 0 ? categories[0].id : '', imageUrl: '', sequence: '', packageString: '' });
                 }} style={{ background: 'transparent', border: 'none', color: theme.danger, cursor: 'pointer', fontWeight: 'bold' }}>✕ Cancel Edit</button>
               )}
             </div>
@@ -365,6 +366,9 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
 
               <label style={styles.labelStyle}>Display Order (Sequence)</label>
               <input type="number" value={newProduct.sequence} onChange={e => setNewProduct({...newProduct, sequence: e.target.value})} style={styles.inputStyle} placeholder="0" />
+
+              <label style={styles.labelStyle}>Packaging Size (Optional)</label>
+              <input type="text" value={newProduct.packageString} onChange={e => setNewProduct({...newProduct, packageString: e.target.value})} style={styles.inputStyle} placeholder="e.g., 5 Pcs" />
 
               <button type="submit" disabled={isUploading} className="action-btn" style={{ ...styles.btnPrimary, width: '100%', marginTop: '10px', opacity: isUploading ? 0.7 : 1, backgroundColor: editingProductId ? theme.accent : theme.info }}>
                 {isUploading ? 'Saving...' : editingProductId ? 'Update Product' : 'Save Product'}
@@ -415,6 +419,7 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
                   <tr>
                     <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Order</th>
                     <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Item</th>
+                    <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>PKG</th>
                     <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Price</th>
                     <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}`, textAlign: 'right' }}>Actions</th>
                   </tr>
@@ -477,6 +482,7 @@ export default function MasterDataPanel({ isDarkMode, products, setProducts, cat
                         </div>
                       </td>
                       <td style={{ padding: '15px', color: theme.textPrimary }}>{product.name}</td>
+                      <td style={{ padding: '15px', color: theme.textSecondary }}>{product.packageString || '-'}</td>
                       <td style={{ padding: '15px', color: theme.accent, fontWeight: 'bold' }}>₹{product.price}</td>
                       <td style={{ padding: '15px', textAlign: 'right' }}>
                         <button onClick={() => handleEditProduct(product)} style={{ padding: '6px 12px', backgroundColor: theme.inputBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.textPrimary, cursor: 'pointer', fontSize: '0.9rem' }}>Edit</button>

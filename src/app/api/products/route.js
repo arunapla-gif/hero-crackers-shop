@@ -52,6 +52,7 @@ export async function POST(request) {
         stockGodown,
         stock: stockShop + stockGodown,
         sequence,
+        packageString: body.packageString ? sanitizeString(body.packageString, 50) : null,
         categoryId: body.categoryId,
         imageUrls: Array.isArray(body.imageUrls) ? body.imageUrls.filter(u => typeof u === 'string').slice(0, 10) : []
       }

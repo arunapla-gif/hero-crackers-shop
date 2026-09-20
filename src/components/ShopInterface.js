@@ -149,37 +149,33 @@ export default function ShopInterface({ categories }) {
               <p style={{ color: '#888', fontStyle: 'italic' }}>More products coming soon.</p>
             ) : (
               viewMode === 'list' ? (
-                <div style={{ overflowX: 'auto', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(20,20,25,0.8)' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', textAlign: 'left' }}>
-                    <thead style={{ background: 'rgba(0,0,0,0.5)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                      <tr>
-                        <th style={{ padding: '12px 15px', fontWeight: 'normal', color: '#888' }}>Product</th>
-                        <th style={{ padding: '12px 15px', textAlign: 'right', fontWeight: 'normal', color: '#888', width: '80px' }}>MRP</th>
-                        <th style={{ padding: '12px 15px', textAlign: 'right', fontWeight: 'normal', color: '#888', width: '100px' }}>Price</th>
-                        <th style={{ padding: '12px 15px', textAlign: 'right', fontWeight: 'normal', color: '#888', width: '130px' }}>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {category.products.map((product, index) => (
-                        <ProductCard 
-                          key={product.id} 
-                          product={product} 
-                          index={index}
-                          viewMode={viewMode}
-                          cartQuantity={cart[product.id]?.quantity || 0}
-                          onAddToCart={() => {
-                            updateQuantity(product, 1);
-                            setIsCartOpen(true);
-                          }}
-                          onUpdateQuantity={(delta) => updateQuantity(product, delta)}
-                          onProductClick={() => setSelectedImage(product)}
-                        />
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="list-container">
+                  <div className="list-header">
+                    <div className="col-product">Product</div>
+                    <div className="col-mrp desktop-only">MRP</div>
+                    <div className="col-price desktop-only">Price</div>
+                    <div className="col-action">Action</div>
+                  </div>
+                  <div className="list-body">
+                    {category.products.map((product, index) => (
+                      <ProductCard 
+                        key={product.id} 
+                        product={product} 
+                        index={index}
+                        viewMode={viewMode}
+                        cartQuantity={cart[product.id]?.quantity || 0}
+                        onAddToCart={() => {
+                          updateQuantity(product, 1);
+                          setIsCartOpen(true);
+                        }}
+                        onUpdateQuantity={(delta) => updateQuantity(product, delta)}
+                        onProductClick={() => setSelectedImage(product)}
+                      />
+                    ))}
+                  </div>
                 </div>
               ) : (
-                <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <div className="product-grid">
                   {category.products.map((product, index) => (
                     <ProductCard 
                       key={product.id} 
@@ -386,6 +382,66 @@ export default function ShopInterface({ categories }) {
           font-size: 2rem;
         }
 
+        /* List View Responsive Styles */
+        .list-container {
+          background: rgba(20,20,25,0.8);
+          border-radius: 12px;
+          border: 1px solid rgba(255,255,255,0.05);
+          overflow: hidden;
+        }
+        .list-header {
+          display: flex;
+          background: rgba(0,0,0,0.5);
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+          padding: 12px 15px;
+          color: #888;
+          font-size: 0.9rem;
+        }
+        .list-row {
+          display: flex;
+          padding: 12px 15px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          background: rgba(26, 26, 29, 0.5);
+          transition: background 0.2s;
+          cursor: pointer;
+          align-items: center;
+        }
+        .list-row:hover {
+          background: rgba(60, 25, 45, 0.85);
+        }
+        .col-product {
+          flex: 1;
+          padding-right: 15px;
+          min-width: 0;
+        }
+        .list-price-action-group {
+          display: flex;
+          align-items: center;
+        }
+        .col-mrp {
+          width: 80px;
+          text-align: right;
+          padding: 0 10px;
+        }
+        .col-price {
+          width: 90px;
+          text-align: right;
+          padding: 0 10px;
+        }
+        .col-action {
+          width: 120px;
+          display: flex;
+          justify-content: flex-end;
+        }
+
+        /* Grid View Responsive Styles */
+        .product-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 20px;
+          justify-content: center;
+        }
+
         /* Tablet (max-width: 900px) */
         @media (max-width: 900px) {
           .enhanced-modal-content {
@@ -409,6 +465,12 @@ export default function ShopInterface({ categories }) {
           .modal-price {
             font-size: 1.8rem;
           }
+          
+          /* Force 2 cards side-by-side on tablet */
+          .product-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+          }
         }
 
         /* Mobile (max-width: 600px) */
@@ -431,6 +493,55 @@ export default function ShopInterface({ categories }) {
           .modal-placeholder-text {
             font-size: 0.8rem;
             margin-top: 10px !important;
+          }
+          
+          /* Mobile List View */
+          .list-header {
+            display: none;
+          }
+          .list-row {
+            flex-direction: row;
+            align-items: center;
+            padding: 12px 10px;
+          }
+          .col-product {
+            padding-right: 10px;
+            margin-bottom: 0;
+            flex: 1;
+          }
+          .col-mrp, .col-price {
+            display: none;
+          }
+          .desktop-only {
+            display: none !important;
+          }
+          .desktop-badge {
+            display: none !important;
+          }
+          .mobile-price-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-top: 8px;
+          }
+          .mobile-mrp {
+            color: #B0BEC5;
+            text-decoration: line-through;
+            text-decoration-color: #FF3B30;
+            font-size: 0.75rem;
+          }
+          .mobile-final {
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 1rem;
+          }
+          .col-action {
+            width: auto;
+            flex-shrink: 0;
+          }
+          .list-badge {
+            font-size: 0.6rem !important;
+            padding: 2px 6px !important;
           }
         }
       `}</style>

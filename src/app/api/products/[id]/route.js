@@ -24,6 +24,7 @@ export async function PATCH(request, { params }) {
       dataToUpdate.stock = (dataToUpdate.stockShop ?? body.stockShop ?? 0) + (dataToUpdate.stockGodown ?? body.stockGodown ?? 0);
     }
     if (body.sequence !== undefined && body.sequence !== '') dataToUpdate.sequence = parseInt(body.sequence);
+    if (body.packageString !== undefined) dataToUpdate.packageString = body.packageString ? sanitizeString(body.packageString, 50) : null;
     if (body.imageUrls !== undefined && Array.isArray(body.imageUrls)) {
       dataToUpdate.imageUrls = body.imageUrls.filter(u => typeof u === 'string').slice(0, 10);
     }
