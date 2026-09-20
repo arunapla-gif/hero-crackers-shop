@@ -275,7 +275,16 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
   const triggerPrint = (order) => {
     const printWindow = window.open('', '_blank', 'width=800,height=900');
     
-    const itemsHtml = order.items.map((item, idx) => {
+    // Sort items by product sequence to match catalog
+    const sortedItems = [...order.items].sort((a, b) => {
+      const productA = products.find(p => p.id === a.productId);
+      const productB = products.find(p => p.id === b.productId);
+      const seqA = productA ? (productA.sequence || 0) : 999999;
+      const seqB = productB ? (productB.sequence || 0) : 999999;
+      return seqA - seqB;
+    });
+    
+    const itemsHtml = sortedItems.map((item, idx) => {
       const product = products.find(p => p.id === item.productId);
       const productName = product ? product.name : 'Unknown Item';
       return `
