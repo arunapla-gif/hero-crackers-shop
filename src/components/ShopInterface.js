@@ -465,12 +465,6 @@ export default function ShopInterface({ categories }) {
           .modal-price {
             font-size: 1.8rem;
           }
-          
-          /* Force 2 cards side-by-side on tablet */
-          .product-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-          }
         }
 
         /* Mobile (max-width: 600px) */
