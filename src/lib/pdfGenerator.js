@@ -40,10 +40,9 @@ export async function generateInvoicePDFBuffer(order, products) {
       return [
         { text: (idx + 1).toString(), alignment: 'center', margin: [0, 2] },
         { text: product ? product.name : 'Item', margin: [0, 2] },
-        { text: product?.packageString || '-', alignment: 'center', margin: [0, 2] },
+        { text: qty.toString(), alignment: 'center', margin: [0, 2] },
         { text: `Rs ${mrp.toFixed(2)}`, alignment: 'right', decoration: 'lineThrough', color: '#666666', margin: [0, 2] },
         { text: `Rs ${rate.toFixed(2)}`, alignment: 'right', bold: true, margin: [0, 2] },
-        { text: qty.toString(), alignment: 'center', margin: [0, 2] },
         { text: `Rs ${(rate * qty).toFixed(2)}`, alignment: 'right', bold: true, margin: [0, 2] }
       ];
     });
@@ -55,8 +54,8 @@ export async function generateInvoicePDFBuffer(order, products) {
       content: [
         { text: 'HERO CRACKERS', style: 'header', alignment: 'center', color: '#B71C1C', margin: [0, 0, 0, 2] },
         { text: 'Sivakasi', alignment: 'center', color: '#555555', fontSize: 10, margin: [0, 0, 0, 8] },
+        { text: '80% DISCOUNT (Special Offer)', alignment: 'center', color: '#B71C1C', bold: true, fontSize: 11, margin: [0, 0, 0, 8] },
         { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 535, y2: 0, lineWidth: 1.5, lineColor: '#B71C1C' }], margin: [0, 0, 0, 15] },
-        { text: 'ESTIMATE / INVOICE', alignment: 'center', color: '#333333', bold: true, margin: [0, 0, 0, 15] },
         
         {
           columns: [
@@ -84,28 +83,27 @@ export async function generateInvoicePDFBuffer(order, products) {
         {
           table: {
             headerRows: 1,
-            widths: ['5%', '30%', '10%', '15%', '15%', '10%', '15%'],
+            widths: ['5%', '40%', '10%', '15%', '15%', '15%'],
             body: [
               [
                 { text: 'S.No', bold: true, alignment: 'center', fillColor: '#ffebee', margin: [0, 4] },
                 { text: 'Particulars', bold: true, fillColor: '#ffebee', margin: [0, 4] },
-                { text: 'PKG', bold: true, alignment: 'center', fillColor: '#ffebee', margin: [0, 4] },
+                { text: 'Qty', bold: true, alignment: 'center', fillColor: '#ffebee', margin: [0, 4] },
                 { text: 'MRP', bold: true, alignment: 'right', fillColor: '#ffebee', margin: [0, 4] },
                 { text: 'Rate', bold: true, alignment: 'right', fillColor: '#ffebee', margin: [0, 4] },
-                { text: 'Qty', bold: true, alignment: 'center', fillColor: '#ffebee', margin: [0, 4] },
                 { text: 'Amount', bold: true, alignment: 'right', fillColor: '#ffebee', margin: [0, 4] }
               ],
               ...bodyItems,
               [
-                { text: 'Total MRP Value:', colSpan: 6, alignment: 'right', color: '#555555', margin: [0, 6] }, {}, {}, {}, {}, {},
+                { text: 'Total MRP Value:', colSpan: 5, alignment: 'right', color: '#555555', margin: [0, 6] }, {}, {}, {}, {},
                 { text: `Rs ${totalMRP.toFixed(2)}`, alignment: 'right', color: '#555555', margin: [0, 6] }
               ],
               [
-                { text: 'Total Discount Savings:', colSpan: 6, alignment: 'right', color: '#2e7d32', margin: [0, 6] }, {}, {}, {}, {}, {},
+                { text: 'Total Discount Savings:', colSpan: 5, alignment: 'right', color: '#2e7d32', margin: [0, 6] }, {}, {}, {}, {},
                 { text: `- Rs ${totalSavings.toFixed(2)}`, alignment: 'right', color: '#2e7d32', margin: [0, 6] }
               ],
               [
-                { text: 'Net Payable Amount:', colSpan: 6, alignment: 'right', fontSize: 11, bold: true, margin: [0, 8] }, {}, {}, {}, {}, {},
+                { text: 'Net Payable Amount:', colSpan: 5, alignment: 'right', fontSize: 11, bold: true, margin: [0, 8] }, {}, {}, {}, {},
                 { text: `Rs ${order.totalAmount.toFixed(2)}`, alignment: 'right', fontSize: 11, bold: true, color: '#B71C1C', margin: [0, 8] }
               ]
             ]
