@@ -157,7 +157,10 @@ export async function POST(request) {
         order.customerPhone,
         customerName || 'Customer',
         order.id,
-        order.totalAmount
+        order.totalAmount,
+        order.customerPhone,
+        order.orderNumber,
+        order.shippingAddress
       ).catch(err => console.error('Error triggering WhatsApp notification:', err));
 
       sendAdminOrderAlert(

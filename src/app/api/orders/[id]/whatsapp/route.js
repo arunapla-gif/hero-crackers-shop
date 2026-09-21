@@ -32,7 +32,9 @@ export async function POST(request, { params }) {
       order.user?.name || 'Customer',
       order.id,
       order.totalAmount,
-      order.customerPhone // Pass original phone for formatting
+      order.customerPhone, // Pass original phone for formatting
+      order.orderNumber,
+      order.shippingAddress
     );
 
     if (!result.success) {
