@@ -256,6 +256,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
       paymentMethod: paymentState.status === 'PAID' ? paymentState.method : null,
       paymentDetails: paymentState.status === 'PAID' ? paymentState.details : null,
       skipWhatsApp: true, // Do not send automated WhatsApp for admin POS bills
+      source: 'POS',
       items
     };
     

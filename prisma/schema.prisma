@@ -76,6 +76,7 @@ model Order {
   createdAt       DateTime    @default(now())
   editVersion     Int         @default(1)
   lastSentVersion Int         @default(0)
+  source          String      @default("WEBSITE")
   user            User        @relation(fields: [userId], references: [id])
   items           OrderItem[]
   

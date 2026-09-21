@@ -114,6 +114,7 @@ export async function POST(request) {
         paymentMethod: body.paymentMethod || null,
         paymentDetails: body.paymentDetails || null,
         status: 'PENDING',
+        source: body.source || 'WEBSITE',
         items: {
           create: validatedItems
         }
@@ -184,6 +185,7 @@ export async function GET(request) {
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50')));
     const status = searchParams.get('status') || 'ALL';
+    const source = searchParams.get('source') || 'ALL';
     const search = sanitizeString(searchParams.get('search') || '', 100);
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
@@ -193,6 +195,9 @@ export async function GET(request) {
     const where = {};
     if (status !== 'ALL') {
       where.status = status;
+    }
+    if (source !== 'ALL') {
+      where.source = source;
     }
     
     if (startDate || endDate) {

@@ -18,6 +18,7 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
 
   // Filters
   const [orderFilter, setOrderFilter] = useState('ALL');
+  const [sourceFilter, setSourceFilter] = useState('ALL');
   const [orderSearch, setOrderSearch] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -44,10 +45,10 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
 
   // Fetch Orders with React Query
   const { data, isLoading } = useQuery({
-    queryKey: ['orders', { page, limit, orderFilter, orderSearch, startDate, endDate }],
+    queryKey: ['orders', { page, limit, orderFilter, sourceFilter, orderSearch, startDate, endDate }],
     queryFn: async () => {
       const params = new URLSearchParams({
-        page, limit, status: orderFilter, search: orderSearch, startDate, endDate
+        page, limit, status: orderFilter, source: sourceFilter, search: orderSearch, startDate, endDate
       });
       const res = await fetch(`/api/orders?${params.toString()}`);
       if (!res.ok) throw new Error('Network response was not ok');
@@ -541,28 +542,40 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
       </div>
 
       {/* Segmented Control for Filters */}
-      <div style={{ display: 'flex', backgroundColor: theme.inputBg, padding: '5px', borderRadius: '30px', border: `1px solid ${theme.border}`, flexWrap: 'wrap', marginBottom: '30px', width: 'fit-content' }}>
-        {['ALL', 'PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map(f => (
-          <button 
-            key={f}
-            className="filter-btn"
-            onClick={() => { setOrderFilter(f); setPage(1); }}
-            style={{ 
-              padding: '8px 18px', 
-              borderRadius: '25px', 
-              cursor: 'pointer', 
-              fontWeight: 'bold', 
-              fontSize: '0.85rem',
-              backgroundColor: orderFilter === f ? theme.cardBg : 'transparent',
-              color: orderFilter === f ? (f === 'ALL' ? theme.textPrimary : (f === 'PENDING' ? theme.accent : f === 'SHIPPED' ? theme.shipped : f === 'DELIVERED' ? theme.success : f === 'CANCELLED' ? theme.cancelled : theme.info)) : theme.textSecondary,
-              border: 'none',
-              boxShadow: orderFilter === f ? `0 2px 8px rgba(0,0,0,${isDarkMode ? '0.3' : '0.1'})` : 'none',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-          >
-            {f}
-          </button>
-        ))}
+      <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', backgroundColor: theme.inputBg, padding: '5px', borderRadius: '30px', border: `1px solid ${theme.border}` }}>
+          {['ALL', 'PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map(f => (
+            <button 
+              key={f}
+              className="filter-btn"
+              onClick={() => { setOrderFilter(f); setPage(1); }}
+              style={{ 
+                padding: '8px 18px', 
+                borderRadius: '25px', 
+                cursor: 'pointer', 
+                fontWeight: 'bold', 
+                fontSize: '0.85rem',
+                backgroundColor: orderFilter === f ? theme.cardBg : 'transparent',
+                color: orderFilter === f ? (f === 'ALL' ? theme.textPrimary : (f === 'PENDING' ? theme.accent : f === 'SHIPPED' ? theme.shipped : f === 'DELIVERED' ? theme.success : f === 'CANCELLED' ? theme.cancelled : theme.info)) : theme.textSecondary,
+                border: 'none',
+                boxShadow: orderFilter === f ? `0 2px 8px rgba(0,0,0,${isDarkMode ? '0.3' : '0.1'})` : 'none',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              }}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+        
+        <select 
+          value={sourceFilter} 
+          onChange={(e) => { setSourceFilter(e.target.value); setPage(1); }}
+          style={{ ...styles.searchInputStyle, width: 'auto', minWidth: '150px' }}
+        >
+          <option value="ALL">All Sources</option>
+          <option value="WEBSITE">🌐 Website Orders</option>
+          <option value="POS">🏬 Admin POS Orders</option>
+        </select>
       </div>
 
       {/* Bulk Actions Bar */}
@@ -621,6 +634,11 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
                     <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: theme.textSecondary, textTransform: 'uppercase', letterSpacing: '1px' }}>
                       {formatOrderNumber(order.orderNumber, order.createdAt)}
                     </span>
+                    {order.source === 'POS' ? (
+                      <span style={{ background: '#2196F3', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>🏬 POS</span>
+                    ) : (
+                      <span style={{ background: '#00E676', color: 'black', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>🌐 WEBSITE</span>
+                    )}
                   </div>
                   <div>{statusBadge(order.status, theme)}</div>
                   <div style={{ marginTop: '4px' }}>{paymentBadge(order.paymentStatus, theme)}</div>
