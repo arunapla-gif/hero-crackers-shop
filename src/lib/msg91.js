@@ -13,8 +13,10 @@ const INTEGRATED_NUMBER = "916385830419"; // Hero Crackers Number
  * @param {string|number} orderId - The generated order ID
  * @param {string|number} totalAmount - The total order amount
  * @param {string} [actualCustomerPhone] - The original customer phone (used for formatting)
+ * @param {number} [orderNumber] - The integer order number
+ * @param {string} [shippingAddress] - The shipping address to extract city
  */
-export async function sendWhatsAppOrderConfirmation(customerPhone, customerName, orderId, totalAmount, actualCustomerPhone) {
+export async function sendWhatsAppOrderConfirmation(customerPhone, customerName, orderId, totalAmount, actualCustomerPhone, orderNumber, shippingAddress) {
   if (!MSG91_AUTH_KEY) {
     console.warn('MSG91_AUTH_KEY is not defined in environment variables. Skipping WhatsApp notification.');
     return { success: false, error: 'MSG91_AUTH_KEY missing' };
@@ -33,13 +35,23 @@ export async function sendWhatsAppOrderConfirmation(customerPhone, customerName,
   }
   const estimateUrl = `${baseUrl}/api/orders/${orderId}/estimate`;
 
-  // Build the display string: Estimate - OrderNo (first 5 chars) - Last 3 digits - Name
+  // Extract city from shippingAddress (assumes last part after comma is city)
+  let city = 'City';
+  if (shippingAddress) {
+    city = shippingAddress.includes(',') ? shippingAddress.split(',').pop().trim() : shippingAddress.trim();
+  }
+  const cleanCity = city.replace(/[^a-zA-Z0-9\s]/g, "").trim().substring(0, 15).replace(/\s+/g, "_");
+
+  // Build the display string: Estimate - OrderNo(Last 3 digits) - Name - City
   const phoneToUse = actualCustomerPhone || customerPhone;
   const last3 = String(phoneToUse).replace(/[^0-9]/g, '').slice(-3) || '000';
   const cleanName = (customerName || "Customer").replace(/[^a-zA-Z0-9\s]/g, "").trim().substring(0, 15).replace(/\s+/g, "_");
-  const displayString = `Estimate-${String(orderId).substring(0, 5)}-${last3}-${cleanName}`;
+  
+  const displayOrderNo = orderNumber ? String(orderNumber) : String(orderId).substring(0, 5);
+  const displayString = `Estimate-${displayOrderNo}(${last3})-${cleanName}-${cleanCity}`;
 
   // The components mapping assumes your MSG91 template 'order_confirmation' 
+
   // uses {{1}} for Name, {{2}} for Order ID, and {{3}} for Amount,
   // AND has a Document header.
   const payload = {

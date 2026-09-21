@@ -29,7 +29,15 @@ export async function GET(request, { params }) {
     const customerName = order.user?.name || 'Customer';
     const last3 = order.customerPhone ? String(order.customerPhone).replace(/[^0-9]/g, '').slice(-3) : '000';
     const cleanName = customerName.replace(/[^a-zA-Z0-9\s]/g, "").trim().substring(0, 15).replace(/\s+/g, "_");
-    const displayString = `Estimate-${String(order.id).substring(0, 5)}-${last3}-${cleanName}`;
+    
+    let city = 'City';
+    if (order.shippingAddress) {
+      city = order.shippingAddress.includes(',') ? order.shippingAddress.split(',').pop().trim() : order.shippingAddress.trim();
+    }
+    const cleanCity = city.replace(/[^a-zA-Z0-9\s]/g, "").trim().substring(0, 15).replace(/\s+/g, "_");
+    
+    const displayOrderNo = order.orderNumber ? String(order.orderNumber) : String(order.id).substring(0, 5);
+    const displayString = `Estimate-${displayOrderNo}(${last3})-${cleanName}-${cleanCity}`;
 
     // Return the native PDF file
     return new NextResponse(pdfBuffer, {
