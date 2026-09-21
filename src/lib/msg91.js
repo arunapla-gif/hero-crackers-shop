@@ -43,12 +43,10 @@ export async function sendWhatsAppOrderConfirmation(customerPhone, customerName,
   const cleanCity = city.replace(/[^a-zA-Z0-9\s]/g, "").trim().substring(0, 15).replace(/\s+/g, "_");
 
   // Build the display string: Estimate - OrderNo(Last 3 digits) - Name - City
-  const phoneToUse = actualCustomerPhone || customerPhone;
-  const last3 = String(phoneToUse).replace(/[^0-9]/g, '').slice(-3) || '000';
   const cleanName = (customerName || "Customer").replace(/[^a-zA-Z0-9\s]/g, "").trim().substring(0, 15).replace(/\s+/g, "_");
   
-  const displayOrderNo = orderNumber ? String(orderNumber) : String(orderId).substring(0, 5);
-  const displayString = `Estimate-${displayOrderNo}(${last3})-${cleanName}-${cleanCity}`;
+  const displayOrderNo = orderNumber ? String(orderNumber).padStart(3, '0').slice(-3) : String(orderId).substring(0, 3);
+  const displayString = `Estimate-${displayOrderNo}-${cleanName}-${cleanCity}`;
 
   // The components mapping assumes your MSG91 template 'order_confirmation' 
 

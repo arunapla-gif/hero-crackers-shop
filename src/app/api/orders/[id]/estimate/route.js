@@ -27,7 +27,6 @@ export async function GET(request, { params }) {
     const pdfBuffer = await generateInvoicePDFBuffer(order, products);
 
     const customerName = order.user?.name || 'Customer';
-    const last3 = order.customerPhone ? String(order.customerPhone).replace(/[^0-9]/g, '').slice(-3) : '000';
     const cleanName = customerName.replace(/[^a-zA-Z0-9\s]/g, "").trim().substring(0, 15).replace(/\s+/g, "_");
     
     let city = 'City';
@@ -36,8 +35,8 @@ export async function GET(request, { params }) {
     }
     const cleanCity = city.replace(/[^a-zA-Z0-9\s]/g, "").trim().substring(0, 15).replace(/\s+/g, "_");
     
-    const displayOrderNo = order.orderNumber ? String(order.orderNumber) : String(order.id).substring(0, 5);
-    const displayString = `Estimate-${displayOrderNo}(${last3})-${cleanName}-${cleanCity}`;
+    const displayOrderNo = order.orderNumber ? String(order.orderNumber).padStart(3, '0').slice(-3) : String(order.id).substring(0, 3);
+    const displayString = `Estimate-${displayOrderNo}-${cleanName}-${cleanCity}`;
 
     // Return the native PDF file
     return new NextResponse(pdfBuffer, {
