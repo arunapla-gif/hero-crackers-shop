@@ -151,7 +151,7 @@ export async function POST(request) {
     }
 
     // 7. Send WhatsApp Notification via MSG91 (non-blocking)
-    if (order.customerPhone) {
+    if (order.customerPhone && !body.skipWhatsApp) {
       sendWhatsAppOrderConfirmation(
         order.customerPhone,
         customerName || 'Customer',
