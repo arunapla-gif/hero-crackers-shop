@@ -24,13 +24,11 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    if (!order.customerPhone) {
-      return NextResponse.json({ error: 'Customer phone number is missing' }, { status: 400 });
-    }
-
-    // 2. Trigger MSG91 API
+    // 2. Trigger MSG91 API (Sent to fixed group/staff number instead of customer)
+    const fixedNumber = '918870904994';
+    
     const result = await sendWhatsAppOrderConfirmation(
-      order.customerPhone,
+      fixedNumber,
       order.user?.name || 'Customer',
       order.id,
       order.totalAmount
