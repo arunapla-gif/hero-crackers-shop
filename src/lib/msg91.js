@@ -38,7 +38,14 @@ export async function sendWhatsAppOrderConfirmation(customerPhone, customerName,
   // Extract city from shippingAddress (assumes last part after comma is city)
   let city = 'City';
   if (shippingAddress) {
-    city = shippingAddress.includes(',') ? shippingAddress.split(',').pop().trim() : shippingAddress.trim();
+    const parts = shippingAddress.split(',').map(s => s.trim());
+    if (parts.length >= 3) {
+      city = parts[parts.length - 2]; // Second to last is City
+    } else if (parts.length === 2) {
+      city = parts[1]; // Last is City
+    } else {
+      city = parts[0];
+    }
   }
   const cleanCity = city.replace(/[^a-zA-Z0-9\s]/g, "").trim().substring(0, 15).replace(/\s+/g, "_");
 

@@ -15,6 +15,7 @@ export default function CartPage() {
     phone: '',
     address: '',
     city: '',
+    district: '',
     referredBy: ''
   });
 
@@ -38,7 +39,7 @@ export default function CartPage() {
         body: JSON.stringify({
           customerName: customerInfo.name,
           customerPhone: customerInfo.phone,
-          shippingAddress: `${customerInfo.address}, ${customerInfo.city}`,
+          shippingAddress: `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.district}`,
           referredBy: customerInfo.referredBy,
           totalAmount: cartTotal,
           items: cartItems.map(item => ({
@@ -88,11 +89,14 @@ export default function CartPage() {
               <label style={labelStyle}>Phone Number</label>
               <input type="tel" required pattern="[0-9]{10}" title="Please enter a valid 10-digit mobile number" value={customerInfo.phone} onChange={e => setCustomerInfo({...customerInfo, phone: e.target.value})} style={inputStyle} placeholder="10-digit mobile number" />
               
-              <label style={labelStyle}>Delivery Address</label>
-              <textarea required value={customerInfo.address} onChange={e => setCustomerInfo({...customerInfo, address: e.target.value})} style={{...inputStyle, height: '100px', resize: 'vertical'}} placeholder="Full street address with pincode" />
+              <label style={labelStyle}>Address</label>
+              <textarea required value={customerInfo.address} onChange={e => setCustomerInfo({...customerInfo, address: e.target.value})} style={{...inputStyle, height: '100px', resize: 'vertical'}} placeholder="Address" />
 
               <label style={labelStyle}>City</label>
-              <input type="text" required value={customerInfo.city} onChange={e => setCustomerInfo({...customerInfo, city: e.target.value})} style={inputStyle} placeholder="E.g. Chennai, Bangalore" />
+              <input type="text" required value={customerInfo.city} onChange={e => setCustomerInfo({...customerInfo, city: e.target.value})} style={inputStyle} placeholder="E.g. Sivakasi, Chennai" />
+
+              <label style={labelStyle}>District</label>
+              <input type="text" required value={customerInfo.district} onChange={e => setCustomerInfo({...customerInfo, district: e.target.value})} style={inputStyle} placeholder="E.g. Virudhunagar" />
 
               <label style={labelStyle}>Referred By (Optional)</label>
               <input type="text" value={customerInfo.referredBy} onChange={e => setCustomerInfo({...customerInfo, referredBy: e.target.value})} style={inputStyle} placeholder="Name of agent or friend" />

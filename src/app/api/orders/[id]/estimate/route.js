@@ -31,7 +31,14 @@ export async function GET(request, { params }) {
     
     let city = 'City';
     if (order.shippingAddress) {
-      city = order.shippingAddress.includes(',') ? order.shippingAddress.split(',').pop().trim() : order.shippingAddress.trim();
+      const parts = order.shippingAddress.split(',').map(s => s.trim());
+      if (parts.length >= 3) {
+        city = parts[parts.length - 2]; // Second to last is City
+      } else if (parts.length === 2) {
+        city = parts[1]; // Last is City
+      } else {
+        city = parts[0];
+      }
     }
     const cleanCity = city.replace(/[^a-zA-Z0-9\s]/g, "").trim().substring(0, 15).replace(/\s+/g, "_");
     
