@@ -26,12 +26,17 @@ export async function GET(request, { params }) {
     // Generate the PDF buffer
     const pdfBuffer = await generateInvoicePDFBuffer(order, products);
 
+    const customerName = order.user?.name || 'Customer';
+    const last3 = order.customerPhone ? String(order.customerPhone).replace(/[^0-9]/g, '').slice(-3) : '000';
+    const cleanName = customerName.replace(/[^a-zA-Z0-9\s]/g, "").trim().substring(0, 15).replace(/\s+/g, "_");
+    const displayString = `Estimate-${String(order.id).substring(0, 5)}-${last3}-${cleanName}`;
+
     // Return the native PDF file
     return new NextResponse(pdfBuffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="Estimate_${formatOrderNumber(order.orderNumber, order.createdAt)}.pdf"`,
+        'Content-Disposition': `inline; filename="${displayString}.pdf"`,
       },
     });
   } catch (error) {

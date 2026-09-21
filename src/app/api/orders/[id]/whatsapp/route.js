@@ -31,7 +31,8 @@ export async function POST(request, { params }) {
       fixedNumber,
       order.user?.name || 'Customer',
       order.id,
-      order.totalAmount
+      order.totalAmount,
+      order.customerPhone // Pass original phone for formatting
     );
 
     if (!result.success) {

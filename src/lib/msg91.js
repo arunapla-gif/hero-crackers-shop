@@ -12,8 +12,9 @@ const INTEGRATED_NUMBER = "916385830419"; // Hero Crackers Number
  * @param {string} customerName - The customer's name
  * @param {string|number} orderId - The generated order ID
  * @param {string|number} totalAmount - The total order amount
+ * @param {string} [actualCustomerPhone] - The original customer phone (used for formatting)
  */
-export async function sendWhatsAppOrderConfirmation(customerPhone, customerName, orderId, totalAmount) {
+export async function sendWhatsAppOrderConfirmation(customerPhone, customerName, orderId, totalAmount, actualCustomerPhone) {
   if (!MSG91_AUTH_KEY) {
     console.warn('MSG91_AUTH_KEY is not defined in environment variables. Skipping WhatsApp notification.');
     return { success: false, error: 'MSG91_AUTH_KEY missing' };
@@ -31,6 +32,12 @@ export async function sendWhatsAppOrderConfirmation(customerPhone, customerName,
     baseUrl = 'https://www.herocrackers.com';
   }
   const estimateUrl = `${baseUrl}/api/orders/${orderId}/estimate`;
+
+  // Build the display string: Estimate - OrderNo (first 5 chars) - Last 3 digits - Name
+  const phoneToUse = actualCustomerPhone || customerPhone;
+  const last3 = String(phoneToUse).replace(/[^0-9]/g, '').slice(-3) || '000';
+  const cleanName = (customerName || "Customer").replace(/[^a-zA-Z0-9\s]/g, "").trim().substring(0, 15).replace(/\s+/g, "_");
+  const displayString = `Estimate-${String(orderId).substring(0, 5)}-${last3}-${cleanName}`;
 
   // The components mapping assumes your MSG91 template 'order_confirmation' 
   // uses {{1}} for Name, {{2}} for Order ID, and {{3}} for Amount,
@@ -54,7 +61,7 @@ export async function sendWhatsAppOrderConfirmation(customerPhone, customerName,
               "header_1": {
                 "type": "document",
                 "value": estimateUrl,
-                "filename": `Estimate_${orderId.substring(0, 8)}.pdf`
+                "filename": `${displayString}.pdf`
               },
               "body_1": {
                 "type": "text",
@@ -62,7 +69,7 @@ export async function sendWhatsAppOrderConfirmation(customerPhone, customerName,
               },
               "body_2": {
                 "type": "text",
-                "value": String(orderId)
+                "value": displayString
               },
               "body_3": {
                 "type": "text",
