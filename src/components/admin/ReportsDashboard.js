@@ -9,6 +9,7 @@ export default function ReportsDashboard({ isDarkMode, products }) {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [activeReport, setActiveReport] = useState('SALES'); // SALES, ITEMS, AGENTS, TRANSPORT, PNL
+  const [selectedAgentDetails, setSelectedAgentDetails] = useState(null);
 
   // Fetch Report Data
   const { data, isLoading } = useQuery({
@@ -69,10 +70,11 @@ export default function ReportsDashboard({ isDarkMode, products }) {
     validOrders.forEach(order => {
       const agentName = order.referredBy || 'Direct (No Agent)';
       if (!agentMap[agentName]) {
-        agentMap[agentName] = { name: agentName, orderCount: 0, totalRevenue: 0 };
+        agentMap[agentName] = { name: agentName, orderCount: 0, totalRevenue: 0, orders: [] };
       }
       agentMap[agentName].orderCount += 1;
       agentMap[agentName].totalRevenue += order.totalAmount;
+      agentMap[agentName].orders.push(order);
     });
     return Object.values(agentMap).sort((a, b) => b.totalRevenue - a.totalRevenue);
   }, [validOrders]);
@@ -285,7 +287,13 @@ export default function ReportsDashboard({ isDarkMode, products }) {
                       {agentPerformance.map((agent, idx) => (
                         <tr key={agent.name} style={{ borderBottom: `1px solid ${theme.border}` }}>
                           <td style={{ padding: '15px', color: theme.textSecondary }}>#{idx + 1}</td>
-                          <td style={{ padding: '15px', color: theme.textPrimary, fontWeight: 'bold' }}>{agent.name}</td>
+                          <td 
+                            style={{ padding: '15px', color: theme.primary, fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}
+                            onClick={() => setSelectedAgentDetails(agent)}
+                            title="Click to view detailed orders"
+                          >
+                            {agent.name}
+                          </td>
                           <td style={{ padding: '15px', color: theme.textPrimary, textAlign: 'center' }}>{agent.orderCount}</td>
                           <td style={{ padding: '15px', color: theme.accent, textAlign: 'right', fontWeight: 'bold', fontSize: '1.1rem' }}>₹{agent.totalRevenue.toLocaleString()}</td>
                         </tr>
@@ -293,6 +301,49 @@ export default function ReportsDashboard({ isDarkMode, products }) {
                     </tbody>
                   </table>
                 </div>
+
+                {selectedAgentDetails && (
+                  <div style={{ marginTop: '30px', padding: '20px', backgroundColor: theme.inputBg, borderRadius: '8px', border: `1px solid ${theme.border}` }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                      <h4 style={{ margin: 0, color: theme.textPrimary }}>Orders for {selectedAgentDetails.name}</h4>
+                      <button onClick={() => setSelectedAgentDetails(null)} style={{ background: 'none', border: 'none', color: theme.danger, cursor: 'pointer', fontWeight: 'bold', padding: '5px' }}>Close ✕</button>
+                    </div>
+                    <div className="table-responsive" style={{ overflowX: 'auto', borderRadius: '4px', border: `1px solid ${theme.border}` }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+                        <thead style={{ backgroundColor: theme.cardBg }}>
+                          <tr>
+                            <th style={{ padding: '10px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>S.No</th>
+                            <th style={{ padding: '10px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Order No</th>
+                            <th style={{ padding: '10px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Customer Name</th>
+                            <th style={{ padding: '10px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>City</th>
+                            <th style={{ padding: '10px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}`, textAlign: 'right' }}>Order Value</th>
+                            <th style={{ padding: '10px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Notes/Remarks</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedAgentDetails.orders.map((o, i) => {
+                            let city = '';
+                            if (o.shippingAddress) {
+                              const parts = o.shippingAddress.split(',').map(s => s.trim());
+                              if (parts.length >= 3) city = parts[parts.length - 2];
+                              else if (parts.length > 0) city = parts[parts.length - 1];
+                            }
+                            return (
+                              <tr key={o.id} style={{ borderBottom: `1px solid ${theme.border}` }}>
+                                <td style={{ padding: '10px', color: theme.textSecondary }}>{i + 1}</td>
+                                <td style={{ padding: '10px', color: theme.textPrimary }}>order-2026-27-{String(o.orderNumber).padStart(5, '0')}</td>
+                                <td style={{ padding: '10px', color: theme.textPrimary, fontWeight: 'bold' }}>{o.user?.name || o.customerName || 'Walk-in'}</td>
+                                <td style={{ padding: '10px', color: theme.textSecondary }}>{city || '-'}</td>
+                                <td style={{ padding: '10px', color: theme.textPrimary, textAlign: 'right', fontWeight: 'bold' }}>₹{o.totalAmount.toLocaleString()}</td>
+                                <td style={{ padding: '10px', color: theme.textSecondary }}>{o.remarks || '-'}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
