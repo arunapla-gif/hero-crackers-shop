@@ -128,3 +128,92 @@ export async function generateInvoicePDFBuffer(order, products) {
     throw err;
   }
 }
+
+export async function generateAgentSpecificPDFBuffer(agentDetails) {
+  try {
+    const fonts = {
+      Helvetica: {
+        normal: 'Helvetica',
+        bold: 'Helvetica-Bold',
+        italics: 'Helvetica-Oblique',
+        bolditalics: 'Helvetica-BoldOblique'
+      }
+    };
+    
+    const pdfMake = require('pdfmake');
+    pdfMake.fonts = fonts;
+    
+    let totalValue = 0;
+    
+    const bodyItems = agentDetails.orders.map((o, idx) => {
+      let city = '-';
+      if (o.shippingAddress) {
+        const parts = o.shippingAddress.split(',').map(s => s.trim());
+        if (parts.length >= 3) city = parts[parts.length - 2];
+        else if (parts.length > 0) city = parts[parts.length - 1];
+      }
+      
+      const customerName = o.user?.name || o.customerName || 'Walk-in';
+      const orderNo = `order-2026-27-${String(o.orderNumber).padStart(5, '0')}`;
+      totalValue += o.totalAmount;
+
+      return [
+        { text: (idx + 1).toString(), alignment: 'center', margin: [0, 4] },
+        { text: orderNo, margin: [0, 4] },
+        { text: customerName, margin: [0, 4] },
+        { text: city, margin: [0, 4] },
+        { text: o.status, margin: [0, 4] },
+        { text: `Rs ${o.totalAmount.toLocaleString()}`, alignment: 'right', bold: true, margin: [0, 4] }
+      ];
+    });
+
+    const docDefinition = {
+      defaultStyle: { font: 'Helvetica', fontSize: 9 },
+      pageSize: 'A4',
+      pageMargins: [ 30, 30, 30, 30 ],
+      content: [
+        { text: 'HERO CRACKERS', style: 'header', alignment: 'center', color: '#B71C1C', margin: [0, 0, 0, 2] },
+        { text: 'Sivakasi', alignment: 'center', color: '#555555', fontSize: 10, margin: [0, 0, 0, 8] },
+        { text: `${agentDetails.name}`, alignment: 'center', color: '#B71C1C', bold: true, fontSize: 16, margin: [0, 0, 0, 8] },
+        { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 535, y2: 0, lineWidth: 1.5, lineColor: '#B71C1C' }], margin: [0, 0, 0, 15] },
+        
+        {
+          table: {
+            headerRows: 1,
+            widths: ['5%', '20%', '25%', '20%', '15%', '15%'],
+            body: [
+              [
+                { text: 'S.No', bold: true, alignment: 'center', fillColor: '#ffebee', margin: [0, 4] },
+                { text: 'Order No', bold: true, fillColor: '#ffebee', margin: [0, 4] },
+                { text: 'Customer Name', bold: true, fillColor: '#ffebee', margin: [0, 4] },
+                { text: 'City', bold: true, fillColor: '#ffebee', margin: [0, 4] },
+                { text: 'Status', bold: true, fillColor: '#ffebee', margin: [0, 4] },
+                { text: 'Value', bold: true, alignment: 'right', fillColor: '#ffebee', margin: [0, 4] }
+              ],
+              ...bodyItems,
+              [
+                { text: 'Total Revenue:', colSpan: 5, alignment: 'right', fontSize: 11, bold: true, margin: [0, 8] }, {}, {}, {}, {},
+                { text: `Rs ${totalValue.toLocaleString()}`, alignment: 'right', fontSize: 11, bold: true, color: '#B71C1C', margin: [0, 8] }
+              ]
+            ]
+          }
+        }
+      ],
+      styles: {
+        header: { fontSize: 20, bold: true }
+      }
+    };
+
+    return new Promise((resolve, reject) => {
+      try {
+        const pdfDoc = pdfMake.createPdf(docDefinition);
+        pdfDoc.getBuffer().then(resolve).catch(reject);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  } catch (err) {
+    console.error('Agent PDF Generation Error:', err);
+    throw err;
+  }
+}

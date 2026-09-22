@@ -128,13 +128,87 @@ export async function sendWhatsAppOrderConfirmation(customerPhone, customerName,
 /**
  * Sends an automated copy of new estimate bookings to the business admin phone.
  */
+
+
 export async function sendAdminOrderAlert(customerName, customerPhone, orderId, totalAmount) {
-  const adminPhone = process.env.ADMIN_ALERT_PHONE || '919047488862';
+  const adminPhone = process.env.ADMIN_ALERT_PHONE || '918870904994';
   return sendWhatsAppOrderConfirmation(
     adminPhone,
     `New Order: ${customerName} (${customerPhone})`,
     orderId,
     totalAmount
   );
+}
+
+export async function sendWhatsAppAgentReport(adminPhone, agentName, totalValue, pdfUrl) {
+  if (!MSG91_AUTH_KEY) {
+    console.warn('MSG91_AUTH_KEY is not defined in environment variables. Skipping WhatsApp notification.');
+    return { success: false, error: 'MSG91_AUTH_KEY missing' };
+  }
+
+  // The components mapping assumes your MSG91 template 'order_confirmation' 
+  // uses {{1}} for Name, {{2}} for Order ID, and {{3}} for Amount,
+  // AND has a Document header. We will reuse it for the agent report to avoid creating a new template.
+  const payload = {
+    "integrated_number": INTEGRATED_NUMBER,
+    "content_type": "template",
+    "payload": {
+      "messaging_product": "whatsapp",
+      "type": "template",
+      "template": {
+        "name": "order_confirmation",
+        "language": {
+          "code": "en",
+          "policy": "deterministic"
+        },
+        "to_and_components": [
+          {
+            "to": [adminPhone],
+            "components": {
+              "header_1": {
+                "type": "document",
+                "value": pdfUrl,
+                "filename": `Report_${agentName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`
+              },
+              "body_1": {
+                "type": "text",
+                "value": "Admin"
+              },
+              "body_2": {
+                "type": "text",
+                "value": `Agent Report: ${agentName}`
+              },
+              "body_3": {
+                "type": "text",
+                "value": String(totalValue)
+              }
+            }
+          }
+        ]
+      }
+    }
+  };
+
+  try {
+    const response = await fetch('https://api.msg91.com/api/v5/whatsapp/whatsapp-outbound-message/bulk/', {
+      method: 'POST',
+      headers: {
+        'authkey': MSG91_AUTH_KEY,
+        'accept': 'application/json',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+    
+    if (response.ok && !result.hasError) {
+      return { success: true };
+    } else {
+      return { success: false, error: result };
+    }
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 }
 

@@ -10,6 +10,7 @@ export default function ReportsDashboard({ isDarkMode, products }) {
   const [endDate, setEndDate] = useState('');
   const [activeReport, setActiveReport] = useState('SALES'); // SALES, ITEMS, AGENTS, TRANSPORT, PNL
   const [selectedAgentDetails, setSelectedAgentDetails] = useState(null);
+  const [loadingAction, setLoadingAction] = useState({ id: null, action: null });
 
   // Fetch Report Data
   const { data, isLoading } = useQuery({
@@ -116,6 +117,32 @@ export default function ReportsDashboard({ isDarkMode, products }) {
     start.setDate(start.getDate() - daysAgo);
     setEndDate(end.toISOString().split('T')[0]);
     setStartDate(start.toISOString().split('T')[0]);
+  };
+
+  const handleWhatsAppAgentReport = async (agent) => {
+    setLoadingAction({ id: agent.name, action: 'whatsapp' });
+    try {
+      const res = await fetch('/api/reports/agent-pdf/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agentName: agent.name,
+          startDate: startDate || undefined,
+          endDate: endDate || undefined,
+          totalValue: agent.totalRevenue
+        })
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        let errMsg = errorData.error || 'Failed to trigger WhatsApp message';
+        throw new Error(errMsg);
+      }
+      alert(`Report sent to Admin WhatsApp successfully!`);
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setLoadingAction({ id: null, action: null });
+    }
   };
 
   const setToday = () => {
@@ -304,9 +331,18 @@ export default function ReportsDashboard({ isDarkMode, products }) {
 
                 {selectedAgentDetails && (
                   <div style={{ marginTop: '30px', padding: '20px', backgroundColor: theme.inputBg, borderRadius: '8px', border: `1px solid ${theme.border}` }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
                       <h4 style={{ margin: 0, color: theme.textPrimary }}>Orders for {selectedAgentDetails.name}</h4>
-                      <button onClick={() => setSelectedAgentDetails(null)} style={{ background: 'none', border: 'none', color: theme.danger, cursor: 'pointer', fontWeight: 'bold', padding: '5px' }}>Close ✕</button>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <button 
+                          onClick={() => handleWhatsAppAgentReport(selectedAgentDetails)}
+                          disabled={loadingAction.id === selectedAgentDetails.name && loadingAction.action === 'whatsapp'}
+                          style={{ ...styles.btnPrimary, padding: '5px 15px', fontSize: '0.85rem' }}
+                        >
+                          {loadingAction.id === selectedAgentDetails.name ? 'Sending...' : '📲 Send Report to Admin'}
+                        </button>
+                        <button onClick={() => setSelectedAgentDetails(null)} style={{ background: 'none', border: 'none', color: theme.danger, cursor: 'pointer', fontWeight: 'bold', padding: '5px' }}>Close ✕</button>
+                      </div>
                     </div>
                     <div className="table-responsive" style={{ overflowX: 'auto', borderRadius: '4px', border: `1px solid ${theme.border}` }}>
                       <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
@@ -316,6 +352,7 @@ export default function ReportsDashboard({ isDarkMode, products }) {
                             <th style={{ padding: '10px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Order No</th>
                             <th style={{ padding: '10px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Customer Name</th>
                             <th style={{ padding: '10px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>City</th>
+                            <th style={{ padding: '10px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Status</th>
                             <th style={{ padding: '10px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}`, textAlign: 'right' }}>Order Value</th>
                             <th style={{ padding: '10px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Notes/Remarks</th>
                           </tr>
@@ -334,6 +371,18 @@ export default function ReportsDashboard({ isDarkMode, products }) {
                                 <td style={{ padding: '10px', color: theme.textPrimary }}>order-2026-27-{String(o.orderNumber).padStart(5, '0')}</td>
                                 <td style={{ padding: '10px', color: theme.textPrimary, fontWeight: 'bold' }}>{o.user?.name || o.customerName || 'Walk-in'}</td>
                                 <td style={{ padding: '10px', color: theme.textSecondary }}>{city || '-'}</td>
+                                <td style={{ padding: '10px' }}>
+                                  <span style={{ 
+                                    padding: '4px 8px', 
+                                    borderRadius: '12px', 
+                                    fontSize: '0.75rem', 
+                                    fontWeight: 'bold',
+                                    backgroundColor: o.status === 'DELIVERED' ? theme.success + '20' : o.status === 'SHIPPED' ? theme.shipped + '20' : o.status === 'CANCELLED' ? theme.danger + '20' : theme.info + '20',
+                                    color: o.status === 'DELIVERED' ? theme.success : o.status === 'SHIPPED' ? theme.shipped : o.status === 'CANCELLED' ? theme.danger : theme.info 
+                                  }}>
+                                    {o.status}
+                                  </span>
+                                </td>
                                 <td style={{ padding: '10px', color: theme.textPrimary, textAlign: 'right', fontWeight: 'bold' }}>₹{o.totalAmount.toLocaleString()}</td>
                                 <td style={{ padding: '10px', color: theme.textSecondary }}>{o.remarks || '-'}</td>
                               </tr>
