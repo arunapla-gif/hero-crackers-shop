@@ -126,6 +126,9 @@
 }
 
 .admin-btn-primary {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
   padding: 12px 24px;
   background-color: var(--admin-accent);
   color: #fff;
@@ -143,6 +146,9 @@
 }
 
 .admin-theme.dark-mode .admin-btn-primary {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
   box-shadow: 0 4px 10px rgba(245, 158, 11, 0.25);
 }
 
@@ -170,6 +176,9 @@
 }
 
 .admin-btn-secondary {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
   background-color: transparent;
   color: var(--admin-text-primary);
   border: 1px solid var(--admin-border);
@@ -725,6 +734,9 @@
   cursor: pointer;
   font-size: 0.9rem;
   transition: all 0.2s;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .admin-table-action-btn:hover {
@@ -746,6 +758,9 @@
   box-shadow: none;
   cursor: pointer;
   transition: opacity 0.2s;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .admin-btn-text:hover {
   opacity: 0.7;
