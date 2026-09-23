@@ -403,8 +403,6 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
       </div>
 
       <OrderFilters
-        theme={theme}
-        styles={styles}
         isDarkMode={isDarkMode}
         orderFilter={orderFilter}
         setOrderFilter={setOrderFilter}
@@ -430,8 +428,6 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
       ) : (
         <OrderTable 
           orders={orders}
-          theme={theme}
-          styles={styles}
           selectedOrders={selectedOrders}
           handleSelectOrder={handleSelectOrder}
           expandedOrderId={expandedOrderId}

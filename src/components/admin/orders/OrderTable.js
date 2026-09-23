@@ -2,8 +2,6 @@ import OrderTableRow from './OrderTableRow';
 
 export default function OrderTable({
   orders,
-  theme,
-  styles,
   selectedOrders,
   handleSelectOrder,
   expandedOrderId,
@@ -34,8 +32,6 @@ export default function OrderTable({
           <OrderTableRow
             key={order.id}
             order={order}
-            theme={theme}
-            styles={styles}
             isSelected={selectedOrders.includes(order.id)}
             onSelectOrder={handleSelectOrder}
             expanded={expandedOrderId === order.id}
