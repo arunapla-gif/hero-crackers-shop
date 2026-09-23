@@ -12,6 +12,8 @@ export const darkTheme = {
   info: '#3b82f6',
   shipped: '#8b5cf6',
   cancelled: '#ef4444',
+  confirmed: '#0ea5e9',
+  packed: '#f59e0b',
 };
 
 export const lightTheme = {
@@ -28,6 +30,8 @@ export const lightTheme = {
   info: '#2563eb',
   shipped: '#7c3aed',
   cancelled: '#dc2626',
+  confirmed: '#0284c7',
+  packed: '#d97706',
 };
 
 export const getTheme = (isDarkMode) => isDarkMode ? darkTheme : lightTheme;
@@ -132,7 +136,9 @@ export const getStyles = (theme, isDarkMode) => ({
 export const statusBadge = (status, theme) => {
   let color = theme.textSecondary;
   if(status === 'PENDING') color = theme.accent;
+  if(status === 'CONFIRMED') color = theme.confirmed;
   if(status === 'PROCESSING') color = theme.info;
+  if(status === 'PACKED') color = theme.packed;
   if(status === 'SHIPPED') color = theme.shipped;
   if(status === 'DELIVERED') color = theme.success;
   if(status === 'CANCELLED') color = theme.cancelled;

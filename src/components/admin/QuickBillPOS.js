@@ -1,12 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { getTheme, getStyles } from './theme';
 import { formatOrderNumber } from '@/lib/utils';
 
 
-export default function QuickBillPOS({ isDarkMode, products, categories, references, handleRefreshData, isRefreshing, initialPosState, onClearPosState }) {
-  const theme = getTheme(isDarkMode);
-  const styles = getStyles(theme, isDarkMode);
+export default function QuickBillPOS({ products, categories, references, handleRefreshData, isRefreshing, initialPosState, onClearPosState }) {
   const queryClient = useQueryClient();
 
   const [quickBillCart, setQuickBillCart] = useState({}); // { productId: quantity }
@@ -273,12 +270,12 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
             position: sticky; 
             top: 0; 
             z-index: 50; 
-            background-color: ${theme.cardBg}; 
+            background-color: var(--admin-card-bg); 
             padding: 15px 20px; 
-            border-bottom: 1px solid ${theme.border};
+            border-bottom: 1px solid var(--admin-border);
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 4px 15px rgba(0,0,0,${isDarkMode ? '0.5' : '0.05'});
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             margin: -20px -20px 20px -20px;
           }
           .products-panel { 
@@ -309,7 +306,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
           .qty-controls { 
             width: 100% !important; 
             justify-content: space-between !important; 
-            background-color: ${theme.cardBg};
+            background-color: var(--admin-card-bg);
             padding: 5px;
             border-radius: 10px;
           }
@@ -320,13 +317,14 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
       {/* Sticky Top Bar for Mobile */}
       <div className="mobile-top-bar">
         <div>
-          <div style={{ color: theme.textSecondary, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Cart Total ({Object.keys(quickBillCart).length} items)</div>
-          <div style={{ color: theme.accent, fontWeight: 'bold', fontSize: '1.5rem', lineHeight: '1' }}>₹{quickBillTotal.toLocaleString()}</div>
+          <div style={{ color: 'var(--admin-text-secondary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Cart Total ({Object.keys(quickBillCart).length} items)</div>
+          <div style={{ color: 'var(--admin-accent)', fontWeight: 'bold', fontSize: '1.5rem', lineHeight: '1' }}>₹{quickBillTotal.toLocaleString()}</div>
         </div>
         <button 
           type="button"
           onClick={() => setIsMobileCartView(!isMobileCartView)}
-          style={{ ...styles.btnPrimary, padding: '10px 20px', fontSize: '1rem', backgroundColor: isMobileCartView ? theme.textSecondary : theme.accent, boxShadow: 'none' }}
+          className={`admin-btn-primary ${isMobileCartView ? 'admin-btn-secondary' : ''}`}
+          style={{ padding: '10px 20px', fontSize: '1rem', boxShadow: 'none' }}
         >
           {isMobileCartView ? '← Back to Products' : 'View Cart 🛒'}
         </button>
@@ -335,14 +333,15 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
       <div className="pos-container" style={{ display: 'flex', gap: '30px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
         
         {/* Left Panel: Scrollable Product Matrix */}
-        <div className="products-panel" style={{ flex: '1 1 600px', backgroundColor: theme.cardBg, borderRadius: '16px', border: `1px solid ${theme.border}`, boxShadow: `0 10px 25px rgba(0,0,0,${isDarkMode ? '0.2' : '0.05'})`, padding: '20px', maxHeight: '850px', overflowY: 'auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${theme.border}`, paddingBottom: '15px', marginBottom: '15px' }}>
-            <h2 style={{ color: theme.textPrimary, margin: 0, fontSize: '1.6rem' }}>Product Matrix</h2>
+        <div className="products-panel admin-card" style={{ flex: '1 1 600px', padding: '20px', maxHeight: '850px', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--admin-border)', paddingBottom: '15px', marginBottom: '15px' }}>
+            <h2 style={{ color: 'var(--admin-text-primary)', margin: 0, fontSize: '1.6rem' }}>Product Matrix</h2>
             <button 
               type="button"
               onClick={handleRefreshData} 
               disabled={isRefreshing}
-              style={{ ...styles.btnPrimary, padding: '8px 16px', fontSize: '0.85rem', backgroundColor: theme.info, opacity: isRefreshing ? 0.7 : 1, boxShadow: 'none' }}>
+              className="admin-btn-primary admin-btn-info"
+              style={{ padding: '8px 16px', fontSize: '0.85rem', opacity: isRefreshing ? 0.7 : 1, boxShadow: 'none' }}>
               {isRefreshing ? '🔄 Refreshing...' : '🔄 Refresh Data'}
             </button>
           </div>
@@ -350,32 +349,27 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
           {/* Quick Search Bar */}
           <div style={{ marginBottom: '12px' }}>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <span style={{ position: 'absolute', left: '12px', color: theme.textSecondary, fontSize: '1rem', pointerEvents: 'none' }}>🔍</span>
+              <span style={{ position: 'absolute', left: '12px', color: 'var(--admin-text-secondary)', fontSize: '1rem', pointerEvents: 'none' }}>🔍</span>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search crackers by name or category..."
+                className="admin-search-input"
                 style={{
-                  ...styles.input,
                   paddingLeft: '38px',
                   paddingRight: searchQuery ? '36px' : '12px',
-                  width: '100%',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem'
+                  maxWidth: 'none'
                 }}
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
+                  className="admin-btn-text"
                   style={{
                     position: 'absolute',
                     right: '12px',
-                    background: 'transparent',
-                    border: 'none',
-                    color: theme.textSecondary,
-                    cursor: 'pointer',
                     fontSize: '1rem'
                   }}
                 >
@@ -384,6 +378,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
               )}
             </div>
           </div>
+
 
           {/* Category Filter Pills (Horizontal Scrollable Bar) */}
           <div style={{ 
@@ -397,18 +392,7 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
             <button
               type="button"
               onClick={() => setSelectedCategory('ALL')}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '20px',
-                fontSize: '0.82rem',
-                fontWeight: '600',
-                border: selectedCategory === 'ALL' ? `1px solid ${theme.accent}` : `1px solid ${theme.border}`,
-                backgroundColor: selectedCategory === 'ALL' ? theme.accent : theme.bg,
-                color: selectedCategory === 'ALL' ? '#000' : theme.textPrimary,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.15s ease'
-              }}
+              className={`admin-pill-btn-sm ${selectedCategory === 'ALL' ? 'active' : ''}`}
             >
               All Categories ({products.length})
             </button>
@@ -423,32 +407,11 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
                   key={cat.id}
                   type="button"
                   onClick={() => setSelectedCategory(isSelected ? 'ALL' : cat.id)}
-                  style={{
-                    padding: '6px 14px',
-                    borderRadius: '20px',
-                    fontSize: '0.82rem',
-                    fontWeight: '600',
-                    border: isSelected ? `1px solid ${theme.accent}` : `1px solid ${theme.border}`,
-                    backgroundColor: isSelected ? theme.accent : theme.bg,
-                    color: isSelected ? '#000' : theme.textPrimary,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    transition: 'all 0.15s ease'
-                  }}
+                  className={`admin-pill-btn-sm ${isSelected ? 'active' : ''}`}
                 >
                   <span>{cat.name} ({catProdCount})</span>
                   {cartCount > 0 && (
-                    <span style={{
-                      backgroundColor: isSelected ? '#000' : theme.accent,
-                      color: isSelected ? '#fff' : '#000',
-                      fontSize: '0.72rem',
-                      padding: '1px 6px',
-                      borderRadius: '10px',
-                      fontWeight: 'bold'
-                    }}>
+                    <span className="admin-pill-badge">
                       {cartCount}
                     </span>
                   )}
@@ -459,13 +422,14 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
           
           {/* Categorized Products List */}
           {categorizedProducts.length === 0 ? (
-            <div style={{ padding: '40px 20px', textAlign: 'center', color: theme.textSecondary }}>
+            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--admin-text-secondary)' }}>
               <div style={{ fontSize: '2rem', marginBottom: '10px' }}>🔍</div>
               <p>No products found matching &quot;{searchQuery}&quot;</p>
               <button 
                 type="button" 
                 onClick={() => { setSearchQuery(''); setSelectedCategory('ALL'); }}
-                style={{ ...styles.btnPrimary, marginTop: '10px', padding: '6px 14px', fontSize: '0.85rem' }}
+                className="admin-btn-primary"
+                style={{ marginTop: '10px', padding: '6px 14px', fontSize: '0.85rem' }}
               >
                 Clear Search & Filters
               </button>
@@ -482,47 +446,48 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
                     key={cat.id} 
                     style={{ 
                       borderRadius: '12px', 
-                      border: `1px solid ${theme.border}`,
+                      border: '1px solid var(--admin-border)',
                       overflow: 'hidden',
-                      backgroundColor: theme.bg
+                      backgroundColor: 'var(--admin-bg)'
                     }}
                   >
                     {/* Category Header Bar */}
                     <div
                       onClick={() => toggleCategory(cat.id)}
+                      className="category-header-hover"
                       style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         padding: '10px 16px',
-                        backgroundColor: isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
                         cursor: 'pointer',
                         userSelect: 'none',
-                        borderBottom: isCollapsed ? 'none' : `1px solid ${theme.border}`,
-                        transition: 'background-color 0.15s ease'
+                        borderBottom: isCollapsed ? 'none' : '1px solid var(--admin-border)',
+                        transition: 'background-color 0.15s ease',
+                        backgroundColor: 'var(--admin-input-bg)'
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ color: theme.accent, fontSize: '0.85rem', transition: 'transform 0.2s ease', display: 'inline-block', transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>
+                        <span style={{ color: 'var(--admin-accent)', fontSize: '0.85rem', transition: 'transform 0.2s ease', display: 'inline-block', transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>
                           ▼
                         </span>
-                        <strong style={{ color: theme.textPrimary, fontSize: '1.05rem', letterSpacing: '0.3px' }}>
+                        <strong style={{ color: 'var(--admin-text-primary)', fontSize: '1.05rem', letterSpacing: '0.3px' }}>
                           {cat.name}
                         </strong>
-                        <span style={{ fontSize: '0.78rem', color: theme.textSecondary, backgroundColor: theme.cardBg, padding: '2px 8px', borderRadius: '12px', border: `1px solid ${theme.border}` }}>
+                        <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-secondary)', backgroundColor: 'var(--admin-card-bg)', padding: '2px 8px', borderRadius: '12px', border: '1px solid var(--admin-border)' }}>
                           {group.products.length} {group.products.length === 1 ? 'item' : 'items'}
                         </span>
                       </div>
 
                       {cartCount > 0 && (
                         <span style={{ 
-                          backgroundColor: `${theme.accent}25`, 
-                          color: theme.accent, 
+                          backgroundColor: 'rgba(212,175,55,0.15)', 
+                          color: 'var(--admin-accent)', 
                           fontSize: '0.78rem', 
                           fontWeight: 'bold', 
                           padding: '3px 10px', 
                           borderRadius: '12px',
-                          border: `1px solid ${theme.accent}40`
+                          border: '1px solid rgba(212,175,55,0.4)'
                         }}>
                           {cartCount} in cart
                         </span>
@@ -545,19 +510,19 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
                                 justifyContent: 'space-between', 
                                 alignItems: 'center', 
                                 padding: '10px 14px', 
-                                backgroundColor: qty > 0 ? (isDarkMode ? 'rgba(212,175,55,0.12)' : 'rgba(212,175,55,0.15)') : theme.cardBg, 
+                                backgroundColor: qty > 0 ? 'rgba(212,175,55,0.15)' : 'var(--admin-card-bg)', 
                                 borderRadius: '8px', 
-                                border: qty > 0 ? `1px solid ${theme.accent}` : `1px solid ${theme.border}`,
+                                border: qty > 0 ? '1px solid var(--admin-accent)' : '1px solid var(--admin-border)',
                                 transition: 'all 0.15s ease'
                               }}
                             >
                               <div className="product-info" style={{ flex: 1 }}>
-                                <div style={{ color: theme.textPrimary, fontWeight: '600', fontSize: '1rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                                  <span style={{ color: theme.accent, minWidth: '24px', fontWeight: 'bold' }}>{displayNumber}.</span>
+                                <div style={{ color: 'var(--admin-text-primary)', fontWeight: '600', fontSize: '1rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                                  <span style={{ color: 'var(--admin-accent)', minWidth: '24px', fontWeight: 'bold' }}>{displayNumber}.</span>
                                   <span>{product.name}</span>
                                 </div>
-                                <div style={{ color: theme.textSecondary, fontSize: '0.9rem', marginTop: '3px', paddingLeft: '24px' }}>
-                                  <strong style={{ color: theme.accent }}>₹{product.price}</strong>
+                                <div style={{ color: 'var(--admin-text-secondary)', fontSize: '0.9rem', marginTop: '3px', paddingLeft: '24px' }}>
+                                  <strong style={{ color: 'var(--admin-accent)' }}>₹{product.price}</strong>
                                   {product.basePrice && product.basePrice > product.price && (
                                     <span style={{ textDecoration: 'line-through', marginLeft: '8px', opacity: 0.6, fontSize: '0.8rem' }}>
                                       ₹{product.basePrice}
@@ -566,9 +531,9 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
                                 </div>
                               </div>
                               <div className="qty-controls" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <button type="button" className="qty-btn action-btn" onClick={() => updateQuickBillQty(product.id, -1)} style={styles.qtyBtnStyle}>-</button>
-                                <span style={{ fontSize: '1.15rem', fontWeight: 'bold', color: qty > 0 ? theme.accent : theme.textPrimary, width: '28px', textAlign: 'center' }}>{qty}</span>
-                                <button type="button" className="qty-btn action-btn" onClick={() => updateQuickBillQty(product.id, 1)} style={styles.qtyBtnStyle}>+</button>
+                                <button type="button" className="qty-btn admin-table-action-btn" onClick={() => updateQuickBillQty(product.id, -1)} style={{ padding: '4px 12px', fontSize: '1.2rem', fontWeight: 'bold' }}>-</button>
+                                <span style={{ fontSize: '1.15rem', fontWeight: 'bold', color: qty > 0 ? 'var(--admin-accent)' : 'var(--admin-text-primary)', width: '28px', textAlign: 'center' }}>{qty}</span>
+                                <button type="button" className="qty-btn admin-table-action-btn" onClick={() => updateQuickBillQty(product.id, 1)} style={{ padding: '4px 12px', fontSize: '1.2rem', fontWeight: 'bold' }}>+</button>
                               </div>
                             </div>
                           );
@@ -584,11 +549,11 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
 
       {/* Right Panel: Sticky Cart Summary */}
       <div className="cart-panel" style={{ flex: '1 1 350px', position: 'sticky', top: '20px' }}>
-        <form onSubmit={handleGenerateQuickBill} style={{ backgroundColor: theme.cardBg, borderRadius: '16px', border: `1px solid ${theme.border}`, boxShadow: `0 10px 25px rgba(0,0,0,${isDarkMode ? '0.2' : '0.05'})`, padding: '30px' }}>
+        <form onSubmit={handleGenerateQuickBill} className="admin-card" style={{ padding: '30px' }}>
           
           {initialPosState && (
-            <div style={{ padding: '10px 15px', backgroundColor: initialPosState.type === 'edit' ? `${theme.info}20` : `${theme.accent}20`, borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ color: initialPosState.type === 'edit' ? theme.info : theme.accent, fontWeight: 'bold' }}>
+            <div style={{ padding: '10px 15px', backgroundColor: initialPosState.type === 'edit' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(212,175,55,0.2)', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: initialPosState.type === 'edit' ? 'var(--admin-info)' : 'var(--admin-accent)', fontWeight: 'bold' }}>
                 {initialPosState.type === 'edit' ? `Editing Order #${formatOrderNumber(initialPosState.order.orderNumber, initialPosState.order.createdAt)}` : 
                  initialPosState.type === 'repeat' ? 'Repeating Order (Same Customer)' : 'Duplicating Order (New Customer)'}
               </span>
@@ -596,28 +561,28 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
                 onClearPosState();
                 setQuickBillCart({});
                 setQuickBillCustomer({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '', referredBy: '' });
-              }} style={{ background: 'transparent', border: 'none', color: theme.cancelled, cursor: 'pointer', fontWeight: 'bold' }}>✕ Cancel</button>
+              }} className="admin-btn-text danger" style={{ fontWeight: 'bold' }}>✕ Cancel</button>
             </div>
           )}
 
-          <h2 style={{ color: theme.textPrimary, margin: '0 0 25px 0', fontSize: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
+          <h2 style={{ color: 'var(--admin-text-primary)', margin: '0 0 25px 0', fontSize: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
             <span>Cart Summary</span>
-            <span style={{ color: theme.accent, fontSize: '1.2rem' }}>{Object.keys(quickBillCart).length} Items</span>
+            <span style={{ color: 'var(--admin-accent)', fontSize: '1.2rem' }}>{Object.keys(quickBillCart).length} Items</span>
           </h2>
           
-          <div style={{ maxHeight: '250px', overflowY: 'auto', marginBottom: '20px', borderBottom: `1px solid ${theme.border}`, paddingBottom: '10px' }}>
+          <div style={{ maxHeight: '250px', overflowY: 'auto', marginBottom: '20px', borderBottom: '1px solid var(--admin-border)', paddingBottom: '10px' }}>
             {Object.entries(quickBillCart).length === 0 ? (
-              <div style={{ color: theme.textSecondary, textAlign: 'center', padding: '20px 0' }}>Cart is empty</div>
+              <div style={{ color: 'var(--admin-text-secondary)', textAlign: 'center', padding: '20px 0' }}>Cart is empty</div>
             ) : (
               Object.entries(quickBillCart).map(([id, qty], index) => {
                 const p = allProducts.find(prod => prod.id === id);
                 return (
-                  <div key={id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: theme.textSecondary, fontSize: '0.95rem' }}>
+                  <div key={id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: 'var(--admin-text-secondary)', fontSize: '0.95rem' }}>
                     <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
-                      <span style={{ color: theme.accent, marginRight: '8px', fontWeight: 'bold' }}>{index + 1}.</span>
+                      <span style={{ color: 'var(--admin-accent)', marginRight: '8px', fontWeight: 'bold' }}>{index + 1}.</span>
                       {p?.name}
                     </span>
-                    <span style={{ color: theme.textPrimary, fontWeight: 'bold' }}>{qty} x ₹{p?.price}</span>
+                    <span style={{ color: 'var(--admin-text-primary)', fontWeight: 'bold' }}>{qty} x ₹{p?.price}</span>
                   </div>
                 )
               })
@@ -625,27 +590,29 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
           </div>
 
           {/* Add Custom Item */}
-          <div style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: `1px solid ${theme.border}` }}>
+          <div style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid var(--admin-border)' }}>
             {!isAddingCustom ? (
               <button 
                 type="button" 
                 onClick={() => setIsAddingCustom(true)}
-                style={{ background: 'transparent', border: `1px dashed ${theme.accent}`, color: theme.accent, padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', width: '100%', fontSize: '0.9rem', display: 'flex', justifyContent: 'center', gap: '8px', alignItems: 'center' }}
+                className="admin-btn-secondary"
+                style={{ border: '1px dashed var(--admin-accent)', color: 'var(--admin-accent)', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', width: '100%', fontSize: '0.9rem', display: 'flex', justifyContent: 'center', gap: '8px', alignItems: 'center' }}
               >
                 <span>➕</span> Add Custom Item
               </button>
             ) : (
-              <div style={{ backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', padding: '15px', borderRadius: '10px', border: `1px solid ${theme.border}` }}>
+              <div style={{ backgroundColor: 'var(--admin-input-bg)', padding: '15px', borderRadius: '10px', border: '1px solid var(--admin-border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '0.9rem', color: theme.textSecondary, fontWeight: 'bold' }}>Custom Item</span>
-                  <button type="button" onClick={() => setIsAddingCustom(false)} style={{ background: 'none', border: 'none', color: theme.textSecondary, cursor: 'pointer' }}>✕</button>
+                  <span style={{ fontSize: '0.9rem', color: 'var(--admin-text-secondary)', fontWeight: 'bold' }}>Custom Item</span>
+                  <button type="button" className="admin-btn-text" onClick={() => setIsAddingCustom(false)}>✕</button>
                 </div>
                 <input 
                   type="text" 
                   placeholder="Item Name (e.g. Extra Sparklers)" 
                   value={customItemForm.name}
                   onChange={e => setCustomItemForm(prev => ({ ...prev, name: e.target.value }))}
-                  style={{ ...styles.inputStyle, marginBottom: '8px', padding: '8px 12px' }} 
+                  className="admin-form-input"
+                  style={{ marginBottom: '8px', padding: '8px 12px' }} 
                 />
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <input 
@@ -653,13 +620,15 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
                     placeholder="Price (₹)" 
                     value={customItemForm.price}
                     onChange={e => setCustomItemForm(prev => ({ ...prev, price: e.target.value }))}
-                    style={{ ...styles.inputStyle, marginBottom: '0', padding: '8px 12px', flex: 1 }} 
+                    className="admin-form-input"
+                    style={{ marginBottom: '0', padding: '8px 12px', flex: 1 }} 
                   />
                   <button 
                     type="button" 
                     onClick={handleAddCustomItem}
                     disabled={addCustomItemMutation.isPending || !customItemForm.name || !customItemForm.price}
-                    style={{ ...styles.btnPrimary, padding: '8px 16px', flex: 1, opacity: (!customItemForm.name || !customItemForm.price || addCustomItemMutation.isPending) ? 0.5 : 1 }}
+                    className="admin-btn-primary"
+                    style={{ padding: '8px 16px', flex: 1, opacity: (!customItemForm.name || !customItemForm.price || addCustomItemMutation.isPending) ? 0.5 : 1 }}
                   >
                     {addCustomItemMutation.isPending ? 'Saving...' : 'Add to Bill'}
                   </button>
@@ -669,28 +638,28 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-            <span style={{ fontSize: '1.2rem', color: theme.textSecondary }}>Grand Total</span>
-            <strong style={{ fontSize: '2.5rem', color: theme.accent, letterSpacing: '-1px' }}>₹{quickBillTotal.toLocaleString()}</strong>
+            <span style={{ fontSize: '1.2rem', color: 'var(--admin-text-secondary)' }}>Grand Total</span>
+            <strong style={{ fontSize: '2.5rem', color: 'var(--admin-accent)', letterSpacing: '-1px' }}>₹{quickBillTotal.toLocaleString()}</strong>
           </div>
 
           <div style={{ marginBottom: '25px' }}>
-            <label style={styles.labelStyle}>Customer Name *</label>
-            <input type="text" value={quickBillCustomer.name} onChange={e => setQuickBillCustomer({...quickBillCustomer, name: e.target.value})} style={styles.inputStyle} placeholder="Customer Name" required />
+            <label className="admin-form-label">Customer Name *</label>
+            <input type="text" value={quickBillCustomer.name} onChange={e => setQuickBillCustomer({...quickBillCustomer, name: e.target.value})} className="admin-form-input" placeholder="Customer Name" required />
             
-            <label style={styles.labelStyle}>Phone Number * {isFetchingCustomer && <span style={{color: theme.info, fontSize: '0.8rem'}}> (Searching...)</span>}</label>
-            <input type="text" value={quickBillCustomer.phone} onChange={e => setQuickBillCustomer({...quickBillCustomer, phone: e.target.value})} style={styles.inputStyle} placeholder="10-digit Mobile Number" required />
+            <label className="admin-form-label">Phone Number * {isFetchingCustomer && <span style={{color: 'var(--admin-info)', fontSize: '0.8rem'}}> (Searching...)</span>}</label>
+            <input type="text" value={quickBillCustomer.phone} onChange={e => setQuickBillCustomer({...quickBillCustomer, phone: e.target.value})} className="admin-form-input" placeholder="10-digit Mobile Number" required />
             
-            <label style={styles.labelStyle}>Address / Notes</label>
-            <input type="text" value={quickBillCustomer.address} onChange={e => setQuickBillCustomer({...quickBillCustomer, address: e.target.value})} style={styles.inputStyle} />
+            <label className="admin-form-label">Address / Notes</label>
+            <input type="text" value={quickBillCustomer.address} onChange={e => setQuickBillCustomer({...quickBillCustomer, address: e.target.value})} className="admin-form-input" />
 
-            <label style={styles.labelStyle}>City *</label>
-            <input type="text" value={quickBillCustomer.city} onChange={e => setQuickBillCustomer({...quickBillCustomer, city: e.target.value})} style={styles.inputStyle} placeholder="City Name" required />
+            <label className="admin-form-label">City *</label>
+            <input type="text" value={quickBillCustomer.city} onChange={e => setQuickBillCustomer({...quickBillCustomer, city: e.target.value})} className="admin-form-input" placeholder="City Name" required />
 
-            <label style={styles.labelStyle}>Referred By (Optional)</label>
+            <label className="admin-form-label">Referred By (Optional)</label>
             <select 
               value={quickBillCustomer.referredBy} 
               onChange={e => setQuickBillCustomer({...quickBillCustomer, referredBy: e.target.value})} 
-              style={styles.inputStyle}
+              className="admin-form-input"
             >
               <option value="">-- None / Walk-in --</option>
               {references?.filter(r => r.isActive).map(ref => (
@@ -698,20 +667,21 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
               ))}
             </select>
 
-            <label style={styles.labelStyle}>Remarks / Internal Notes</label>
+            <label className="admin-form-label">Remarks / Internal Notes</label>
             <textarea 
               value={quickBillCustomer.remarks} 
               onChange={e => setQuickBillCustomer({...quickBillCustomer, remarks: e.target.value})} 
-              style={{ ...styles.inputStyle, minHeight: '60px', resize: 'vertical' }}
+              className="admin-form-input"
+              style={{ minHeight: '60px', resize: 'vertical' }}
               placeholder="Any special instructions or internal notes" 
             />
 
-            <div style={{ backgroundColor: `${theme.info}15`, padding: '15px', borderRadius: '12px', border: `1px solid ${theme.info}40`, marginBottom: '20px' }}>
-              <label style={styles.labelStyle}>Payment Status</label>
+            <div style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', padding: '15px', borderRadius: '12px', border: '1px solid rgba(59, 130, 246, 0.4)', marginBottom: '20px' }}>
+              <label className="admin-form-label">Payment Status</label>
               <select 
                 value={paymentState.status} 
                 onChange={e => setPaymentState({...paymentState, status: e.target.value})} 
-                style={styles.inputStyle}
+                className="admin-form-input"
               >
                 <option value="UNPAID">🔴 Unpaid (Estimate / Pending)</option>
                 <option value="PAID">🟢 Paid in Full</option>
@@ -721,11 +691,11 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
               {paymentState.status === 'PAID' && (
                 <div className="mobile-stack" style={{ display: 'flex', gap: '15px' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={styles.labelStyle}>Payment Method</label>
+                    <label className="admin-form-label">Payment Method</label>
                     <select 
                       value={paymentState.method} 
                       onChange={e => setPaymentState({...paymentState, method: e.target.value})} 
-                      style={styles.inputStyle}
+                      className="admin-form-input"
                     >
                       <option value="CASH">Cash</option>
                       <option value="UPI">UPI / GPay / PhonePe</option>
@@ -733,12 +703,12 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
                     </select>
                   </div>
                   <div>
-                    <label style={styles.labelStyle}>Reference / Txn ID</label>
+                    <label className="admin-form-label">Reference / Txn ID</label>
                     <input 
                       type="text" 
                       value={paymentState.details} 
                       onChange={e => setPaymentState({...paymentState, details: e.target.value})} 
-                      style={styles.inputStyle} 
+                      className="admin-form-input" 
                       placeholder="e.g. UTR Number" 
                     />
                   </div>
@@ -749,15 +719,12 @@ export default function QuickBillPOS({ isDarkMode, products, categories, referen
 
           <button 
             type="submit" 
-            className="action-btn"
+            className={`admin-btn-primary action-btn ${generateBillMutation.isPending ? 'admin-btn-secondary' : (initialPosState?.type === 'edit' ? 'admin-btn-info' : 'admin-btn-success')}`}
             disabled={generateBillMutation.isPending || Object.keys(quickBillCart).length === 0}
             style={{ 
-              ...styles.btnPrimary, 
               width: '100%', 
               padding: '16px', 
-              fontSize: '1.2rem', 
-              backgroundColor: generateBillMutation.isPending ? theme.border : (initialPosState?.type === 'edit' ? theme.info : theme.success), 
-              boxShadow: generateBillMutation.isPending ? 'none' : `0 4px 15px ${(initialPosState?.type === 'edit' ? theme.info : theme.success)}50` 
+              fontSize: '1.2rem'
             }}
           >
             {generateBillMutation.isPending ? 'Processing...' : (initialPosState?.type === 'edit' ? '🔄 Save Order Changes' : '⚡ Submit')}

@@ -1,10 +1,6 @@
 import { useState } from 'react';
-import { getTheme, getStyles } from './theme';
 
-export default function ExpenseTracker({ isDarkMode, expenses, setExpenses }) {
-  const theme = getTheme(isDarkMode);
-  const styles = getStyles(theme, isDarkMode);
-
+export default function ExpenseTracker({ expenses, setExpenses }) {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('General');
@@ -40,23 +36,23 @@ export default function ExpenseTracker({ isDarkMode, expenses, setExpenses }) {
     .reduce((sum, e) => sum + e.amount, 0);
 
   return (
-    <div style={styles.cardStyle}>
-      <h2 style={{ color: theme.textPrimary, margin: '0 0 20px 0' }}>Accounts & Petty Cash</h2>
+    <div className="admin-card">
+      <h2 style={{ color: 'var(--admin-text-primary)', margin: '0 0 20px 0' }}>Accounts & Petty Cash</h2>
       
       <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 300px' }}>
-          <div style={{ backgroundColor: `${theme.danger}15`, padding: '20px', borderRadius: '12px', border: `1px solid ${theme.danger}40`, marginBottom: '30px' }}>
-            <h3 style={{ margin: '0 0 10px 0', color: theme.danger, fontSize: '1.2rem' }}>Total Expenses Today</h3>
-            <p style={{ margin: 0, fontSize: '2.5rem', fontWeight: 'bold', color: theme.textPrimary }}>₹{totalToday.toLocaleString('en-IN')}</p>
+          <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.4)', marginBottom: '30px' }}>
+            <h3 style={{ margin: '0 0 10px 0', color: 'var(--admin-danger)', fontSize: '1.2rem' }}>Total Expenses Today</h3>
+            <p style={{ margin: 0, fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--admin-text-primary)' }}>₹{totalToday.toLocaleString('en-IN')}</p>
           </div>
 
-          <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '20px' }}>Log New Expense</h3>
+          <h3 style={{ color: 'var(--admin-text-primary)', fontSize: '1.5rem', marginBottom: '20px' }}>Log New Expense</h3>
           <form onSubmit={handleAddExpense}>
-            <label style={styles.labelStyle}>Date</label>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} required style={styles.inputStyle} />
+            <label className="admin-form-label">Date</label>
+            <input type="date" value={date} onChange={e => setDate(e.target.value)} required className="admin-form-input" />
             
-            <label style={styles.labelStyle}>Category</label>
-            <select value={category} onChange={e => setCategory(e.target.value)} style={styles.inputStyle}>
+            <label className="admin-form-label">Category</label>
+            <select value={category} onChange={e => setCategory(e.target.value)} className="admin-form-input">
               <option value="General">General / Other</option>
               <option value="Wages">Wages / Staff</option>
               <option value="Transport">Transport / Loading</option>
@@ -64,47 +60,47 @@ export default function ExpenseTracker({ isDarkMode, expenses, setExpenses }) {
               <option value="Stationary">Stationary / Supplies</option>
             </select>
 
-            <label style={styles.labelStyle}>Amount (₹)</label>
-            <input type="number" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} required style={styles.inputStyle} placeholder="0.00" />
+            <label className="admin-form-label">Amount (₹)</label>
+            <input type="number" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} required className="admin-form-input" placeholder="0.00" />
 
-            <label style={styles.labelStyle}>Description / Notes</label>
-            <input type="text" value={description} onChange={e => setDescription(e.target.value)} required style={styles.inputStyle} placeholder="e.g. Tea for packing boys" />
+            <label className="admin-form-label">Description / Notes</label>
+            <input type="text" value={description} onChange={e => setDescription(e.target.value)} required className="admin-form-input" placeholder="e.g. Tea for packing boys" />
 
-            <button type="submit" className="action-btn" style={styles.btnPrimary}>Save Expense</button>
+            <button type="submit" className="admin-btn-primary action-btn">Save Expense</button>
           </form>
         </div>
 
         <div style={{ flex: '2 1 500px' }}>
-          <h3 style={{ color: theme.textPrimary, fontSize: '1.5rem', marginBottom: '20px' }}>Recent Expenses</h3>
-          <div className="table-responsive" style={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${theme.border}` }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead style={{ backgroundColor: theme.cardBg }}>
+          <h3 style={{ color: 'var(--admin-text-primary)', fontSize: '1.5rem', marginBottom: '20px' }}>Recent Expenses</h3>
+          <div className="admin-table-wrapper">
+            <table className="admin-table">
+              <thead className="admin-table-thead">
                 <tr>
-                  <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Date</th>
-                  <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Category</th>
-                  <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Description</th>
-                  <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>Amount</th>
-                  <th style={{ padding: '15px', color: theme.textSecondary, borderBottom: `1px solid ${theme.border}`, textAlign: 'right' }}>Action</th>
+                  <th className="admin-table-th">Date</th>
+                  <th className="admin-table-th">Category</th>
+                  <th className="admin-table-th">Description</th>
+                  <th className="admin-table-th">Amount</th>
+                  <th className="admin-table-th" style={{ textAlign: 'right' }}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {expenses.length === 0 ? (
-                  <tr>
-                    <td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: theme.textSecondary }}>No expenses logged yet.</td>
+                  <tr className="admin-table-tr">
+                    <td colSpan="5" className="admin-table-td" style={{ textAlign: 'center' }}>No expenses logged yet.</td>
                   </tr>
                 ) : (
                   expenses.map(e => (
-                    <tr key={e.id} style={{ borderBottom: `1px solid ${theme.border}` }}>
-                      <td style={{ padding: '15px', color: theme.textPrimary }}>{new Date(e.date).toLocaleDateString('en-IN')}</td>
-                      <td style={{ padding: '15px', color: theme.accent }}>
-                        <span style={{ backgroundColor: `${theme.accent}15`, padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                    <tr key={e.id} className="admin-table-tr">
+                      <td className="admin-table-td" style={{ color: 'var(--admin-text-primary)' }}>{new Date(e.date).toLocaleDateString('en-IN')}</td>
+                      <td className="admin-table-td" style={{ color: 'var(--admin-accent)' }}>
+                        <span style={{ backgroundColor: 'rgba(99, 102, 241, 0.15)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>
                           {e.category}
                         </span>
                       </td>
-                      <td style={{ padding: '15px', color: theme.textSecondary }}>{e.description}</td>
-                      <td style={{ padding: '15px', color: theme.danger, fontWeight: 'bold' }}>₹{e.amount}</td>
-                      <td style={{ padding: '15px', textAlign: 'right' }}>
-                        <button onClick={() => handleDeleteExpense(e.id)} style={{ padding: '6px 12px', backgroundColor: 'transparent', border: `1px solid ${theme.danger}`, borderRadius: '6px', color: theme.danger, cursor: 'pointer', fontSize: '0.9rem' }}>✕ Delete</button>
+                      <td className="admin-table-td">{e.description}</td>
+                      <td className="admin-table-td" style={{ color: 'var(--admin-danger)', fontWeight: 'bold' }}>₹{e.amount}</td>
+                      <td className="admin-table-td" style={{ textAlign: 'right' }}>
+                        <button onClick={() => handleDeleteExpense(e.id)} className="admin-table-action-btn danger">✕ Delete</button>
                       </td>
                     </tr>
                   ))

@@ -1,10 +1,10 @@
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider  = "postgresql"
-  schemas   = ["shop"]
+  provider = "postgresql"
+  schemas  = ["shop"]
 }
 
 model User {
@@ -15,33 +15,35 @@ model User {
   role      Role     @default(USER)
   createdAt DateTime @default(now())
   orders    Order[]
+
   @@schema("shop")
 }
 
 enum Role {
   ADMIN
   USER
+
   @@schema("shop")
 }
 
 model Product {
-  id          String        @id @default(cuid())
-  name        String
-  description String
-  basePrice   Float         @default(0)
-  price       Float
-  discount    Float         @default(0)
-  stockShop   Int           @default(0)
-  stockGodown Int           @default(0)
-  stock       Int           @default(0)
-  sequence    Int           @default(0)
+  id            String        @id @default(cuid())
+  name          String
+  description   String
+  basePrice     Float         @default(0)
+  price         Float
+  discount      Float         @default(0)
+  stockShop     Int           @default(0)
+  stockGodown   Int           @default(0)
+  stock         Int           @default(0)
+  sequence      Int           @default(0)
   packageString String?
-  categoryId  String
-  imageUrls   String[]
-  category    Category      @relation(fields: [categoryId], references: [id])
-  orderItems  OrderItem[]
-  godownStock GodownStock[]
-  
+  categoryId    String
+  imageUrls     String[]
+  category      Category      @relation(fields: [categoryId], references: [id])
+  orderItems    OrderItem[]
+  godownStock   GodownStock[]
+
   @@index([categoryId])
   @@index([sequence])
   @@schema("shop")
@@ -53,17 +55,17 @@ model Category {
   slug     String    @unique
   sequence Int       @default(0)
   products Product[]
-  
+
   @@index([sequence])
   @@schema("shop")
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  orderNumber     Int         @unique @default(autoincrement())
+  id              String        @id @default(cuid())
+  orderNumber     Int           @unique @default(autoincrement())
   userId          String
   totalAmount     Float
-  status          OrderStatus @default(PENDING)
+  status          OrderStatus   @default(PENDING)
   shippingAddress String
   customerPhone   String?
   transportName   String?
@@ -73,13 +75,13 @@ model Order {
   paymentMethod   String?
   paymentDetails  String?
   remarks         String?
-  createdAt       DateTime    @default(now())
-  editVersion     Int         @default(1)
-  lastSentVersion Int         @default(0)
-  source          String      @default("WEBSITE")
-  user            User        @relation(fields: [userId], references: [id])
+  createdAt       DateTime      @default(now())
+  editVersion     Int           @default(1)
+  lastSentVersion Int           @default(0)
+  source          String        @default("WEBSITE")
+  user            User          @relation(fields: [userId], references: [id])
   items           OrderItem[]
-  
+
   @@index([status, createdAt])
   @@index([createdAt])
   @@index([userId])
@@ -88,10 +90,13 @@ model Order {
 
 enum OrderStatus {
   PENDING
+  CONFIRMED
   PROCESSING
+  PACKED
   SHIPPED
   DELIVERED
   CANCELLED
+
   @@schema("shop")
 }
 
@@ -99,6 +104,7 @@ enum PaymentStatus {
   UNPAID
   PAID
   CREDIT
+
   @@schema("shop")
 }
 
@@ -110,6 +116,7 @@ model OrderItem {
   price     Float
   order     Order   @relation(fields: [orderId], references: [id])
   product   Product @relation(fields: [productId], references: [id])
+
   @@schema("shop")
 }
 
@@ -118,6 +125,7 @@ model Godown {
   name     String
   location String?
   stocks   GodownStock[]
+
   @@schema("shop")
 }
 
@@ -139,6 +147,7 @@ model ReferenceMaster {
   phone     String?
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
+
   @@schema("shop")
 }
 
@@ -148,6 +157,7 @@ model TransportMaster {
   phone     String?
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
+
   @@schema("shop")
 }
 
@@ -158,22 +168,22 @@ model Expense {
   amount      Float
   category    String   @default("General") // e.g. Wages, Tea, Transport
   createdAt   DateTime @default(now())
-  
+
   @@index([date])
   @@schema("shop")
 }
 
 model CustomerMaster {
-  id              String   @id @default(cuid())
-  primaryPhone    String   @unique
-  alternatePhone  String?
-  name            String
-  fullAddress     String?
-  city            String?
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  id             String   @id @default(cuid())
+  primaryPhone   String   @unique
+  alternatePhone String?
+  name           String
+  fullAddress    String?
+  city           String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
   @@index([createdAt])
   @@schema("shop")
 }

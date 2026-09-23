@@ -8,7 +8,7 @@ import MasterDataPanel from './admin/MasterDataPanel';
 import ExpenseTracker from './admin/ExpenseTracker';
 import ReportsDashboard from './admin/ReportsDashboard';
 import CustomerDirectory from './admin/CustomerDirectory';
-import { getTheme, getStyles } from './admin/theme';
+import './admin/admin.css';
 
 export default function AdminDashboardClient({ initialOrders, initialProducts, categories: initialCategories, initialGodowns, initialReferences, initialTransports, initialExpenses, initialCustomers }) {
   // Master states used across tabs
@@ -24,8 +24,6 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [initialPosState, setInitialPosState] = useState(null); // { type: 'edit'|'duplicate', order: {} }
   const router = useRouter();
-
-  const theme = getTheme(isDarkMode);
 
   const handleEditOrder = (order) => {
     setInitialPosState({ type: 'edit', order });
@@ -75,78 +73,24 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
 
   const TabButton = ({ active, onClick, children }) => (
     <button 
-      className="tab-btn"
+      className={`admin-tab-btn ${active ? 'active' : ''}`}
       onClick={onClick}
-      style={{
-        padding: '14px 28px',
-        fontSize: '1.1rem',
-        fontWeight: 'bold',
-        cursor: 'pointer',
-        backgroundColor: active ? theme.cardBg : 'transparent',
-        color: active ? theme.accent : theme.textSecondary,
-        border: 'none',
-        borderBottom: active ? `3px solid ${theme.accent}` : '3px solid transparent',
-        transition: 'all 0.3s',
-        outline: 'none'
-      }}
-      onMouseOver={e => !active && (e.target.style.color = theme.textPrimary)}
-      onMouseOut={e => !active && (e.target.style.color = theme.textSecondary)}
     >
       {children}
     </button>
   );
 
   return (
-    <div style={{ backgroundColor: theme.bg, minHeight: '100vh', padding: '40px 20px', fontFamily: '"Inter", sans-serif', transition: 'background-color 0.3s' }}>
-      
+    <div className={`admin-theme ${isDarkMode ? 'dark-mode' : ''}`}>
       <style dangerouslySetInnerHTML={{__html: `
-        .order-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,${isDarkMode ? '0.4' : '0.1'}) !important; }
-        .search-input:focus, .date-input:focus { border-color: ${theme.accent} !important; box-shadow: 0 0 0 3px ${theme.accent}20 !important; }
-        .custom-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: ${theme.accent}; }
-        
-        button { transition: all 0.2s ease-in-out !important; }
-        .action-btn { position: relative; overflow: hidden; }
-        .action-btn:hover:not(:disabled) {
-           transform: scale(1.03) translateY(-2px) !important;
-           filter: brightness(1.2) !important;
-           box-shadow: 0 8px 20px rgba(0,0,0,0.3) !important;
-           opacity: 0.95;
-        }
-        .action-btn:active:not(:disabled) {
-           transform: scale(0.97) translateY(0) !important;
-           filter: brightness(0.9) !important;
-        }
-
-        /* Utility Icons Animation */
-        .icon-btn-alive {
-          transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-        }
-        .icon-btn-alive:hover {
-          transform: translateY(-3px) scale(1.15) rotate(5deg) !important;
-          background-color: ${theme.accent} !important;
-          color: white !important;
-          box-shadow: 0 5px 15px ${theme.accent}40 !important;
-          border-color: ${theme.accent} !important;
-        }
-        .icon-btn-alive:active {
-          transform: translateY(0) scale(0.95) rotate(-5deg) !important;
-        }
-
-        button:disabled { opacity: 0.5 !important; cursor: not-allowed !important; filter: grayscale(1) !important; }
-        
-        .qty-btn:hover { background-color: ${theme.accent} !important; color: white !important; border-color: ${theme.accent} !important; transform: scale(1.1); }
-        .qty-btn:active { transform: scale(0.95) !important; }
-        
-        .filter-btn:hover { background-color: ${theme.cardBg} !important; opacity: 0.8 !important; transform: translateY(-1px); }
-        
         /* Mobile Responsive Utilities */
         @media (max-width: 768px) {
           .admin-container { padding: 20px 10px !important; }
           .header-flex { flex-direction: column !important; align-items: flex-start !important; gap: 20px !important; }
           .header-title { font-size: 2.2rem !important; }
-          .tab-btn { padding: 10px 15px !important; font-size: 1rem !important; flex: 1 1 auto; text-align: center; }
+          .admin-tab-btn { padding: 10px 15px !important; font-size: 1rem !important; flex: 1 1 auto; text-align: center; }
           .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-          .table-responsive table { min-width: 800px; } /* Ensures table doesn't squish too much */
+          .table-responsive table { min-width: 800px; }
           .mobile-stack { flex-direction: column !important; }
           .mobile-stack > * { width: 100% !important; margin-left: 0 !important; margin-right: 0 !important; }
           .mobile-hide { display: none !important; }
@@ -160,10 +104,10 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
         {/* Header */}
         <div className="header-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
           <div>
-            <h1 className="header-title" style={{ fontFamily: 'var(--font-serif)', fontSize: '3rem', color: theme.textPrimary, margin: '0 0 10px 0', transition: 'color 0.3s' }}>
+            <h1 className="header-title" style={{ fontFamily: 'var(--font-serif)', fontSize: '3rem', color: 'var(--admin-text-primary)', margin: '0 0 10px 0', transition: 'color 0.3s' }}>
               Command Center
             </h1>
-            <p style={{ color: theme.textSecondary, margin: 0, fontSize: '1.1rem' }}>Manage orders, inventory, and masters seamlessly.</p>
+            <p style={{ color: 'var(--admin-text-secondary)', margin: 0, fontSize: '1.1rem' }}>Manage orders, inventory, and masters seamlessly.</p>
           </div>
           <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
             <button 
@@ -171,7 +115,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
               onClick={() => setIsDarkMode(!isDarkMode)}
               style={{ 
                 padding: '10px 20px', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold',
-                backgroundColor: theme.cardBg, color: theme.textPrimary, border: `1px solid ${theme.border}`,
+                backgroundColor: 'var(--admin-card-bg)', color: 'var(--admin-text-primary)', border: `1px solid var(--admin-border)`,
                 display: 'flex', alignItems: 'center', gap: '8px'
               }}
             >
@@ -192,7 +136,7 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
         </div>
         
         {/* Main Navigation */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', borderBottom: `1px solid ${theme.border}`, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', borderBottom: `1px solid var(--admin-border)`, flexWrap: 'wrap' }}>
           <TabButton active={activeTab === 'orders'} onClick={() => setActiveTab('orders')}>Orders & Analytics</TabButton>
           <TabButton active={activeTab === 'quickbill'} onClick={() => setActiveTab('quickbill')}>⚡ Quick Bill (POS)</TabButton>
           <TabButton active={activeTab === 'masters'} onClick={() => setActiveTab('masters')}>Data Masters</TabButton>
