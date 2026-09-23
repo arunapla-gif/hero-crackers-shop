@@ -21,7 +21,10 @@ const OrderTableRow = React.memo(({
   onPrintInvoice,
   onPrintLabel,
   loadingAction,
-  products
+  products,
+  onEditOrder,
+  onDuplicateOrder,
+  onRepeatOrder
 }) => {
 
   const triggerPrint = () => {
@@ -242,6 +245,21 @@ const OrderTableRow = React.memo(({
               🏷️ Print Label
             </button>
           </div>
+          
+          {/* Order Editing Actions */}
+          {order.status !== 'CANCELLED' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+              <button className="admin-btn-secondary action-btn icon-btn-alive admin-btn-compact" onClick={() => onEditOrder?.(order)} title="Edit Order" style={{ padding: '8px 5px', fontSize: '0.8rem' }}>
+                ✏️ Edit
+              </button>
+              <button className="admin-btn-secondary action-btn icon-btn-alive admin-btn-compact" onClick={() => onDuplicateOrder?.(order)} title="Duplicate for New Customer" style={{ padding: '8px 5px', fontSize: '0.8rem' }}>
+                📋 Dup
+              </button>
+              <button className="admin-btn-secondary action-btn icon-btn-alive admin-btn-compact" onClick={() => onRepeatOrder?.(order)} title="Repeat for Same Customer" style={{ padding: '8px 5px', fontSize: '0.8rem' }}>
+                🔁 Repeat
+              </button>
+            </div>
+          )}
           
         </div>
       </div>

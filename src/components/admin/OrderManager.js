@@ -440,6 +440,9 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
           printShippingLabel={printShippingLabel}
           loadingAction={loadingAction}
           products={products}
+          onEditOrder={onEditOrder}
+          onDuplicateOrder={onDuplicateOrder}
+          onRepeatOrder={onRepeatOrder}
         />
       )}
       

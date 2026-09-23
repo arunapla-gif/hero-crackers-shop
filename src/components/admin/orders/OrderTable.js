@@ -13,7 +13,10 @@ export default function OrderTable({
   printInvoice,
   printShippingLabel,
   loadingAction,
-  products
+  products,
+  onEditOrder,
+  onDuplicateOrder,
+  onRepeatOrder
 }) {
 
   const handleToggleExpand = (id) => {
@@ -44,6 +47,9 @@ export default function OrderTable({
             onPrintLabel={printShippingLabel}
             loadingAction={loadingAction}
             products={products}
+            onEditOrder={onEditOrder}
+            onDuplicateOrder={onDuplicateOrder}
+            onRepeatOrder={onRepeatOrder}
           />
         ))
       )}
