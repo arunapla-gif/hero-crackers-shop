@@ -35,7 +35,8 @@ export async function GET(request) {
       orderBy: { createdAt: 'desc' }
     });
 
-    const validOrders = orders.filter(o => o.status !== 'CANCELLED');
+    const validStatuses = ['CONFIRMED', 'PROCESSING', 'PACKED', 'SHIPPED', 'DELIVERED'];
+    const validOrders = orders.filter(o => validStatuses.includes(o.status));
 
     // 1. Sales Summary
     const totalRevenue = validOrders.reduce((sum, o) => sum + o.totalAmount, 0);
