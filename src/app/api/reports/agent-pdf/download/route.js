@@ -21,10 +21,8 @@ export async function GET(request) {
       dateFilter.lte = end;
     }
 
-    const validStatuses = ['CONFIRMED', 'PROCESSING', 'PACKED', 'SHIPPED', 'DELIVERED'];
     const ordersWhere = {
-      referredBy: agentName === 'Direct (No Agent)' ? null : agentName,
-      status: { in: validStatuses }
+      referredBy: agentName === 'Direct (No Agent)' ? null : agentName
     };
     if (startDate && endDate) {
       ordersWhere.createdAt = dateFilter;

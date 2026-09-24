@@ -68,7 +68,7 @@ export async function GET(request) {
 
     // 3. Agent Performance
     const agentMap = {};
-    validOrders.forEach(order => {
+    orders.forEach(order => {
       const agentName = order.referredBy || 'Direct (No Agent)';
       if (!agentMap[agentName]) {
         agentMap[agentName] = { name: agentName, orderCount: 0, totalRevenue: 0, orders: [] };
