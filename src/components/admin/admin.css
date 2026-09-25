@@ -483,8 +483,14 @@
 .admin-order-badge.PENDING { background-color: rgba(217, 119, 6, 0.15); color: var(--admin-accent); border: 1px solid rgba(217, 119, 6, 0.4); box-shadow: 0 0 10px rgba(217, 119, 6, 0.2); }
 .admin-order-badge.PENDING .dot { background-color: var(--admin-accent); }
 
+.admin-order-badge.CONFIRMED { background-color: rgba(14, 165, 233, 0.15); color: var(--admin-confirmed); border: 1px solid rgba(14, 165, 233, 0.4); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
+.admin-order-badge.CONFIRMED .dot { background-color: var(--admin-confirmed); }
+
 .admin-order-badge.PROCESSING { background-color: rgba(59, 130, 246, 0.15); color: var(--admin-info); border: 1px solid rgba(59, 130, 246, 0.4); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
 .admin-order-badge.PROCESSING .dot { background-color: var(--admin-info); }
+
+.admin-order-badge.PACKED { background-color: rgba(245, 158, 11, 0.15); color: var(--admin-packed); border: 1px solid rgba(245, 158, 11, 0.4); box-shadow: 0 0 10px rgba(245, 158, 11, 0.2); }
+.admin-order-badge.PACKED .dot { background-color: var(--admin-packed); }
 
 .admin-order-badge.SHIPPED { background-color: rgba(139, 92, 246, 0.15); color: var(--admin-shipped); border: 1px solid rgba(139, 92, 246, 0.4); box-shadow: 0 0 10px rgba(139, 92, 246, 0.2); }
 .admin-order-badge.SHIPPED .dot { background-color: var(--admin-shipped); }

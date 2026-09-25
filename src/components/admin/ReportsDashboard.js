@@ -293,7 +293,8 @@ export default function ReportsDashboard({ products }) {
                                 <td className="admin-table-td" style={{ padding: '10px', color: 'var(--admin-text-primary)', fontWeight: 'bold' }}>{o.user?.name || o.customerName || 'Walk-in'}</td>
                                 <td className="admin-table-td" style={{ padding: '10px', color: 'var(--admin-text-secondary)' }}>{city || '-'}</td>
                                 <td className="admin-table-td" style={{ padding: '10px' }}>
-                                  <span className={`admin-order-badge ${o.status.toLowerCase()}`}>
+                                  <span className={`admin-order-badge ${o.status}`}>
+                                    <span className="dot"></span>
                                     {o.status}
                                   </span>
                                 </td>
