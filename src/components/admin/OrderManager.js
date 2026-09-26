@@ -217,423 +217,192 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
       const seqB = productB ? (productB.sequence || 0) : 999999;
       return seqA - seqB;
     });
-
-    const totalQty = sortedItems.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
-    const totalItems = sortedItems.length;
     
     const itemsHtml = sortedItems.map((item, idx) => {
       const product = orderProducts.find(p => p.id === item.productId);
       const productName = product ? product.name : 'Unknown Item';
-      const unitPrice = Number(item.price) || 0;
-      const qty = Number(item.quantity) || 0;
-      const amount = unitPrice * qty;
       return `
         <tr>
-          <td class="col-num center">${idx + 1}</td>
-          <td class="col-name">${productName}</td>
-          <td class="col-qty center">${qty}</td>
-          <td class="col-rate right">₹${unitPrice.toLocaleString('en-IN')}</td>
-          <td class="col-amount right">₹${amount.toLocaleString('en-IN')}</td>
+          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd;">${idx + 1}</td>
+          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd; font-weight: 500;">${productName}</td>
+          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd; text-align: center;">${item.quantity}</td>
+          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd; text-align: right;">₹${item.price}</td>
+          <td style="padding: 10px 8px; border-bottom: 1px solid #ddd; text-align: right; font-weight: bold;">₹${item.price * item.quantity}</td>
         </tr>
       `;
     }).join('');
 
     const invoiceHtml = `
-      <!DOCTYPE html>
       <html>
         <head>
-          <meta charset="utf-8">
           <title>Invoice - ${formatOrderNumber(order.orderNumber, order.createdAt)}</title>
           <style>
-            @page {
-              size: A4 portrait;
-              margin: 6mm 8mm 6mm 8mm;
+            body { 
+              font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+              color: #333; 
+              margin: 0; 
+              padding: 30px; 
             }
-            * {
-              box-sizing: border-box;
+            .invoice-wrapper {
+              zoom: 1.5;
+              -moz-transform: scale(1.5);
+              -moz-transform-origin: top left;
             }
-            body {
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-              color: #1f2937;
-              margin: 0;
-              padding: 12px 16px;
-              font-size: 10.5px;
-              line-height: 1.25;
-              background: #fff;
-            }
-
-            /* Density Options */
-            body.density-compact {
-              font-size: 10.5px;
-            }
-            body.density-compact td, body.density-compact th {
-              padding: 3px 6px;
-            }
-
-            body.density-ultra {
-              font-size: 9.5px;
-              line-height: 1.15;
-            }
-            body.density-ultra td, body.density-ultra th {
-              padding: 1.5px 5px;
-            }
-            body.density-ultra .header {
-              margin-bottom: 5px;
-              padding-bottom: 3px;
-            }
-            body.density-ultra .details {
-              margin-bottom: 5px;
-              padding: 4px 8px;
-            }
-
-            body.density-normal {
-              font-size: 12px;
-            }
-            body.density-normal td, body.density-normal th {
-              padding: 6px 8px;
-            }
-
-            /* Screen Toolbar */
+            .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 35px; border-bottom: 2px solid #333; padding-bottom: 15px; }
+            .header h1 { margin: 0; color: #ff1361; font-size: 32px; letter-spacing: 1px; text-transform: uppercase; }
+            .header p { margin: 5px 0; color: #666; font-size: 14px; }
+            .details { display: flex; justify-content: space-between; margin-bottom: 35px; }
+            .details h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 5px; color: #555; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+            .address-box { flex: 1; min-width: 250px; padding-right: 20px; }
+            .meta-box { flex: 1; text-align: right; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+            th { background-color: #f8f8f8; padding: 12px 8px; text-align: left; border-bottom: 2px solid #ddd; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; color: #555; }
+            th.center { text-align: center; }
+            th.right { text-align: right; }
+            .totals { width: 50%; float: right; margin-top: 20px; }
+            .totals-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+            .totals-row.bold { font-weight: bold; font-size: 1.4em; border-bottom: none; border-top: 2px solid #333; padding-top: 15px; }
+            .footer { clear: both; margin-top: 50px; text-align: center; color: #888; font-size: 12px; border-top: 1px solid #eee; padding-top: 20px; }
+            
             .toolbar {
               display: flex;
-              align-items: center;
               justify-content: space-between;
-              background: #111827;
-              color: #fff;
-              padding: 8px 16px;
+              align-items: center;
+              margin-bottom: 25px;
+              padding: 10px 16px;
+              background: #1f2937;
               border-radius: 6px;
-              margin-bottom: 12px;
-              box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+              color: white;
             }
-            .toolbar-title {
-              font-weight: 600;
+            .scale-btn {
+              padding: 6px 12px;
+              background: #374151;
+              color: white;
+              border: 1px solid #4b5563;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 12px;
+            }
+            .scale-btn.active {
+              background: #ff1361;
+              border-color: #ff1361;
+              font-weight: bold;
+            }
+            .print-btn {
+              padding: 8px 18px;
+              background: #ff1361;
+              color: white;
+              border: none;
+              cursor: pointer;
+              font-weight: bold;
+              border-radius: 4px;
               font-size: 13px;
             }
-            .toolbar-controls {
-              display: flex;
-              align-items: center;
-              gap: 10px;
-            }
-            .toolbar select {
-              padding: 5px 10px;
-              border-radius: 4px;
-              border: 1px solid #4b5563;
-              background: #1f2937;
-              color: #fff;
-              font-size: 12px;
-              cursor: pointer;
-            }
-            .toolbar button {
-              padding: 6px 14px;
-              background: #ff1361;
-              color: #fff;
-              border: none;
-              border-radius: 4px;
-              font-weight: bold;
-              font-size: 12px;
-              cursor: pointer;
-            }
-            .toolbar button:hover {
-              background: #e00b50;
-            }
 
-            /* Header */
-            .header {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              margin-bottom: 8px;
-              border-bottom: 2px solid #ff1361;
-              padding-bottom: 5px;
-            }
-            .header-brand h1 {
-              margin: 0;
-              color: #ff1361;
-              font-size: 20px;
-              font-weight: 800;
-              letter-spacing: 0.5px;
-              text-transform: uppercase;
-              line-height: 1.1;
-            }
-            .header-brand p {
-              margin: 2px 0 0 0;
-              color: #4b5563;
-              font-size: 10px;
-            }
-            .header-meta {
-              text-align: right;
-            }
-            .header-meta h2 {
-              margin: 0;
-              color: #111827;
-              font-size: 18px;
-              font-weight: 800;
-              letter-spacing: 0.5px;
-              line-height: 1.1;
-            }
-            .header-meta p {
-              margin: 1px 0;
-              font-size: 10.5px;
-            }
-            .badge-source {
-              display: inline-block;
-              font-size: 9px;
-              font-weight: bold;
-              padding: 1px 5px;
-              border-radius: 3px;
-              background: #e5e7eb;
-              color: #374151;
-            }
-
-            /* Details Card */
-            .details {
-              display: flex;
-              justify-content: space-between;
-              gap: 12px;
-              margin-bottom: 8px;
-              background: #f9fafb;
-              border: 1px solid #e5e7eb;
-              border-radius: 4px;
-              padding: 6px 10px;
-            }
-            .details-box {
-              flex: 1;
-            }
-            .details-box h3 {
-              margin: 0 0 3px 0;
-              padding-bottom: 2px;
-              border-bottom: 1px solid #e5e7eb;
-              color: #6b7280;
-              text-transform: uppercase;
-              font-size: 9.5px;
-              letter-spacing: 0.5px;
-              font-weight: 700;
-            }
-            .details-box p {
-              margin: 1px 0;
-              font-size: 10px;
-              line-height: 1.25;
-            }
-            .customer-name {
-              font-size: 11px !important;
-              font-weight: 700;
-              color: #111827;
-            }
-            .remarks-box {
-              margin-bottom: 6px;
-              padding: 4px 8px;
-              background: #eff6ff;
-              border-left: 3px solid #3b82f6;
-              font-size: 9.5px;
-              border-radius: 2px;
-              color: #1e40af;
-            }
-
-            /* Table */
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-bottom: 6px;
-            }
-            thead {
-              display: table-header-group;
-            }
-            tr {
-              page-break-inside: avoid;
-            }
-            th {
-              background-color: #f3f4f6;
-              padding: 3px 6px;
-              text-align: left;
-              border-top: 1px solid #d1d5db;
-              border-bottom: 1.5px solid #9ca3af;
-              text-transform: uppercase;
-              font-size: 9.5px;
-              letter-spacing: 0.5px;
-              color: #374151;
-              font-weight: 700;
-            }
-            th.center, td.center { text-align: center; }
-            th.right, td.right { text-align: right; }
-            td {
-              padding: 3px 6px;
-              border-bottom: 1px solid #e5e7eb;
-              font-size: 10px;
-              line-height: 1.25;
-            }
-            tbody tr:nth-child(even) {
-              background-color: #f9fafb;
-            }
-            .col-num { width: 5%; }
-            .col-name { width: 48%; font-weight: 500; color: #111827; }
-            .col-qty { width: 10%; font-weight: 600; }
-            .col-rate { width: 17%; }
-            .col-amount { width: 20%; font-weight: 700; color: #111827; }
-
-            /* Summary & Totals */
-            .summary-section {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              margin-top: 4px;
-            }
-            .summary-notes {
-              font-size: 9px;
-              color: #6b7280;
-              max-width: 50%;
-              line-height: 1.3;
-            }
-            .summary-notes p {
-              margin: 1px 0;
-            }
-            .totals {
-              width: 250px;
-              border: 1px solid #e5e7eb;
-              border-radius: 4px;
-              background: #f9fafb;
-              padding: 4px 8px;
-            }
-            .totals-row {
-              display: flex;
-              justify-content: space-between;
-              padding: 1.5px 0;
-              font-size: 10px;
-              color: #4b5563;
-            }
-            .totals-row.grand-total {
-              font-weight: 800;
-              font-size: 12.5px;
-              color: #111827;
-              border-top: 1.5px solid #111827;
-              margin-top: 2px;
-              padding-top: 3px;
-            }
-
-            /* Footer */
-            .footer {
-              clear: both;
-              margin-top: 8px;
-              text-align: center;
-              color: #9ca3af;
-              font-size: 8.5px;
-              border-top: 1px solid #e5e7eb;
-              padding-top: 4px;
-            }
-
-            /* Print Rules */
             @media print {
-              body {
-                padding: 0 !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-              }
-              .no-print {
-                display: none !important;
+              body { padding: 0; }
+              .no-print { display: none !important; }
+              .invoice-wrapper {
+                zoom: 1.5;
               }
             }
           </style>
         </head>
-        <body class="density-compact">
+        <body>
           <div class="no-print toolbar">
-            <div class="toolbar-title">📄 Invoice Preview</div>
-            <div class="toolbar-controls">
-              <label for="densitySelect" style="font-size: 11px; color: #d1d5db;">Density:</label>
-              <select id="densitySelect" onchange="setDensity(this.value)">
-                <option value="compact">Compact (Default: ~40+ items/page)</option>
-                <option value="ultra">Ultra-Compact (~55+ items/page)</option>
-                <option value="normal">Standard / Relaxed</option>
-              </select>
-              <button onclick="window.print()">🖨️ Print Invoice</button>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 12px; color: #9ca3af;">Size:</span>
+              <button class="scale-btn" id="btn-1" onclick="setScale(1.0)">1.0x</button>
+              <button class="scale-btn" id="btn-125" onclick="setScale(1.25)">1.25x</button>
+              <button class="scale-btn active" id="btn-15" onclick="setScale(1.5)">1.5x</button>
             </div>
+            <button class="print-btn" onclick="window.print()">🖨️ Print Invoice</button>
           </div>
           
-          <div class="header">
-            <div class="header-brand">
-              <h1>HERO CRACKERS</h1>
-              <p>Premium Sivakasi Fireworks Wholesale & Retail | Sivakasi, Tamil Nadu</p>
+          <div class="invoice-wrapper" id="invoice-content">
+            <div class="header">
+              <div>
+                <h1>HERO CRACKERS</h1>
+                <p>Premium Sivakasi Fireworks Wholesale & Retail</p>
+                <p>Sivakasi, Tamil Nadu, India</p>
+              </div>
+              <div style="text-align: right;">
+                <h2 style="margin:0 0 5px 0; color:#333; font-size: 28px;">INVOICE</h2>
+                <p style="font-weight: bold; color: #000; font-size: 16px;"># ${formatOrderNumber(order.orderNumber, order.createdAt)}</p>
+                <p>Date: ${new Date(order.createdAt).toLocaleDateString()}</p>
+              </div>
             </div>
-            <div class="header-meta">
-              <h2>INVOICE</h2>
-              <p><strong># ${formatOrderNumber(order.orderNumber, order.createdAt)}</strong> <span class="badge-source">${order.source || 'ONLINE'}</span></p>
-              <p>Date: ${new Date(order.createdAt).toLocaleDateString()}</p>
+            
+            <div class="details">
+              <div class="address-box">
+                <h3>Billed To:</h3>
+                <p style="font-size: 16px;"><strong>${order.user?.name || order.customerName || 'Walk-in Customer'}</strong></p>
+                <p>Phone: ${order.customerPhone || 'N/A'}</p>
+                <p style="margin-top: 10px;">${order.shippingAddress ? order.shippingAddress.replace(/\n/g, '<br>') : 'N/A'}</p>
+              </div>
+              <div class="meta-box">
+                <h3>Shipping Details:</h3>
+                <p><strong>Transport:</strong> ${order.transportName || 'N/A'}</p>
+                <p><strong>Tracking/LR:</strong> ${order.trackingNumber || 'N/A'}</p>
+                <p><strong>Status:</strong> <span style="text-transform: uppercase;">${order.status}</span></p>
+              </div>
             </div>
-          </div>
-          
-          <div class="details">
-            <div class="details-box">
-              <h3>Billed To:</h3>
-              <p class="customer-name">${order.user?.name || order.customerName || 'Walk-in Customer'}</p>
-              <p>Phone: <strong>${order.customerPhone || 'N/A'}</strong></p>
-              <p>${order.shippingAddress ? order.shippingAddress.replace(/\n/g, ', ') : 'N/A'}</p>
+            ${order.remarks ? `<div style="margin-bottom: 20px; padding: 10px; background-color: #f8f8f8; border-left: 4px solid #555;"><p style="margin:0;font-size:14px;"><strong>Remarks:</strong> ${order.remarks}</p></div>` : ''}
+            
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Product Description</th>
+                  <th class="center">Qty</th>
+                  <th class="right">Unit Price</th>
+                  <th class="right">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsHtml}
+              </tbody>
+            </table>
+            
+            <div class="totals">
+              <div class="totals-row bold">
+                <span>Grand Total:</span>
+                <span>₹${order.totalAmount?.toLocaleString()}</span>
+              </div>
             </div>
-            <div class="details-box" style="text-align: right;">
-              <h3>Shipping & Order Info:</h3>
-              <p><strong>Transport:</strong> ${order.transportName || 'N/A'}</p>
-              <p><strong>Tracking / LR:</strong> ${order.trackingNumber || 'N/A'}</p>
-              <p><strong>Status:</strong> <span style="text-transform: uppercase; font-weight: bold;">${order.status}</span> | <strong>Payment:</strong> ${order.paymentStatus === 'PAID' ? 'Paid' : order.paymentStatus === 'CREDIT' ? 'Credit / Later' : 'Unpaid'}</p>
-            </div>
-          </div>
-
-          ${order.remarks ? `
-            <div class="remarks-box">
-              <strong>Note / Remarks:</strong> ${order.remarks}
-            </div>
-          ` : ''}
-          
-          <table>
-            <thead>
-              <tr>
-                <th class="col-num center">#</th>
-                <th class="col-name">Product Description</th>
-                <th class="col-qty center">Qty</th>
-                <th class="col-rate right">Unit Price</th>
-                <th class="col-amount right">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsHtml}
-            </tbody>
-          </table>
-          
-          <div class="summary-section">
-            <div class="summary-notes">
-              <p>Thank you for shopping with <strong>Hero Crackers</strong>!</p>
+            
+            <div class="footer">
+              <p>Thank you for shopping with Hero Crackers!</p>
               <p>This is a computer-generated invoice and does not require a physical signature.</p>
             </div>
-            <div class="totals">
-              <div class="totals-row">
-                <span>Total Items:</span>
-                <strong>${totalItems}</strong>
-              </div>
-              <div class="totals-row">
-                <span>Total Quantity:</span>
-                <strong>${totalQty}</strong>
-              </div>
-              <div class="totals-row grand-total">
-                <span>Grand Total:</span>
-                <span>₹${(order.totalAmount || 0).toLocaleString('en-IN')}</span>
-              </div>
-            </div>
-          </div>
-          
-          <div class="footer">
-            Hero Crackers, Sivakasi • All Disputes Subject to Sivakasi Jurisdiction
           </div>
           
           <script>
-            function setDensity(density) {
-              document.body.className = 'density-' + density;
-              try {
-                localStorage.setItem('hero_invoice_density', density);
-              } catch(e) {}
+            function setScale(scale) {
+              var el = document.getElementById('invoice-content');
+              if (el) {
+                el.style.zoom = scale;
+                el.style.MozTransform = 'scale(' + scale + ')';
+              }
+              ['1', '125', '15'].forEach(function(k) {
+                var b = document.getElementById('btn-' + k);
+                if (b) b.className = 'scale-btn';
+              });
+              var activeId = scale === 1.0 ? 'btn-1' : scale === 1.25 ? 'btn-125' : 'btn-15';
+              var activeBtn = document.getElementById(activeId);
+              if (activeBtn) activeBtn.className = 'scale-btn active';
+              try { localStorage.setItem('hero_invoice_scale', scale); } catch(e) {}
             }
             try {
-              var saved = localStorage.getItem('hero_invoice_density');
+              var saved = localStorage.getItem('hero_invoice_scale');
               if (saved) {
-                document.getElementById('densitySelect').value = saved;
-                setDensity(saved);
+                setScale(parseFloat(saved));
+              } else {
+                setScale(1.5);
               }
-            } catch(e) {}
+            } catch(e) {
+              setScale(1.5);
+            }
             window.onload = function() { window.print(); }
           </script>
         </body>
