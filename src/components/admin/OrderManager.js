@@ -244,8 +244,8 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
               padding: 30px; 
             }
             .invoice-wrapper {
-              zoom: 1.5;
-              -moz-transform: scale(1.5);
+              zoom: 0.67;
+              -moz-transform: scale(0.67);
               -moz-transform-origin: top left;
             }
             .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 35px; border-bottom: 2px solid #333; padding-bottom: 15px; }
@@ -268,7 +268,7 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
               display: flex;
               justify-content: space-between;
               align-items: center;
-              margin-bottom: 25px;
+              margin-bottom: 20px;
               padding: 10px 16px;
               background: #1f2937;
               border-radius: 6px;
@@ -303,7 +303,7 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
               body { padding: 0; }
               .no-print { display: none !important; }
               .invoice-wrapper {
-                zoom: 1.5;
+                zoom: 0.67;
               }
             }
           </style>
@@ -312,9 +312,10 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
           <div class="no-print toolbar">
             <div style="display: flex; align-items: center; gap: 8px;">
               <span style="font-size: 12px; color: #9ca3af;">Size:</span>
-              <button class="scale-btn" id="btn-1" onclick="setScale(1.0)">1.0x</button>
-              <button class="scale-btn" id="btn-125" onclick="setScale(1.25)">1.25x</button>
-              <button class="scale-btn active" id="btn-15" onclick="setScale(1.5)">1.5x</button>
+              <button class="scale-btn" id="btn-1" onclick="setScale(1.0)">1.0x (Original)</button>
+              <button class="scale-btn" id="btn-125" onclick="setScale(0.8)">1.25x Smaller</button>
+              <button class="scale-btn active" id="btn-15" onclick="setScale(0.67)">1.5x Smaller</button>
+              <button class="scale-btn" id="btn-175" onclick="setScale(0.57)">1.75x Smaller</button>
             </div>
             <button class="print-btn" onclick="window.print()">🖨️ Print Invoice</button>
           </div>
@@ -384,11 +385,11 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
                 el.style.zoom = scale;
                 el.style.MozTransform = 'scale(' + scale + ')';
               }
-              ['1', '125', '15'].forEach(function(k) {
+              ['1', '125', '15', '175'].forEach(function(k) {
                 var b = document.getElementById('btn-' + k);
                 if (b) b.className = 'scale-btn';
               });
-              var activeId = scale === 1.0 ? 'btn-1' : scale === 1.25 ? 'btn-125' : 'btn-15';
+              var activeId = scale === 1.0 ? 'btn-1' : scale === 0.8 ? 'btn-125' : scale === 0.57 ? 'btn-175' : 'btn-15';
               var activeBtn = document.getElementById(activeId);
               if (activeBtn) activeBtn.className = 'scale-btn active';
               try { localStorage.setItem('hero_invoice_scale', scale); } catch(e) {}
@@ -398,10 +399,10 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
               if (saved) {
                 setScale(parseFloat(saved));
               } else {
-                setScale(1.5);
+                setScale(0.67);
               }
             } catch(e) {
-              setScale(1.5);
+              setScale(0.67);
             }
             window.onload = function() { window.print(); }
           </script>
