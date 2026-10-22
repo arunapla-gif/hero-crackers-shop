@@ -8,6 +8,25 @@ const Spinner = () => (
   </svg>
 );
 
+const formatOrderDateTime = (dateInput) => {
+  if (!dateInput) return null;
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return null;
+
+  return {
+    date: date.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    }),
+    time: date.toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    })
+  };
+};
+
 const OrderTableRow = React.memo(({ 
   order, 
   isSelected,
@@ -36,14 +55,15 @@ const OrderTableRow = React.memo(({
   };
 
   const paymentLabel = order.paymentStatus === 'PAID' ? 'Paid' : order.paymentStatus === 'CREDIT' ? 'Credit / Later' : 'Unpaid';
+  const orderDateTime = formatOrderDateTime(order.createdAt);
 
   return (
     <div className={`admin-card admin-order-row status-${order.status} order-card`}>
       
       <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', width: '100%' }}>
         
-        {/* Col 1: ID & Status */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '150px' }}>
+        {/* Col 1: ID, Date/Time & Status */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '170px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <input 
               type="checkbox" 
@@ -60,13 +80,32 @@ const OrderTableRow = React.memo(({
               <span style={{ background: '#00E676', color: 'black', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>🌐 WEBSITE</span>
             )}
           </div>
+
+          {orderDateTime && (
+            <div 
+              title="Order Generated Date & Time"
+              style={{ 
+                fontSize: '0.8rem', 
+                color: 'var(--admin-text-secondary)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px',
+                fontWeight: '500'
+              }}
+            >
+              <span>🗓️ {orderDateTime.date}</span>
+              <span style={{ opacity: 0.4 }}>•</span>
+              <span>🕒 {orderDateTime.time}</span>
+            </div>
+          )}
+
           <div>
             <span className={`admin-order-badge ${order.status}`}>
               <span className="dot"></span>
               {order.status}
             </span>
           </div>
-          <div style={{ marginTop: '4px' }}>
+          <div style={{ marginTop: '2px' }}>
             <span className={`admin-payment-badge ${order.paymentStatus}`}>
               💰 {paymentLabel}
             </span>

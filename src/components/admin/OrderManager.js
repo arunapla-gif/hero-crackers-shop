@@ -183,10 +183,10 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
   };
 
   const exportToCSV = () => {
-    const headers = ['Order ID', 'Date', 'Customer Phone', 'Address', 'Status', 'Total Amount', 'Remarks'];
+    const headers = ['Order ID', 'Date & Time', 'Customer Phone', 'Address', 'Status', 'Total Amount', 'Remarks'];
     const rows = orders.map(o => [
       o.id, 
-      new Date(o.createdAt).toLocaleDateString(),
+      o.createdAt ? `${new Date(o.createdAt).toLocaleDateString('en-IN')} ${new Date(o.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}` : 'N/A',
       o.customerPhone || 'N/A',
       `"${o.shippingAddress.replace(/"/g, '""')}"`,
       o.status,
