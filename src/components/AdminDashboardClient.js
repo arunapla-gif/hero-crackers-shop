@@ -2,15 +2,42 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import OrderManager from './admin/OrderManager';
-import QuickBillPOS from './admin/QuickBillPOS';
-import MasterDataPanel from './admin/MasterDataPanel';
-import ExpenseTracker from './admin/ExpenseTracker';
-import ReportsDashboard from './admin/ReportsDashboard';
-import CustomerDirectory from './admin/CustomerDirectory';
+import dynamic from 'next/dynamic';
 import './admin/admin.css';
 
-export default function AdminDashboardClient({ initialOrders, initialProducts, categories: initialCategories, initialGodowns, initialReferences, initialTransports, initialExpenses, initialCustomers }) {
+const TabLoadingSkeleton = ({ title = 'Loading panel...' }) => (
+  <div className="admin-card" style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--admin-text-secondary)' }}>
+    <div style={{ display: 'inline-block', width: '32px', height: '32px', border: '3px solid var(--admin-border)', borderTopColor: 'var(--admin-accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: '16px' }} />
+    <div style={{ fontSize: '1rem', fontWeight: 500 }}>{title}</div>
+  </div>
+);
+
+const OrderManager = dynamic(() => import('./admin/OrderManager'), {
+  ssr: false,
+  loading: () => <TabLoadingSkeleton title="Loading Orders & Analytics..." />
+});
+const QuickBillPOS = dynamic(() => import('./admin/QuickBillPOS'), {
+  ssr: false,
+  loading: () => <TabLoadingSkeleton title="Loading Quick Bill POS..." />
+});
+const MasterDataPanel = dynamic(() => import('./admin/MasterDataPanel'), {
+  ssr: false,
+  loading: () => <TabLoadingSkeleton title="Loading Master Data..." />
+});
+const ExpenseTracker = dynamic(() => import('./admin/ExpenseTracker'), {
+  ssr: false,
+  loading: () => <TabLoadingSkeleton title="Loading Accounts & Expenses..." />
+});
+const ReportsDashboard = dynamic(() => import('./admin/ReportsDashboard'), {
+  ssr: false,
+  loading: () => <TabLoadingSkeleton title="Loading Reports Dashboard..." />
+});
+const CustomerDirectory = dynamic(() => import('./admin/CustomerDirectory'), {
+  ssr: false,
+  loading: () => <TabLoadingSkeleton title="Loading Customer Directory..." />
+});
+
+export default function AdminDashboardClient({ initialProducts, categories: initialCategories, initialGodowns, initialReferences, initialTransports, initialExpenses, initialCustomers }) {
   // Master states used across tabs
   const [products, setProducts] = useState(initialProducts);
   const [categories, setCategories] = useState(initialCategories);
@@ -210,7 +237,6 @@ export default function AdminDashboardClient({ initialOrders, initialProducts, c
           <CustomerDirectory 
             isDarkMode={isDarkMode}
             customers={initialCustomers}
-            orders={initialOrders}
           />
         )}
       </div>

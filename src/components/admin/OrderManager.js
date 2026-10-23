@@ -157,28 +157,49 @@ export default function OrderManager({ isDarkMode, products, transports, onEditO
   const handleBulkStatusChange = async (newStatus) => {
     if (!confirm(`Are you sure you want to change the status of ${selectedOrders.length} orders to ${newStatus}?`)) return;
     
-    await Promise.all(selectedOrders.map(id => 
-      fetch(`/api/orders/${id}`, {
+    try {
+      const res = await fetch('/api/orders/bulk', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      })
-    ));
+        body: JSON.stringify({ orderIds: selectedOrders, status: newStatus }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'Failed to update orders');
+      }
+    } catch (e) {
+      console.error('Failed to perform bulk status change', e);
+      alert('Error updating orders');
+    }
     queryClient.invalidateQueries(['orders']);
+    queryClient.invalidateQueries(['orderAnalytics']);
     setSelectedOrders([]);
   };
 
   const handleBulkMarkPaid = async () => {
     if (!confirm(`Are you sure you want to mark ${selectedOrders.length} orders as PAID via CASH?`)) return;
     
-    await Promise.all(selectedOrders.map(id => 
-      fetch(`/api/orders/${id}`, {
+    try {
+      const res = await fetch('/api/orders/bulk', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentStatus: 'PAID', paymentMethod: 'CASH', paymentDetails: 'Bulk Applied' }),
-      })
-    ));
+        body: JSON.stringify({
+          orderIds: selectedOrders,
+          paymentStatus: 'PAID',
+          paymentMethod: 'CASH',
+          paymentDetails: 'Bulk Applied'
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'Failed to mark orders as paid');
+      }
+    } catch (e) {
+      console.error('Failed to perform bulk mark paid', e);
+      alert('Error marking orders as paid');
+    }
     queryClient.invalidateQueries(['orders']);
+    queryClient.invalidateQueries(['orderAnalytics']);
     setSelectedOrders([]);
   };
 

@@ -12,9 +12,8 @@ export default async function AdminDashboard() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Execute all database queries in parallel to significantly reduce page load time
+  // Execute lightweight master data queries in parallel to significantly reduce page load time
   const [
-    orders,
     products,
     categories,
     godowns,
@@ -23,14 +22,6 @@ export default async function AdminDashboard() {
     expenses,
     customers
   ] = await Promise.all([
-    prisma.order.findMany({
-      include: { 
-        items: true, 
-        user: { select: { id: true, name: true, email: true, role: true } } 
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 50
-    }),
     prisma.product.findMany({
       orderBy: [
         { sequence: 'asc' },
@@ -62,7 +53,6 @@ export default async function AdminDashboard() {
   return (
     <ReactQueryProvider>
       <AdminDashboardClient 
-        initialOrders={JSON.parse(JSON.stringify(orders))} 
         initialProducts={JSON.parse(JSON.stringify(products))} 
         categories={JSON.parse(JSON.stringify(categories))}
         initialGodowns={JSON.parse(JSON.stringify(godowns))}
