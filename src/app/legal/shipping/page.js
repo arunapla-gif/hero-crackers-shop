@@ -42,7 +42,10 @@ export default function ShippingPage() {
             <li><strong>Deepavali Peak Season (September to November):</strong> Dispatches occur daily from our Sivakasi godowns. Because highway parcel traffic is heavy during festival rush, we recommend booking your estimate at least 15 to 20 days ahead of Deepavali to guarantee timely arrival.</li>
           </ul>
 
-          <h3 style={{ color: '#800000', marginTop: '28px', marginBottom: '10px' }}>3. Freight / Transport Charges</h3>
+          <h3 style={{ color: '#800000', marginTop: '28px', marginBottom: '10px' }}>3. Minimum Order & Freight Charges</h3>
+          <p style={{ marginBottom: '15px' }}>
+            To ensure safe transit packaging (heavy-duty corrugated boxing and strapping) and make parcel road transport economical for customers, our online catalog requires a <strong>minimum order value of ₹5,000</strong>.
+          </p>
           <p style={{ marginBottom: '20px' }}>
             Estimated prices displayed on the website are for the products packed at our Sivakasi godown. Transport parcel freight charges are paid by the customer directly to the transport company upon collecting the parcel (To-Pay basis), or as agreed during order confirmation.
           </p>

@@ -41,8 +41,20 @@ export default function ShopInterface({ categories }) {
       {/* 80% FLAT OFF Banner */}
       <div className={styles.promoBanner}>
         <h2 className={styles.promoText}>
-          <span>🎆 2026 Festival Collection</span>
-          <span className={styles.promoBadge}>80% FLAT OFF 🎆</span>
+          <span>🎆 2026 Festival Collection • Direct Sivakasi Factory Rates 🎆</span>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '4px' }}>
+            <span className={styles.promoBadge}>80% FLAT OFF</span>
+            <span style={{
+              background: '#000',
+              color: '#FFF800',
+              padding: '4px 10px',
+              borderRadius: '8px',
+              fontSize: '0.9rem',
+              fontWeight: 'bold'
+            }}>
+              📦 Min Order ₹5,000
+            </span>
+          </div>
         </h2>
       </div>
 
@@ -209,7 +221,9 @@ export default function ShopInterface({ categories }) {
           <div className={styles.footerTotals}>
             <span className={styles.footerTotalLabel} style={{ color: '#666' }}>Total Estimate</span>
             <span className={styles.footerTotalValue} style={{ color: 'var(--color-primary)' }}>₹{cartTotal.toLocaleString()}</span>
-            <span className={styles.footerItems} style={{ color: '#888' }}>{cartItemsCount} items selected</span>
+            <span className={styles.footerItems} style={{ color: cartTotal < 5000 ? '#e65100' : '#888', fontWeight: cartTotal < 5000 ? 'bold' : 'normal' }}>
+              {cartItemsCount} items {cartTotal < 5000 ? `• Min. ₹5,000 (Add ₹${(5000 - cartTotal).toLocaleString()})` : 'selected'}
+            </span>
           </div>
           <button 
             className={styles.footerBtn}

@@ -39,9 +39,12 @@ export default async function ShopPage() {
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '3.5rem', marginBottom: '10px', color: '#ffd700' }}>
           Our Products
         </h1>
-        <p style={{ fontSize: '1.2rem', color: '#ccc' }}>
+        <p style={{ fontSize: '1.2rem', color: '#ccc', marginBottom: '14px' }}>
           Explore our wide range of premium fireworks for every celebration.
         </p>
+        <div style={{ display: 'inline-block', backgroundColor: 'rgba(255, 87, 34, 0.15)', border: '1px solid #ff5722', padding: '6px 18px', borderRadius: '25px', color: '#ffb74d', fontSize: '0.95rem', fontWeight: 'bold' }}>
+          📦 Direct Sivakasi Godown Dispatch • Minimum Order ₹5,000
+        </div>
       </section>
 
       {/* Main Interactive Interface (Grid / Quick Buy Toggle) */}

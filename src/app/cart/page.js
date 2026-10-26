@@ -30,6 +30,11 @@ export default function CartPage() {
       return;
     }
 
+    if (cartTotal < 5000) {
+      alert(`Minimum order value from the catalog is ₹5,000. Please add ₹${(5000 - cartTotal).toLocaleString()} more to proceed.`);
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -116,21 +121,58 @@ export default function CartPage() {
                 </div>
               </div>
 
+              {cartTotal < 5000 && (
+                <div style={{
+                  backgroundColor: '#fff3cd',
+                  color: '#856404',
+                  border: '1px solid #ffeeba',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  marginBottom: '20px',
+                  fontSize: '0.92rem',
+                  lineHeight: '1.5'
+                }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>📦</span> Minimum Order: ₹5,000
+                  </div>
+                  <div>
+                    Current Total: <strong>₹{cartTotal.toLocaleString()}</strong>. Please add <strong>₹{(5000 - cartTotal).toLocaleString()}</strong> more from our catalog to submit your estimate request.
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => router.push('/shop')}
+                    style={{
+                      marginTop: '10px',
+                      padding: '6px 14px',
+                      background: '#856404',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    + Add More Products
+                  </button>
+                </div>
+              )}
+
               <button 
                 type="submit" 
-                disabled={submitting || cartItems.length === 0}
+                disabled={submitting || cartItems.length === 0 || cartTotal < 5000}
                 style={{
                   width: '100%',
-                  background: submitting ? '#ccc' : 'linear-gradient(135deg, var(--color-primary), var(--color-accent-orange))',
-                  color: submitting ? '#666' : '#fff',
+                  background: (submitting || cartTotal < 5000) ? '#ccc' : 'linear-gradient(135deg, var(--color-primary), var(--color-accent-orange))',
+                  color: (submitting || cartTotal < 5000) ? '#666' : '#fff',
                   border: 'none',
                   padding: '15px',
-                  fontSize: '1.2rem',
+                  fontSize: '1.15rem',
                   fontWeight: 'bold',
                   borderRadius: '8px',
-                  cursor: submitting ? 'not-allowed' : 'pointer',
+                  cursor: (submitting || cartTotal < 5000) ? 'not-allowed' : 'pointer',
                   transition: 'background 0.3s ease',
-                  boxShadow: submitting ? 'none' : '0 5px 15px rgba(229, 57, 53, 0.3)',
+                  boxShadow: (submitting || cartTotal < 5000) ? 'none' : '0 5px 15px rgba(229, 57, 53, 0.3)',
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -144,6 +186,8 @@ export default function CartPage() {
                     </svg>
                     <span>Processing Estimate...</span>
                   </>
+                ) : cartTotal < 5000 ? (
+                  `Min Order ₹5,000 (Add ₹${(5000 - cartTotal).toLocaleString()} More)`
                 ) : (
                   'Submit Estimate Request'
                 )}

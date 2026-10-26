@@ -213,28 +213,85 @@ export default function SlidingCart() {
               <span style={{ fontWeight: 'bold', color: '#E6C27A' }}>₹{cartTotal.toLocaleString()}</span>
             </div>
             
-            <Link href="/cart" onClick={() => setIsCartOpen(false)} style={{ textDecoration: 'none' }}>
-              <button style={{
-                width: '100%',
-                background: 'linear-gradient(135deg, #FFB75E, #ED8F03)',
-                color: '#000',
-                border: 'none',
-                padding: '16px',
-                borderRadius: '12px',
-                fontWeight: 'bold',
-                fontSize: '1.1rem',
-                cursor: 'pointer',
-                boxShadow: '0 5px 20px rgba(237, 143, 3, 0.4)',
-                transition: 'transform 0.2s',
-                textTransform: 'uppercase',
-                letterSpacing: '1px'
-              }}
-              onMouseOver={e => e.target.style.transform = 'translateY(-2px)'}
-              onMouseOut={e => e.target.style.transform = 'translateY(0)'}
-              >
-                Proceed to Checkout
-              </button>
-            </Link>
+            {/* Minimum Order Indicator */}
+            {(() => {
+              const isMinMet = cartTotal >= 5000;
+              const minDiff = Math.max(0, 5000 - cartTotal);
+              return (
+                <>
+                  <div style={{
+                    marginBottom: '16px',
+                    padding: '12px 14px',
+                    borderRadius: '10px',
+                    background: isMinMet ? 'rgba(76, 175, 80, 0.12)' : 'rgba(237, 143, 3, 0.15)',
+                    border: `1px solid ${isMinMet ? 'rgba(76, 175, 80, 0.3)' : 'rgba(237, 143, 3, 0.35)'}`,
+                    fontSize: '0.85rem'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontWeight: 'bold' }}>
+                      <span style={{ color: isMinMet ? '#81c784' : '#FFB75E' }}>
+                        {isMinMet ? '✅ Minimum order reached!' : '📦 Minimum Order: ₹5,000'}
+                      </span>
+                      {!isMinMet && (
+                        <span style={{ color: '#fff' }}>Add ₹{minDiff.toLocaleString()} more</span>
+                      )}
+                    </div>
+                    <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div style={{
+                        width: `${Math.min(100, (cartTotal / 5000) * 100)}%`,
+                        height: '100%',
+                        background: isMinMet ? 'linear-gradient(90deg, #4caf50, #81c784)' : 'linear-gradient(90deg, #FFB75E, #ED8F03)',
+                        borderRadius: '3px',
+                        transition: 'width 0.3s ease'
+                      }} />
+                    </div>
+                  </div>
+                  
+                  {isMinMet ? (
+                    <Link href="/cart" onClick={() => setIsCartOpen(false)} style={{ textDecoration: 'none' }}>
+                      <button style={{
+                        width: '100%',
+                        background: 'linear-gradient(135deg, #FFB75E, #ED8F03)',
+                        color: '#000',
+                        border: 'none',
+                        padding: '16px',
+                        borderRadius: '12px',
+                        fontWeight: 'bold',
+                        fontSize: '1.1rem',
+                        cursor: 'pointer',
+                        boxShadow: '0 5px 20px rgba(237, 143, 3, 0.4)',
+                        transition: 'transform 0.2s',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px'
+                      }}
+                      onMouseOver={e => e.target.style.transform = 'translateY(-2px)'}
+                      onMouseOut={e => e.target.style.transform = 'translateY(0)'}
+                      >
+                        Proceed to Checkout
+                      </button>
+                    </Link>
+                  ) : (
+                    <button 
+                      disabled
+                      style={{
+                        width: '100%',
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        color: '#aaa',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        padding: '16px',
+                        borderRadius: '12px',
+                        fontWeight: 'bold',
+                        fontSize: '0.95rem',
+                        cursor: 'not-allowed',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                      }}
+                    >
+                      Add ₹{minDiff.toLocaleString()} More to Checkout
+                    </button>
+                  )}
+                </>
+              );
+            })()}
           </div>
         )}
       </div>

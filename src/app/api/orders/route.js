@@ -86,6 +86,15 @@ export async function POST(request) {
       };
     });
 
+    // 3b. Minimum Order Check for Customer Website Catalog (Exempt POS / Admin)
+    const isCustomerCatalog = !body.source || body.source === 'WEBSITE';
+    if (isCustomerCatalog && calculatedTotal < 5000) {
+      return NextResponse.json(
+        { error: 'Minimum order amount from the customer catalog is ₹5,000. Please add more items to your estimate.' },
+        { status: 400 }
+      );
+    }
+
     // 4. Guest Checkout User Creation with Hashed Password
     // Each order is an independent transaction: create a dedicated guest user identity
     // so every order permanently preserves its exact customerName and phone without overwriting past orders.
