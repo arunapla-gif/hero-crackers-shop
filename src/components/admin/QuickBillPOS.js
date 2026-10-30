@@ -232,7 +232,6 @@ export default function QuickBillPOS({ products, categories, references, handleR
   const handleGenerateQuickBill = (e) => {
     e.preventDefault();
     if (Object.keys(quickBillCart).length === 0) return alert('Cart is empty!');
-    if (quickBillTotal < 3000) return alert('Minimum order Rs.3000');
     if (!quickBillCustomer.name.trim()) return alert('Customer Name is mandatory.');
     if (!quickBillCustomer.phone.trim()) return alert('Phone Number is mandatory.');
     if (!quickBillCustomer.city.trim()) return alert('City is mandatory.');
