@@ -126,35 +126,35 @@ export default function AdminDashboardClient({ initialProducts, categories: init
         }
       `}} />
 
-      <div className="admin-container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 20px' }}>
+      <div className="admin-container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px 20px' }}>
         
         {/* Header */}
-        <div className="header-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        <div className="header-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
           <div>
-            <h1 className="header-title" style={{ fontFamily: 'var(--font-serif)', fontSize: '3rem', color: 'var(--admin-text-primary)', margin: '0 0 10px 0', transition: 'color 0.3s' }}>
+            <h1 className="header-title" style={{ fontFamily: 'var(--font-serif)', fontSize: '1.8rem', color: 'var(--admin-text-primary)', margin: '0 0 2px 0', transition: 'color 0.3s' }}>
               Command Center
             </h1>
-            <p style={{ color: 'var(--admin-text-secondary)', margin: 0, fontSize: '1.1rem' }}>Manage orders, inventory, and masters seamlessly.</p>
+            <p style={{ color: 'var(--admin-text-secondary)', margin: 0, fontSize: '0.88rem' }}>Manage orders, inventory, and masters seamlessly.</p>
           </div>
-          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <button 
               className="action-btn"
               onClick={() => setIsDarkMode(!isDarkMode)}
               style={{ 
-                padding: '10px 20px', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold',
+                padding: '6px 14px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
                 backgroundColor: 'var(--admin-card-bg)', color: 'var(--admin-text-primary)', border: `1px solid var(--admin-border)`,
-                display: 'flex', alignItems: 'center', gap: '8px'
+                display: 'flex', alignItems: 'center', gap: '6px'
               }}
             >
-              {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+              {isDarkMode ? '☀️ Light' : '🌙 Dark'}
             </button>
             <button 
               className="action-btn"
               onClick={handleLogout}
               style={{ 
-                padding: '10px 20px', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold',
+                padding: '6px 14px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
                 backgroundColor: '#ef4444', color: 'white', border: 'none',
-                display: 'flex', alignItems: 'center', gap: '8px'
+                display: 'flex', alignItems: 'center', gap: '6px'
               }}
             >
               🚪 Logout
@@ -163,7 +163,7 @@ export default function AdminDashboardClient({ initialProducts, categories: init
         </div>
         
         {/* Main Navigation */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', borderBottom: `1px solid var(--admin-border)`, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', borderBottom: `1px solid var(--admin-border)`, flexWrap: 'wrap' }}>
           <TabButton active={activeTab === 'orders'} onClick={() => setActiveTab('orders')}>Orders & Analytics</TabButton>
           <TabButton active={activeTab === 'quickbill'} onClick={() => setActiveTab('quickbill')}>⚡ Quick Bill (POS)</TabButton>
           <TabButton active={activeTab === 'masters'} onClick={() => setActiveTab('masters')}>Data Masters</TabButton>

@@ -53,7 +53,7 @@ export default function OrderFilters({
       </div>
 
       {/* Segmented Control for Filters */}
-      <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
         <div className="admin-filter-group">
           {['ALL', 'PENDING', 'CONFIRMED', 'PROCESSING', 'PACKED', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map(f => (
             <button 
