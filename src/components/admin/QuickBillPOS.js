@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatOrderNumber } from '@/lib/utils';
+import { isValidPhone } from '@/lib/validation';
 
 
 export default function QuickBillPOS({ products, categories, references, handleRefreshData, isRefreshing, initialPosState, onClearPosState }) {
@@ -127,6 +128,65 @@ export default function QuickBillPOS({ products, categories, references, handleR
     }
   }, [initialPosState]);
 
+  // Restore draft from sessionStorage on mount (if not editing an existing order)
+  useEffect(() => {
+    if (initialPosState) return;
+    try {
+      const savedDraft = sessionStorage.getItem('quickbill_pos_draft');
+      if (savedDraft) {
+        const parsed = JSON.parse(savedDraft);
+        if (parsed.cart && typeof parsed.cart === 'object' && Object.keys(parsed.cart).length > 0) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setQuickBillCart(parsed.cart);
+        }
+        if (parsed.customer && typeof parsed.customer === 'object') {
+          setQuickBillCustomer(prev => ({ ...prev, ...parsed.customer }));
+        }
+        if (parsed.paymentState && typeof parsed.paymentState === 'object') {
+          setPaymentState(prev => ({ ...prev, ...parsed.paymentState }));
+        }
+      }
+    } catch (e) {
+      console.error('Failed to restore POS draft from sessionStorage', e);
+    }
+  }, [initialPosState]);
+
+  // Auto-save draft to sessionStorage whenever cart, customer, or payment details change
+  useEffect(() => {
+    if (initialPosState) return;
+    try {
+      const hasCart = Object.keys(quickBillCart).length > 0;
+      const hasCustomer = Boolean(quickBillCustomer.name?.trim() || quickBillCustomer.phone?.trim() || (quickBillCustomer.city?.trim() && quickBillCustomer.city !== ''));
+      if (hasCart || hasCustomer) {
+        sessionStorage.setItem('quickbill_pos_draft', JSON.stringify({
+          cart: quickBillCart,
+          customer: quickBillCustomer,
+          paymentState
+        }));
+      } else {
+        sessionStorage.removeItem('quickbill_pos_draft');
+      }
+    } catch (e) {
+      console.error('Failed to save POS draft to sessionStorage', e);
+    }
+  }, [quickBillCart, quickBillCustomer, paymentState, initialPosState]);
+
+  const handleClearCart = () => {
+    const hasItems = Object.keys(quickBillCart).length > 0;
+    const hasCustomer = quickBillCustomer.name?.trim() || quickBillCustomer.phone?.trim();
+    if (hasItems || hasCustomer) {
+      if (!confirm('Are you sure you want to clear the current bill draft?')) return;
+    }
+    setQuickBillCart({});
+    setQuickBillCustomer({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '', referredBy: '', remarks: '' });
+    setPaymentState({ status: 'UNPAID', method: 'CASH', details: '' });
+    setLocalCustomItems([]);
+    try {
+      sessionStorage.removeItem('quickbill_pos_draft');
+    } catch (_) {}
+    if (onClearPosState) onClearPosState();
+  };
+
   // Auto-fill customer details when phone number reaches 10 digits
   useEffect(() => {
     const phone = quickBillCustomer.phone.replace(/[^0-9]/g, '');
@@ -188,7 +248,14 @@ export default function QuickBillPOS({ products, categories, references, handleR
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      if (!res.ok) throw new Error(`Failed to ${isEdit ? 'update' : 'generate'} bill`);
+      if (!res.ok) {
+        let errorMsg = `Failed to ${isEdit ? 'update' : 'generate'} bill`;
+        try {
+          const errData = await res.json();
+          if (errData?.error) errorMsg = errData.error;
+        } catch (_) {}
+        throw new Error(errorMsg);
+      }
       return res.json();
     },
     onSuccess: (order) => {
@@ -197,7 +264,13 @@ export default function QuickBillPOS({ products, categories, references, handleR
       setQuickBillCustomer({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '', referredBy: '', remarks: '' });
       setPaymentState({ status: 'UNPAID', method: 'CASH', details: '' });
       setLocalCustomItems([]); // clear custom items mapping on success
+      try {
+        sessionStorage.removeItem('quickbill_pos_draft');
+      } catch (_) {}
       if (onClearPosState) onClearPosState();
+    },
+    onError: (err) => {
+      alert(`⚠️ Could not save bill: ${err.message || 'Something went wrong. Please check details and try again.'}`);
     }
   });
 
@@ -234,11 +307,14 @@ export default function QuickBillPOS({ products, categories, references, handleR
     if (Object.keys(quickBillCart).length === 0) return alert('Cart is empty!');
     if (!quickBillCustomer.name.trim()) return alert('Customer Name is mandatory.');
     if (!quickBillCustomer.phone.trim()) return alert('Phone Number is mandatory.');
+    if (!isValidPhone(quickBillCustomer.phone)) {
+      return alert('A valid 10-digit Indian mobile number is required (starting with 6, 7, 8, or 9).');
+    }
     if (!quickBillCustomer.city.trim()) return alert('City is mandatory.');
     
     const items = Object.entries(quickBillCart).map(([id, qty]) => {
       const p = allProducts.find(prod => prod.id === id);
-      return { productId: id, quantity: qty, price: p.price };
+      return { productId: id, quantity: qty, price: p?.price ?? 0 };
     });
     
     const payload = {
@@ -560,13 +636,29 @@ export default function QuickBillPOS({ products, categories, references, handleR
                 onClearPosState();
                 setQuickBillCart({});
                 setQuickBillCustomer({ name: '', phone: '', address: 'Walk-in / Store Pickup', city: '', referredBy: '' });
+                try {
+                  sessionStorage.removeItem('quickbill_pos_draft');
+                } catch (_) {}
               }} className="admin-btn-text danger" style={{ fontWeight: 'bold' }}>✕ Cancel</button>
             </div>
           )}
 
-          <h2 style={{ color: 'var(--admin-text-primary)', margin: '0 0 25px 0', fontSize: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
+          <h2 style={{ color: 'var(--admin-text-primary)', margin: '0 0 25px 0', fontSize: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>Cart Summary</span>
-            <span style={{ color: 'var(--admin-accent)', fontSize: '1.2rem' }}>{Object.keys(quickBillCart).length} Items</span>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              {(Object.keys(quickBillCart).length > 0 || quickBillCustomer.name || quickBillCustomer.phone) && !initialPosState && (
+                <button 
+                  type="button" 
+                  onClick={handleClearCart} 
+                  className="admin-btn-text danger" 
+                  style={{ fontSize: '0.85rem', padding: '4px 8px' }}
+                  title="Clear Current Bill"
+                >
+                  🗑️ Clear
+                </button>
+              )}
+              <span style={{ color: 'var(--admin-accent)', fontSize: '1.2rem' }}>{Object.keys(quickBillCart).length} Items</span>
+            </div>
           </h2>
           
           <div style={{ maxHeight: '250px', overflowY: 'auto', marginBottom: '20px', borderBottom: '1px solid var(--admin-border)', paddingBottom: '10px' }}>
@@ -715,6 +807,24 @@ export default function QuickBillPOS({ products, categories, references, handleR
               )}
             </div>
           </div>
+
+          {generateBillMutation.isError && (
+            <div style={{ 
+              padding: '10px 14px', 
+              backgroundColor: 'rgba(239, 68, 68, 0.15)', 
+              border: '1px solid #ef4444', 
+              borderRadius: '8px', 
+              color: '#f87171', 
+              marginBottom: '15px', 
+              fontSize: '0.9rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <span>⚠️</span>
+              <span>{generateBillMutation.error?.message || 'Failed to save bill. Please try again.'}</span>
+            </div>
+          )}
 
           <button 
             type="submit" 

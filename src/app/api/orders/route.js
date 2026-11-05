@@ -8,16 +8,22 @@ import limiter from '@/lib/rateLimit';
 import { isValidPhone, cleanPhone, sanitizeString, isValidQuantity } from '@/lib/validation';
 
 export async function POST(request) {
-  // 1. Bot honeypot & Rate limiting
-  const clientIp = limiter.getClientIp(request);
-  const rateLimitKey = `order_create:${clientIp}`;
-  const rateLimitStatus = limiter.isRateLimited(rateLimitKey, 15, 10 * 60 * 1000); // max 15 orders / 10 mins
+  // 1. Admin verification & Rate limiting
+  // Authenticated Admins / POS are exempt from rate limiting to prevent counter billing lockouts
+  const auth = await requireAdminApi();
+  const isAdmin = auth.authorized;
 
-  if (rateLimitStatus.limited) {
-    return NextResponse.json(
-      { error: 'Order submission rate limit exceeded. Please wait a few minutes.' },
-      { status: 429, headers: { 'Retry-After': String(rateLimitStatus.retryAfterSeconds) } }
-    );
+  if (!isAdmin) {
+    const clientIp = limiter.getClientIp(request);
+    const rateLimitKey = `order_create:${clientIp}`;
+    const rateLimitStatus = limiter.isRateLimited(rateLimitKey, 15, 10 * 60 * 1000); // max 15 orders / 10 mins
+
+    if (rateLimitStatus.limited) {
+      return NextResponse.json(
+        { error: 'Order submission rate limit exceeded. Please wait a few minutes.' },
+        { status: 429, headers: { 'Retry-After': String(rateLimitStatus.retryAfterSeconds) } }
+      );
+    }
   }
 
   try {
