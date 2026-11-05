@@ -230,6 +230,27 @@ export default function QuickBillPOS({ products, categories, references, handleR
     });
   };
 
+  const removeQuickBillItem = (productId) => {
+    setQuickBillCart(prev => {
+      const newCart = { ...prev };
+      delete newCart[productId];
+      return newCart;
+    });
+  };
+
+  const setQuickBillExactQty = (productId, value) => {
+    const qty = parseInt(value, 10);
+    setQuickBillCart(prev => {
+      const newCart = { ...prev };
+      if (isNaN(qty) || qty <= 0) {
+        delete newCart[productId];
+      } else {
+        newCart[productId] = Math.min(1000, qty);
+      }
+      return newCart;
+    });
+  };
+
   const quickBillTotal = useMemo(() => {
     return Object.entries(quickBillCart).reduce((sum, [id, qty]) => {
       const p = allProducts.find(prod => prod.id === id);
@@ -661,21 +682,92 @@ export default function QuickBillPOS({ products, categories, references, handleR
             </div>
           </h2>
           
-          <div style={{ maxHeight: '250px', overflowY: 'auto', marginBottom: '20px', borderBottom: '1px solid var(--admin-border)', paddingBottom: '10px' }}>
+          <div style={{ maxHeight: '280px', overflowY: 'auto', marginBottom: '20px', borderBottom: '1px solid var(--admin-border)', paddingBottom: '10px' }}>
             {Object.entries(quickBillCart).length === 0 ? (
               <div style={{ color: 'var(--admin-text-secondary)', textAlign: 'center', padding: '20px 0' }}>Cart is empty</div>
             ) : (
               Object.entries(quickBillCart).map(([id, qty], index) => {
                 const p = allProducts.find(prod => prod.id === id);
                 return (
-                  <div key={id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: 'var(--admin-text-secondary)', fontSize: '0.95rem' }}>
-                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
-                      <span style={{ color: 'var(--admin-accent)', marginRight: '8px', fontWeight: 'bold' }}>{index + 1}.</span>
-                      {p?.name}
-                    </span>
-                    <span style={{ color: 'var(--admin-text-primary)', fontWeight: 'bold' }}>{qty} x ₹{p?.price}</span>
+                  <div 
+                    key={id} 
+                    style={{ 
+                      display: 'flex', 
+                      flexDirection: 'column',
+                      gap: '4px',
+                      padding: '8px 10px', 
+                      backgroundColor: 'var(--admin-input-bg)',
+                      borderRadius: '8px', 
+                      border: '1px solid var(--admin-border)',
+                      marginBottom: '8px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: '600', color: 'var(--admin-text-primary)', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '240px' }} title={p?.name}>
+                        <span style={{ color: 'var(--admin-accent)', marginRight: '6px', fontWeight: 'bold' }}>{index + 1}.</span>
+                        {p?.name || 'Item'}
+                      </span>
+                      <button 
+                        type="button" 
+                        onClick={() => removeQuickBillItem(id)}
+                        className="admin-btn-text danger"
+                        style={{ padding: '2px 6px', fontSize: '0.85rem', lineHeight: 1 }}
+                        title="Remove item"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2px' }}>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-secondary)' }}>
+                        ₹{p?.price ?? 0} each
+                      </span>
+                      
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <button 
+                          type="button" 
+                          onClick={() => updateQuickBillQty(id, -1)}
+                          className="qty-btn admin-table-action-btn"
+                          style={{ width: '24px', height: '24px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold', borderRadius: '4px' }}
+                          title="Decrease quantity"
+                        >
+                          -
+                        </button>
+                        <input 
+                          type="number"
+                          min="1"
+                          max="1000"
+                          value={qty}
+                          onChange={(e) => setQuickBillExactQty(id, e.target.value)}
+                          style={{ 
+                            width: '42px', 
+                            height: '24px',
+                            textAlign: 'center', 
+                            fontWeight: 'bold', 
+                            fontSize: '0.85rem',
+                            color: 'var(--admin-accent)', 
+                            backgroundColor: 'var(--admin-card-bg)', 
+                            border: '1px solid var(--admin-border)', 
+                            borderRadius: '4px',
+                            padding: '0 2px'
+                          }}
+                        />
+                        <button 
+                          type="button" 
+                          onClick={() => updateQuickBillQty(id, 1)}
+                          className="qty-btn admin-table-action-btn"
+                          style={{ width: '24px', height: '24px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold', borderRadius: '4px' }}
+                          title="Increase quantity"
+                        >
+                          +
+                        </button>
+                        <span style={{ fontWeight: 'bold', color: 'var(--admin-text-primary)', fontSize: '0.9rem', marginLeft: '6px', minWidth: '55px', textAlign: 'right' }}>
+                          ₹{((p?.price ?? 0) * qty).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                )
+                );
               })
             )}
           </div>
